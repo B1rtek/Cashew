@@ -1,0 +1,42 @@
+setcase 35
+mode case
+
+exit
+
+setcase 29
+mode collection
+https://csgostash.com/skin/1325/PP-Bizon-Death-Rattle
+https://csgostash.com/skin/1339/MAC-10-Hot-Snakes
+https://csgostash.com/skin/1338/AWP-Silk-Tiger
+exit
+
+setcase 15
+mode knife
+
+exit
+
+setcase 16
+mode glove
+https://csgostash.com/glove/58/Driver-Gloves-Black-Tie
+https://csgostash.com/glove/69/Hand-Wraps-Desert-Shamagh
+https://csgostash.com/glove/54/Specialist-Gloves-Field-Agent
+https://csgostash.com/glove/64/Sport-Gloves-Nocts
+exit
+
+[knify i glovy korzystają z tej samej tabeli]
+1 - base knif
+2 - huntsman
+3 - butterfly
+4 - chroma
+5 - falchion
+6 - shadow daggers
+7 - bowie
+8 - gamma
+9 - glove case
+10 - spectrum knif
+11 - clutch gloves
+12 - horizon knif
+13 - prisma knif
+14 - cs20 knif
+15 - shattered web knif
+16 - broken fang gloves
