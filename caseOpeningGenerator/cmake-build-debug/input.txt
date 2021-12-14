@@ -1,24 +1,7 @@
 setcase 32
 mode collection
-https://csgostash.com/skin/1399/PP-Bizon-Anolis
-https://csgostash.com/skin/1401/MAC-10-Sienna-Damask
-https://csgostash.com/skin/1400/MAG-7-Navy-Sheen
-https://csgostash.com/skin/1398/P250-Drought
-https://csgostash.com/skin/1402/SSG-08-Prey
-https://csgostash.com/skin/1405/CZ75-Auto-Midnight-Palm
-https://csgostash.com/skin/1406/P90-Verdant-Growth
-https://csgostash.com/skin/1403/Dual-Berettas-Drift-Wood
-https://csgostash.com/skin/1404/FAMAS-CaliCamo
 https://csgostash.com/skin/1409/M249-Humidor
-https://csgostash.com/skin/1408/MP9-Music-Box
-https://csgostash.com/skin/1410/SG-553-Desert-Blossom
-https://csgostash.com/skin/1407/USP-S-Purple-DDPAT
-https://csgostash.com/skin/1411/XM1014-Elegant-Vines
 https://csgostash.com/skin/1413/AUG-Sand-Storm
-https://csgostash.com/skin/1412/Glock-18-Pink-DDPAT
-https://csgostash.com/skin/1414/MP5-SD-Oxide-Oasis
-https://csgostash.com/skin/1415/Desert-Eagle-Fennec-Fox
-https://csgostash.com/skin/1416/AWP-Desert-Hydra
 exit
 
 setcase 17

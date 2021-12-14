@@ -81,7 +81,7 @@ int main()
 		if(url=="exit")
 		{
 			fstream output;
-			output.open("output.txt", ios::out);
+			output.open("output.sql", ios::out);
 			for(auto & i : SQL)
 			{
 				output<<i<<endl;
