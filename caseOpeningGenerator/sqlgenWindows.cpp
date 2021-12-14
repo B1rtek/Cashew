@@ -270,7 +270,7 @@ int main()
 			}
 			//cout<<pictureURLs[i]<<endl;
 		}
-		//naprawa b³êdów
+		//naprawa bÅ‚Ä™dÃ³w
 		if(pictureURLs[0].size()<140 && pictureURLs[0]!="empty") 
 		{
 			log("[FN] Attempting to repair a broken entry...", MODE_WARNING);

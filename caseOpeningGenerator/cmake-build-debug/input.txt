@@ -1,7 +1,24 @@
-setcase 32
+setcase 33
 mode collection
-https://csgostash.com/skin/1409/M249-Humidor
-https://csgostash.com/skin/1413/AUG-Sand-Storm
+https://csgostash.com/skin/1379/R8-Revolver-Desert-Brush
+https://csgostash.com/skin/1380/P90-Desert-DDPAT
+https://csgostash.com/skin/1383/Sawed-Off-Parched
+https://csgostash.com/skin/1382/MP7-Prey
+https://csgostash.com/skin/1381/SG-553-Bleached
+https://csgostash.com/skin/1387/M249-Midnight-Palm
+https://csgostash.com/skin/1385/MP9-Old-Roots
+https://csgostash.com/skin/1386/Five-SeveN-Withered-Vine
+https://csgostash.com/skin/1384/AUG-Spalted-Wood
+https://csgostash.com/skin/1390/G3SG1-New-Roots
+https://csgostash.com/skin/1388/P250-Black-&-Tan
+https://csgostash.com/skin/1389/Nova-Quick-Sand
+https://csgostash.com/skin/1391/Galil-AR-Amber-Fade
+https://csgostash.com/skin/1393/M4A4-Red-DDPAT
+https://csgostash.com/skin/1392/USP-S-Orange-Anolis
+https://csgostash.com/skin/1394/MAC-10-Case-Hardened
+https://csgostash.com/skin/1396/SSG-08-Death-Strike
+https://csgostash.com/skin/1395/UMP-45-Fade
+https://csgostash.com/skin/1397/AK-47-Gold-Arabesque
 exit
 
 setcase 17
