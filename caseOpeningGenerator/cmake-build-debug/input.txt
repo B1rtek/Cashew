@@ -1,0 +1,77 @@
+setcase 31
+mode collection
+https://csgostash.com/skin/1425/AWP-POP-AWP
+exit
+
+setcase 17
+mode knife
+https://csgostash.com/skin/1470/Bowie-Knife-Gamma-Doppler
+https://csgostash.com/skin/1473/Bowie-Knife-Autotronic
+https://csgostash.com/skin/1472/Bowie-Knife-Lore
+https://csgostash.com/skin/1471/Bowie-Knife-Freehand
+https://csgostash.com/skin/1474/Bowie-Knife-Black-Laminate
+https://csgostash.com/skin/1475/Bowie-Knife-Bright-Water
+https://csgostash.com/skin/1476/Butterfly-Knife-Gamma-Doppler
+https://csgostash.com/skin/1479/Butterfly-Knife-Autotronic
+https://csgostash.com/skin/1478/Butterfly-Knife-Lore
+https://csgostash.com/skin/1481/Butterfly-Knife-Bright-Water
+https://csgostash.com/skin/1480/Butterfly-Knife-Black-Laminate
+https://csgostash.com/skin/1477/Butterfly-Knife-Freehand
+https://csgostash.com/skin/1482/Falchion-Knife-Gamma-Doppler
+https://csgostash.com/skin/1485/Falchion-Knife-Autotronic
+https://csgostash.com/skin/1484/Falchion-Knife-Lore
+https://csgostash.com/skin/1483/Falchion-Knife-Freehand
+https://csgostash.com/skin/1487/Falchion-Knife-Bright-Water
+https://csgostash.com/skin/1486/Falchion-Knife-Black-Laminate
+https://csgostash.com/skin/1488/Huntsman-Knife-Gamma-Doppler
+https://csgostash.com/skin/1490/Huntsman-Knife-Lore
+https://csgostash.com/skin/1491/Huntsman-Knife-Autotronic
+https://csgostash.com/skin/1492/Huntsman-Knife-Black-Laminate
+https://csgostash.com/skin/1489/Huntsman-Knife-Freehand
+https://csgostash.com/skin/1493/Huntsman-Knife-Bright-Water
+https://csgostash.com/skin/1497/Shadow-Daggers-Autotronic
+https://csgostash.com/skin/1496/Shadow-Daggers-Lore
+https://csgostash.com/skin/1494/Shadow-Daggers-Gamma-Doppler
+https://csgostash.com/skin/1495/Shadow-Daggers-Freehand
+https://csgostash.com/skin/1499/Shadow-Daggers-Bright-Water
+https://csgostash.com/skin/1498/Shadow-Daggers-Black-Laminate
+exit
+
+
+setcase 36
+mode case
+https://csgostash.com/skin/1465/MAC-10-Toybox
+exit
+
+setcase 16
+mode glove
+https://csgostash.com/glove/58/Driver-Gloves-Black-Tie
+https://csgostash.com/glove/69/Hand-Wraps-Desert-Shamagh
+https://csgostash.com/glove/54/Specialist-Gloves-Field-Agent
+https://csgostash.com/glove/64/Sport-Gloves-Nocts
+exit
+
+insert into Collections(collectionID, collectionName, collectionURL, collectionIconURL) values(30, "The 2021 Vertigo Collection", "https://www.csgodatabase.com/collections/the-2021-vertigo-collection/", "https://www.csgodatabase.com/images/collections/2021_Vertigo.png");
+insert into Collections(collectionID, collectionName, collectionURL, collectionIconURL) values(31, "The 2021 Train Collection", "https://www.csgodatabase.com/collections/the-2021-train-collection/", "https://www.csgodatabase.com/images/collections/2021_Train.png");
+insert into Collections(collectionID, collectionName, collectionURL, collectionIconURL) values(32, "The 2021 Mirage Collection", "https://www.csgodatabase.com/collections/the-2021-mirage-collection/", "https://www.csgodatabase.com/images/collections/2021_Mirage.png");
+insert into Collections(collectionID, collectionName, collectionURL, collectionIconURL) values(33, "The 2021 Dust 2 Collection", "https://www.csgodatabase.com/collections/the-2021-dust-2-collection/", "https://www.csgodatabase.com/images/collections/2021_Dust_2.png");
+
+
+[knify i glovy korzystają z tej samej tabeli]
+1 - base knif
+2 - huntsman
+3 - butterfly
+4 - chroma
+5 - falchion
+6 - shadow daggers
+7 - bowie
+8 - gamma
+9 - glove case
+10 - spectrum knif
+11 - clutch gloves
+12 - horizon knif
+13 - prisma knif
+14 - cs20 knif
+15 - shattered web knif
+16 - broken fang gloves
+17 - riptide knif
