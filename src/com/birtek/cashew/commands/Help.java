@@ -85,6 +85,7 @@ public class Help extends BaseCommand {
                         helpEmbed.setAuthor("🥜 Cashew's admin commands 🥜", null, Objects.requireNonNull(event.getGuild().getMemberById(Cashew.CASHEW_USER_ID)).getUser().getAvatarUrl());
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"reactions <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions to messages containing \"69\", \"amogus\", etc in a text channel. Setting it to \"all\" enables the reactions with pings.", false);
+                        helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"reactions <#channel> <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions in the specified channel.", false);
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"socialcredit <@User> <amount(int)>`", "Adds or removes someone's social credit on the server.", false);
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"timedmessage <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"timedmessage show <id(int)|\"all\">`", "Shows the timed message with the spcified id/all scheduled messages on this server.", false);

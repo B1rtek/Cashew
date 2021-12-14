@@ -132,6 +132,9 @@ public final class Database {
     }
 
     public boolean updateChannelActivity(String channelID, int activitySetting) throws SQLException {
+        if ((activitySetting < 0) || (activitySetting > 2)) {
+            return false;
+        }
         try {
             int size = 0;
             ResultSet checkIfRecordExists = instance.channelActivitySelect(channelID);
