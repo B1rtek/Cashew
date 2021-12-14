@@ -115,6 +115,7 @@ int main()
             log("Code generation mode has been changed to "+url, MODE_INFO);
             continue;
         }
+        log("Processing "+url, MODE_INFO);
         downloadPage(url, mainFilePath);
         fstream source;
         source.open(mainFilePath.c_str(), ios::in);
@@ -338,7 +339,7 @@ int main()
         SQL.push_back(insertStatement);
         if(errorState==0)
         {
-            log("Entry done ("+url+")", MODE_SUCCESS);
+            log("Entry done", MODE_SUCCESS);
         }
         if(errorState==2)
         {

@@ -82,9 +82,9 @@ int main()
 		{
 			fstream output;
 			output.open("output.txt", ios::out);
-			for(int i=0; i<SQL.size(); i++)
+			for(auto & i : SQL)
 			{
-				output<<SQL[i]<<endl;
+				output<<i<<endl;
 			}
 			output.close();
 			exit(0);
@@ -121,6 +121,7 @@ int main()
 			log("Code generation mode has been changed to "+url, MODE_INFO);
 			continue;
 		}
+        log("Processing "+url, MODE_INFO);
 		downloadPage(url, mainFilePath);
 		fstream source;
 		source.open(mainFilePath.c_str(), ios::in);

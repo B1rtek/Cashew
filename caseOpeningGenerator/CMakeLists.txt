@@ -3,6 +3,7 @@ set(PROJECT_NAME "sqlgen")
 project(${PROJECT_NAME})
 
 set(CMAKE_CXX_STANDARD 14)
+
 if(WIN32)
     add_executable(sqlgenWin32 sqlgenWindows.cpp)
 else()
