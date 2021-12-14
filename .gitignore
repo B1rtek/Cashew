@@ -1,2 +1,17 @@
 /.key
 /runcashew.txt
+/out/
+/caseOpeningGenerator/cmake-build-debug/cmake_install.cmake
+/caseOpeningGenerator/cmake-build-debug/CMakeCache.txt
+/caseOpeningGenerator/cmake-build-debug/main.html
+/caseOpeningGenerator/cmake-build-debug/Makefile
+/caseOpeningGenerator/cmake-build-debug/picture.html
+/caseOpeningGenerator/cmake-build-debug/sqlgen.cbp
+/caseOpeningGenerator/cmake-build-debug/sqlgenWin32.ilk
+/caseOpeningGenerator/cmake-build-debug/sqlgenWin32.pdb
+/caseOpeningGenerator/cmake-build-debug/CMakeFiles/
+/caseOpeningGenerator/cmake-build-debug/Testing/
+/backups/
+/.idea/
+/caseOpeningGenerator/.idea/
+/Cashew.iml
