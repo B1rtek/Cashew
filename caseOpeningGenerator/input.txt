@@ -1,6 +1,6 @@
-setcase 35
+setcase 36
 mode case
-
+https://csgostash.com/skin/1455/G3SG1-Keeping-Tabs
 exit
 
 setcase 29
@@ -40,3 +40,4 @@ exit
 14 - cs20 knif
 15 - shattered web knif
 16 - broken fang gloves
+17 - riptide knif
