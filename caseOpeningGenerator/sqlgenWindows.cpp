@@ -1,8 +1,11 @@
-#include <bits/stdc++.h>
+#include <string>
+#include <iostream>
+#include <vector>
+#include <fstream>
 #include <windows.h>
 #include <tchar.h>
 #include <urlmon.h>
-#pragma comment(lib,"wininet.lib")
+#pragma comment(lib,"urlmon.lib")
 
 using namespace std;
 
@@ -26,7 +29,7 @@ void downloadPage(string url, string saveFile)
 	string sciezka=getExeDir();
 	sciezka+=saveFile;
 	LPCTSTR Url=_T(url.c_str()), File=_T(sciezka.c_str());
-	hr=URLDownloadToFile(0, Url, File, 0, 0);
+	hr=URLDownloadToFileA(0, Url, File, 0, 0);
 }
 
 const int MODE_INFO = 1;

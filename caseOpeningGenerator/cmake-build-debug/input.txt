@@ -1,4 +1,4 @@
-setcase 31
+etcase 31
 mode collection
 https://csgostash.com/skin/1425/AWP-POP-AWP
 exit
