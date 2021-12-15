@@ -15,3 +15,8 @@
 /.idea/
 /caseOpeningGenerator/.idea/
 /Cashew.iml
+/caseOpeningGenerator/cmake-build-debug/.ninja_deps
+/caseOpeningGenerator/cmake-build-debug/.ninja_log
+/caseOpeningGenerator/cmake-build-debug/build.ninja
+/caseOpeningGenerator/cmake-build-debug/.cmake/
+/CashewJDA.iml
