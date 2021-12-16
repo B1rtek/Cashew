@@ -30,7 +30,7 @@ public class Cashew {
 
         KeyLoader keyLoader = new KeyLoader();
         String TOKEN;
-        if(keyLoader.loadKey()) {
+        if (keyLoader.loadKey()) {
             TOKEN = keyLoader.getKey();
         } else {
             System.err.println("The API key is missing.");
@@ -41,7 +41,7 @@ public class Cashew {
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new OpenCase(), new OpenCollection(), new TimedMessageCommand(),
-                        new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), //commands
+                        new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), //commands
                         new GuildMemberJoinAndLeave(), new GuildMessageReactionAdd(), //events
                         new ReactToMaple(), new OwosEtc()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
