@@ -71,12 +71,16 @@ public class OwosEtc extends BaseReaction {
             if ((message.contains("impostor") || message.contains("imposter")) && (rawMessage.contains("impostor") || rawMessage.contains("imposter")) && checkActivitySettings(event, 1)) {
                 event.getMessage().reply(whentheimposterissus).mentionRepliedUser(false).queue();
             }
+            if (message.contains("ęśąćż") && rawMessage.contains("ęśąćż") && checkActivitySettings(event, 1)) {
+                event.getMessage().reply("https://cdn.discordapp.com/attachments/857711843282649158/921471143578320956/800x0x1.png").mentionRepliedUser(false).queue();
+            }
             if (message.contains("worst neko") && rawMessage.contains("worst neko") && checkActivitySettings(event, 1)) {
                 Random random = new Random();
                 if (random.nextInt(5) == 0) {
                     event.getMessage().reply("https://cdn.discordapp.com/attachments/857711843282649158/862677751444799530/unknown.png").mentionRepliedUser(false).queue();
                 }
             }
+
 
             // $kromer command
             if (message.startsWith(Cashew.COMMAND_PREFIX + "kromer") && rawMessage.startsWith(Cashew.COMMAND_PREFIX + "kromer") && checkActivitySettings(event, 0)) {

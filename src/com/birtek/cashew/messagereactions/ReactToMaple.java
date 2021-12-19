@@ -75,7 +75,7 @@ public class ReactToMaple extends BaseReaction {
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentDisplay().toLowerCase(Locale.ROOT);
-        if(!event.getAuthor().getId().equals(Cashew.CASHEW_USER_ID) && checkIfNotBot(event) && checkActivitySettings(event, 1)) {
+        if(!event.getAuthor().getId().equals(Cashew.CASHEW_USER_ID) && checkIfNotBot(event) && checkActivitySettings(event, 2)) {
             for(String mention: mapleMentions) {
                 if(message.contains(mention)) {
                     if(mention.equals("best catgirl") || mention.equals("best neko")) {
