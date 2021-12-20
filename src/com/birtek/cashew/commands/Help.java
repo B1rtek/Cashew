@@ -87,6 +87,7 @@ public class Help extends BaseCommand {
                         helpEmbed = new EmbedBuilder();
                         helpEmbed.setAuthor("🥜 Cashew's admin commands 🥜", null, Objects.requireNonNull(event.getGuild().getMemberById(Cashew.CASHEW_USER_ID)).getUser().getAvatarUrl());
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
+                        helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"clear range <ranges>`", "Removes recent messages in the given range. For example, `$clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"reactions <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions to messages containing \"69\", \"amogus\", etc in a text channel. Setting it to \"all\" enables the reactions with pings.", false);
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"reactions <#channel> <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions in the specified channel.", false);
                         helpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"socialcredit <@User> <amount(int)>`", "Adds or removes someone's social credit on the server.", false);
