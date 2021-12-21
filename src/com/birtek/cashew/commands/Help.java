@@ -62,6 +62,9 @@ public class Help extends BaseCommand {
                     } else if (args[1].equalsIgnoreCase("korwin")) {
                         specificHelpEmbed.setTitle("Korwin");
                         specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"korwin`", "Generates a quote from Janusz Korwin-Mikke.", false);
+                    } else if (args[1].equalsIgnoreCase("inspirobot")) {
+                        specificHelpEmbed.setTitle("Inspirobot");
+                        specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"inspirobot`", "Generates an inspiring quote using https://inspirobot.me/", false);
                     } else if (args[1].equalsIgnoreCase("help")) {
                         specificHelpEmbed.setTitle("Help");
                         specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"help`", "bruh.", false);
@@ -76,7 +79,7 @@ public class Help extends BaseCommand {
                     helpEmbed.setAuthor("🥜 Cashew's commands 🥜", null, Objects.requireNonNull(event.getGuild().getMemberById(Cashew.CASHEW_USER_ID)).getUser().getAvatarUrl());
                     helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
                     helpEmbed.addField("🔫 CS:GO", "`opencase`, `opencollection`", false);
-                    helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`", false);
+                    helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`, `inspirobot`", false);
                     helpEmbed.addField("❓ Help", "To learn more about a specific command, type "+Cashew.COMMAND_PREFIX+"help <command>.", false);
                     helpEmbed.setColor(0xffd297);
                     helpEmbed.setFooter("Called by " + Objects.requireNonNull(event.getMember()).getUser().getName(), event.getMember().getUser().getAvatarUrl());
