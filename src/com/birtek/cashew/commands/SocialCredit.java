@@ -45,6 +45,7 @@ public class SocialCredit extends BaseCommand {
         String[] display = event.getMessage().getContentDisplay().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "socialcredit") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "soc")) {
             if(checkPermissions(event, socialCreditCommandPermissions)) {
+                if(event.isWebhookMessage()) return;
                 boolean youFailed=false;
                 Database database = Database.getInstance();
                 if(args.length==1) {
