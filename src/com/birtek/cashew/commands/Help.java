@@ -65,6 +65,7 @@ public class Help extends BaseCommand {
                     } else if (args[1].equalsIgnoreCase("inspirobot")) {
                         specificHelpEmbed.setTitle("Inspirobot");
                         specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"inspirobot`", "Generates an inspiring quote using https://inspirobot.me/", false);
+                        specificHelpEmbed.addField("Aliases", '`'+Cashew.COMMAND_PREFIX+"insp`", false);
                     } else if (args[1].equalsIgnoreCase("help")) {
                         specificHelpEmbed.setTitle("Help");
                         specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"help`", "bruh.", false);

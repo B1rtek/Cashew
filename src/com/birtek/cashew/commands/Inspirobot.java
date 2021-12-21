@@ -21,7 +21,7 @@ public class Inspirobot extends BaseCommand {
     @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
-        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "inspirobot")) {
+        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "inspirobot") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "insp")) {
             if (checkPermissions(event, inspirobotCommandPermissions)) {
                 URL inspirobot = null;
                 try {
