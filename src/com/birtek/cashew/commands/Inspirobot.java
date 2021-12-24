@@ -23,27 +23,23 @@ public class Inspirobot extends BaseCommand {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "inspirobot") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "insp")) {
             if (checkPermissions(event, inspirobotCommandPermissions)) {
-                URL inspirobot = null;
+                URL inspirobot;
                 try {
                     inspirobot = new URL("https://inspirobot.me/api?generate=true");
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
+                    event.getMessage().reply("Something went wrong while performing the command...").mentionRepliedUser(false).queue();
+                    return;
                 }
-                URLConnection yc;
-                String quote = "Something went wrong...";
+                URLConnection inspirobotURLConnection;
+                String quote;
                 try {
-                    assert inspirobot != null;
-                    yc = inspirobot.openConnection();
-                    BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
-                    String inputLine;
-                    StringBuilder response = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null)
-                        response.append(inputLine);
-                    in.close();
-                    quote = response.toString();
+                    inspirobotURLConnection = inspirobot.openConnection();
+                    quote = readURL(inspirobotURLConnection);
                 } catch (IOException e) {
                     e.printStackTrace();
                     event.getMessage().reply("Something went wrong while requesting the quote :thinking:").mentionRepliedUser(false).queue();
+                    return;
                 }
                 event.getMessage().reply(quote).mentionRepliedUser(false).queue();
             }
