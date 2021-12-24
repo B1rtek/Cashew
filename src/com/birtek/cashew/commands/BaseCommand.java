@@ -5,6 +5,10 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URLConnection;
 import java.util.EnumSet;
 import java.util.Objects;
 
@@ -43,5 +47,14 @@ public class BaseCommand extends ListenerAdapter {
             return false;
         }
         return true;
+    }
+
+    public String readURL(URLConnection connection) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String inputLine;
+        StringBuilder response = new StringBuilder();
+        while ((inputLine = in.readLine()) != null) response.append(inputLine);
+        in.close();
+        return response.toString();
     }
 }
