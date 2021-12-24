@@ -62,14 +62,13 @@ public class Help extends BaseCommand {
                     } else if (args[1].equalsIgnoreCase("korwin")) {
                         specificHelpEmbed.setTitle("Korwin");
                         specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"korwin`", "Generates a quote from Janusz Korwin-Mikke.", false);
-                    } else if (args[1].equalsIgnoreCase("inspirobot")) {
+                    } else if (args[1].equalsIgnoreCase("inspirobot") || args[1].equalsIgnoreCase("insp")) {
                         specificHelpEmbed.setTitle("Inspirobot");
                         specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"inspirobot`", "Generates an inspiring quote using https://inspirobot.me/", false);
                         specificHelpEmbed.addField("Aliases", '`'+Cashew.COMMAND_PREFIX+"insp`", false);
                     } else if (args[1].equalsIgnoreCase("dadjoke")) {
                         specificHelpEmbed.setTitle("Dad Joke");
                         specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "dadjoke`", "Displays a random dad joke from https://icanhazdadjoke.com/", false);
-                        specificHelpEmbed.addField("Aliases", '`' + Cashew.COMMAND_PREFIX + "insp`", false);
                     } else if (args[1].equalsIgnoreCase("help")) {
                         specificHelpEmbed.setTitle("Help");
                         specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"help`", "bruh.", false);
