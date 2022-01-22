@@ -1,6 +1,8 @@
-setcase 33
-mode collection
-https://csgostash.com/skin/1383/Sawed-Off-Parched
+setcase 37
+mode case
+https://csgostash.com/skin/1506/Sawed-Off-Spirit-Board
+https://csgostash.com/skin/1511/USP-S-Ticket-to-Hell
+https://csgostash.com/skin/1515/AK-47-Nightwish
 exit
 
 setcase 17
@@ -56,6 +58,7 @@ insert into Collections(collectionID, collectionName, collectionURL, collectionI
 insert into Collections(collectionID, collectionName, collectionURL, collectionIconURL) values(32, "The 2021 Mirage Collection", "https://www.csgodatabase.com/collections/the-2021-mirage-collection/", "https://www.csgodatabase.com/images/collections/2021_Mirage.png");
 insert into Collections(collectionID, collectionName, collectionURL, collectionIconURL) values(33, "The 2021 Dust 2 Collection", "https://www.csgodatabase.com/collections/the-2021-dust-2-collection/", "https://www.csgodatabase.com/images/collections/2021_Dust_2.png");
 
+insert into Cases(caseID, caseName, caseURL, caseIconURL) values(37, "Dreams & Nightmares Case", "https://www.csgodatabase.com/cases/dreams-nightmares-case/", "https://www.csgodatabase.com/images/containers/Dreams_&_Nightmares_Case.png");
 
 [knify i glovy korzystają z tej samej tabeli]
 1 - base knif
