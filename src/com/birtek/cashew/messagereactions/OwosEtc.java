@@ -80,7 +80,9 @@ public class OwosEtc extends BaseReaction {
                     event.getMessage().reply("https://cdn.discordapp.com/attachments/857711843282649158/862677751444799530/unknown.png").mentionRepliedUser(false).queue();
                 }
             }
-
+            if(message.contains("nya") && rawMessage.contains("nya") && checkActivitySettings(event, 1)) {
+                event.getMessage().reply("nyaaa :3").mentionRepliedUser(false).queue();
+            }
 
             // $kromer command
             if (message.startsWith(Cashew.COMMAND_PREFIX + "kromer") && rawMessage.startsWith(Cashew.COMMAND_PREFIX + "kromer") && checkActivitySettings(event, 0)) {
