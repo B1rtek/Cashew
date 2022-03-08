@@ -13,6 +13,9 @@ import java.util.Objects;
 public class Counter extends BaseReaction {
 
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+        if(!checkIfNotBot(event) || event.isWebhookMessage()) {
+            return;
+        }
         String message = event.getMessage().getContentDisplay().toLowerCase(Locale.ROOT);
         if(message.isEmpty()) {
             return;
