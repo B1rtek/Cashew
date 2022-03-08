@@ -19,6 +19,7 @@ public final class Database {
     public static final String COLLECTION_OPENING_DB = "jdbc:sqlite:collectionOpening.db";
     public static final String TIMED_MESSAGES_DB = "jdbc:sqlite:timedMessages.db";
     public static final String SOCIALCREDIT_DB = "jdbc:sqlite:socialCredit.db";
+    public static final String COUNTING_DB = "jdbc:sqlite:counting.db";
 
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
@@ -32,6 +33,8 @@ public final class Database {
     private Statement timedMessagesStatement;
     private Connection socialCreditConnection;
     private Statement socialCreditStatement;
+    private Connection countingConnection;
+    private Statement countingStatement;
 
     private Database() {
 
@@ -55,6 +58,8 @@ public final class Database {
             timedMessagesStatement = timedMessagesConnection.createStatement();
             socialCreditConnection = DriverManager.getConnection(SOCIALCREDIT_DB);
             socialCreditStatement = socialCreditConnection.createStatement();
+            countingConnection = DriverManager.getConnection(COUNTING_DB);
+            countingStatement = countingConnection.createStatement();
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the databases");
             e.printStackTrace();
@@ -69,7 +74,7 @@ public final class Database {
             return result;
         }
         synchronized (Database.class) {
-            if(instance == null) {
+            if (instance == null) {
                 instance = new Database();
             }
             return instance;
@@ -120,7 +125,7 @@ public final class Database {
             PreparedStatement prepStmt = channelActivityConnection.prepareStatement("UPDATE ChannelActivity SET activity = ? WHERE channelID = ?");
             prepStmt.setInt(1, activitySetting);
             prepStmt.setString(2, channelID);
-            if(prepStmt.executeUpdate()!=1) {
+            if (prepStmt.executeUpdate() != 1) {
                 return false;
             }
         } catch (SQLException e) {
@@ -138,16 +143,16 @@ public final class Database {
         try {
             int size = 0;
             ResultSet checkIfRecordExists = instance.channelActivitySelect(channelID);
-            if(checkIfRecordExists!=null) {
-                while(checkIfRecordExists.next()) {
+            if (checkIfRecordExists != null) {
+                while (checkIfRecordExists.next()) {
                     size++;
                 }
             }
-            if(size == 0) { //create new record
+            if (size == 0) { //create new record
                 instance.channelActivityInsert(channelID, activitySetting);
             } else { //apply new setting
                 boolean result = instance.channelActivityUpdate(channelID, activitySetting);
-                if(!result) {
+                if (!result) {
                     System.err.println("An error occured while executing the update statement in the ChannelActivity table.");
                 }
             }
@@ -164,8 +169,8 @@ public final class Database {
             prepStmt.setInt(1, nsfw);
             ResultSet results = prepStmt.executeQuery();
             int count = 0;
-            if(results!=null) {
-                while(results.next()) {
+            if (results != null) {
+                while (results.next()) {
                     count = results.getInt("il");
                 }
             }
@@ -230,7 +235,7 @@ public final class Database {
             prepStmt.setInt(1, knifeGroup);
             ResultSet results = prepStmt.executeQuery();
             int knifeCount = 0;
-            while(results.next()) {
+            while (results.next()) {
                 knifeCount = results.getInt("il");
             }
             return knifeCount;
@@ -265,15 +270,15 @@ public final class Database {
         }
     }
 
-    public List<Pair<String,String>> getCollectionItems(int collectionID) {
+    public List<Pair<String, String>> getCollectionItems(int collectionID) {
         try {
-            List<Pair<String,String>> skins = new ArrayList<>();
+            List<Pair<String, String>> skins = new ArrayList<>();
             PreparedStatement prepStmt = collectionOpeningConnection.prepareStatement("SELECT DISTINCT itemName, rarity FROM Skins WHERE collectionID = ?");
             prepStmt.setInt(1, collectionID);
             ResultSet results = prepStmt.executeQuery();
-            if(results!=null) {
-                while(results.next()) {
-                    skins.add(new Pair<>(results.getString("itemName"),results.getString("rarity")));
+            if (results != null) {
+                while (results.next()) {
+                    skins.add(new Pair<>(results.getString("itemName"), results.getString("rarity")));
                 }
                 return skins;
             } else return null;
@@ -303,8 +308,8 @@ public final class Database {
             prepStmt.setInt(1, collectionID);
             ResultSet results = prepStmt.executeQuery();
             List<String> availableRarities = new ArrayList<>();
-            if(results!=null) {
-                while(results.next()) {
+            if (results != null) {
+                while (results.next()) {
                     String currentRarity = results.getString("rarity");
                     availableRarities.add(currentRarity);
                 }
@@ -321,7 +326,7 @@ public final class Database {
     public ResultSet showTimedMessages(String selection, String serverID) {
         try {
             PreparedStatement prepStmt;
-            if(selection.startsWith(">")) {
+            if (selection.startsWith(">")) {
                 prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, executionTime, destinationChannelID, messageContent FROM Messages WHERE _id > ? AND serverID = ?");
                 prepStmt.setInt(1, 0);
             } else if (selection.startsWith("=")) {
@@ -342,7 +347,7 @@ public final class Database {
     public int deleteTimedMessages(String selection, String serverID) {
         try {
             PreparedStatement prepStmtQuery;
-            if(selection.startsWith(">")) {
+            if (selection.startsWith(">")) {
                 prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*) FROM Messages WHERE _id > ? AND serverID = ?");
                 prepStmtQuery.setInt(1, 0);
             } else if (selection.startsWith("=")) {
@@ -353,13 +358,13 @@ public final class Database {
             }
             prepStmtQuery.setString(2, serverID);
             ResultSet preQuery = prepStmtQuery.executeQuery();
-            while(preQuery.next()) {
-                if(preQuery.getInt(1)==0) {
+            while (preQuery.next()) {
+                if (preQuery.getInt(1) == 0) {
                     return -1;
                 }
             }
             PreparedStatement prepStmtDelete;
-            if(selection.startsWith(">")) {
+            if (selection.startsWith(">")) {
                 prepStmtDelete = timedMessagesConnection.prepareStatement("DELETE FROM Messages WHERE _id > ? AND serverID = ?");
                 prepStmtDelete.setInt(1, 0);
             } else {
@@ -367,7 +372,7 @@ public final class Database {
                 prepStmtDelete.setInt(1, Integer.parseInt(selection.substring(1)));
             }
             prepStmtDelete.setString(2, serverID);
-            if(prepStmtDelete.executeUpdate()==0) {
+            if (prepStmtDelete.executeUpdate() == 0) {
                 System.err.println("An error occured while deleting stuff from the Messages table.");
                 return -1;
             }
@@ -390,11 +395,11 @@ public final class Database {
             prepStmt.setString(5, serverID);
             prepStmt.execute();
             ResultSet insertID = prepStmt.getGeneratedKeys();
-            int returnedInsertID=0;
-            if(insertID.next()) {
+            int returnedInsertID = 0;
+            if (insertID.next()) {
                 returnedInsertID = (int) insertID.getLong(1);
             }
-            if(returnedInsertID!=0) {
+            if (returnedInsertID != 0) {
                 Cashew.timedMessagesManager.refresh();
                 return returnedInsertID;
             } else return 0;
@@ -410,9 +415,9 @@ public final class Database {
             PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT messageContent, executionTime, destinationChannelID FROM Messages");
             ResultSet timedMessages = prepStmt.executeQuery();
             ArrayList<TimedMessage> timedMessagesArrayList = new ArrayList<>();
-            if(timedMessages!=null) {
-                while(timedMessages.next()) {
-                    timedMessagesArrayList.add(new TimedMessage(timedMessages.getString(1), timedMessages.getString(2), 86400*1000, timedMessages.getString(3)));
+            if (timedMessages != null) {
+                while (timedMessages.next()) {
+                    timedMessagesArrayList.add(new TimedMessage(timedMessages.getString(1), timedMessages.getString(2), 86400 * 1000, timedMessages.getString(3)));
                 }
             }
             return timedMessagesArrayList;
@@ -429,8 +434,8 @@ public final class Database {
             prepStmt.setString(1, serverID);
             prepStmt.setString(2, userID);
             ResultSet socialCredit = prepStmt.executeQuery();
-            if(socialCredit!=null) {
-                if(socialCredit.next()) {
+            if (socialCredit != null) {
+                if (socialCredit.next()) {
                     return socialCredit.getInt(1);
                 }
                 return 648294745;
@@ -446,11 +451,11 @@ public final class Database {
     public void addSocialCredit(String userID, String serverID, int credit) {
         try {
             int socialCredit = getSocialCredit(userID, serverID);
-            if(socialCredit==648294745) {
+            if (socialCredit == 648294745) {
                 newSocialCredit(userID, serverID, credit);
             } else {
                 PreparedStatement prepStmt = socialCreditConnection.prepareStatement("UPDATE SocialCredit SET credit = ? WHERE serverID = ? AND userID = ?");
-                prepStmt.setInt(1, credit+socialCredit);
+                prepStmt.setInt(1, credit + socialCredit);
                 prepStmt.setString(2, serverID);
                 prepStmt.setString(3, userID);
                 prepStmt.executeUpdate();
@@ -471,6 +476,37 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while inserting into the SocialCredit table.");
+        }
+    }
+
+    public boolean setCountingStatus(boolean newState, String channelID) {
+        try {
+            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT Count(*) FROM Counting WHERE channelID = ?");
+            prepStmt.setString(1, channelID);
+            ResultSet result = prepStmt.executeQuery();
+            boolean createNewRecord = false;
+            while (result.next()) {
+                if (result.getInt(1) == 0) {
+                    createNewRecord = true;
+                    break;
+                }
+            }
+            if (createNewRecord) {
+                prepStmt = countingConnection.prepareStatement("INSERT INTO Counting(channelID, activity, current) VALUES(? ,?, ?)");
+                prepStmt.setString(1, channelID);
+                prepStmt.setBoolean(2, newState);
+                prepStmt.setInt(3, 0);
+            } else {
+                prepStmt = countingConnection.prepareStatement("UPDATE Counting SET activity = ? WHERE channelID = ?");
+                prepStmt.setBoolean(1, newState);
+                prepStmt.setString(2, channelID);
+            }
+            prepStmt.execute();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("An error occured while querying into the Counting table.");
+            return false;
         }
     }
 }
