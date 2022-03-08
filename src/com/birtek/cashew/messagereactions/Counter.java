@@ -7,6 +7,7 @@ import de.congrace.exp4j.UnparsableExpressionException;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EmptyStackException;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -23,6 +24,7 @@ public class Counter extends BaseReaction {
         Database database = Database.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
         if(countingData.getActive() && !Objects.equals(countingData.getUserID(), event.getAuthor().getId())) {
+            message = message.replace(',', '.');
             ExpressionBuilder test = new ExpressionBuilder(message);
             int result, current = countingData.getValue();
             try {
@@ -31,7 +33,7 @@ public class Counter extends BaseReaction {
                 e.printStackTrace();
                 System.err.println("Something weird happened idk counting failed");
                 return;
-            } catch (UnparsableExpressionException e) {
+            } catch (UnparsableExpressionException | EmptyStackException e) {
                 return;
             } catch (ArithmeticException e) {
                 event.getMessage().reply("This is illegal bruh").mentionRepliedUser(false).queue();
