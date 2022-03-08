@@ -15,6 +15,9 @@ public class Counter extends BaseReaction {
 
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
         String message = event.getMessage().getContentDisplay().toLowerCase(Locale.ROOT);
+        if(message.isEmpty()) {
+            return;
+        }
         Database database = Database.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
         if(countingData.getActive() && !Objects.equals(countingData.getUserID(), event.getAuthor().getId())) {
@@ -27,6 +30,9 @@ public class Counter extends BaseReaction {
                 System.err.println("Something weird happened idk counting failed");
                 return;
             } catch (UnparsableExpressionException e) {
+                return;
+            } catch (ArithmeticException e) {
+                event.getMessage().reply("This is illegal bruh").mentionRepliedUser(false).queue();
                 return;
             }
             if(result == 0) {
