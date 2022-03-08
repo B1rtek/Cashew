@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.table.DefaultTableCellRenderer;
 import java.util.Locale;
 
 public class Counting extends BaseCommand {

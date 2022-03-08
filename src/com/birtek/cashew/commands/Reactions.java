@@ -20,7 +20,7 @@ public class Reactions extends BaseCommand {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "reactions")) {
             if (checkPermissions(event, reactionsCommandPermissions)) {
-                int newActivitySetting = -1;
+                int newActivitySetting;
                 String channelID = event.getChannel().getId();
                 if (event.isWebhookMessage()) return;
                 if (args.length < 2) {

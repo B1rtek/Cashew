@@ -58,7 +58,7 @@ public class SocialCredit extends BaseCommand {
                             notSpecial++;
                         }
                         args[1] = args[1].substring(notSpecial, args[1].length()-1);
-                        long test = MiscUtil.parseSnowflake(args[1]);
+                        MiscUtil.parseSnowflake(args[1]);
                         if(args[1].length()!=18) {
                             youFailed=true;
                         }

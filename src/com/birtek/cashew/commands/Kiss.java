@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
@@ -42,18 +41,7 @@ public class Kiss extends BaseCommand {
                         embedMessage = new StringBuilder(Objects.requireNonNull(event.getMember()).getNickname() + " kisses");
                     }
                 }
-                for(int i=1; i<betterArgs.length; i++)
-                {
-                    embedMessage.append(" ");
-                    embedMessage.append(betterArgs[i]);
-                }
-                embedMessage.append("! ").append(reactions[random.nextInt(reactions.length)]);
-                EmbedBuilder kissEmbed = new EmbedBuilder();
-                kissEmbed.setColor(kissGifs[gifNumber].getColor());
-                kissEmbed.setImage(kissGifs[gifNumber].getGifURL());
-                kissEmbed.setAuthor(embedMessage.toString(), null, event.getAuthor().getAvatarUrl());
-                event.getChannel().sendMessageEmbeds(kissEmbed.build()).queue();
-                kissEmbed.clear();
+                Cuddle.sendCuddlyCommandGif(event, random, gifNumber, betterArgs, embedMessage, reactions, kissGifs);
             }
         }
     }

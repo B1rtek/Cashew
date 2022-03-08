@@ -78,19 +78,8 @@ public class OpenCase extends BaseCommand {
                     if(selectedCaseID!=0) {
                         ResultSet caseContents = database.getCaseItems(selectedCaseID);
                         if(caseContents!=null) {
+                            condition = getCaseItemCondition();
                             Random random = new Random();
-                            int skinFloat = random.nextInt(10000);
-                            if(skinFloat<1471) {
-                                condition = "fn";
-                            } else if(skinFloat<3939) {
-                                condition = "mw";
-                            } else if(skinFloat<8257) {
-                                condition = "ft";
-                            } else if(skinFloat<9049) {
-                                condition = "ww";
-                            } else {
-                                condition = "bs";
-                            }
                             int rarityRandom = random.nextInt(10000);
 //                            rarityRandom = 9999;
                             if(rarityRandom<7992) {
@@ -162,16 +151,7 @@ public class OpenCase extends BaseCommand {
                         if(random.nextInt(10)==0) {
                             itemName = "(StatTrak) "+itemName;
                         }
-                        EmbedBuilder drop = new EmbedBuilder();
-                        drop.setAuthor(selectedCaseName, selectedCaseURL, selectedCaseIconURL);
-                        drop.addField(itemName, condition, false);
-                        drop.setImage(imageURL);
-                        drop.setColor(embedColor);
-                        if(!flavorText.equals("emptyFlavorLOL")) {
-                            drop.setFooter(flavorText);
-                        }
-                        event.getChannel().sendTyping().queue();
-                        event.getMessage().replyEmbeds(drop.build()).mentionRepliedUser(false).queueAfter(1000, TimeUnit.MILLISECONDS);
+                        sendDroppedItemEmbed(event, selectedCaseName, selectedCaseURL, selectedCaseIconURL, condition, itemName, embedColor, flavorText, imageURL);
                     } else {
                         event.getMessage().reply("An error occurred while executing this command.").mentionRepliedUser(false).queue();
                     }
@@ -237,90 +217,6 @@ public class OpenCase extends BaseCommand {
         } else {
             event.getMessage().reply("An error occurred while executing this command (you got a knife btw but there was an error idk) [4]").mentionRepliedUser(false).queue();
         }
-    }
-
-    private Pair<String, String> processCondition(String cond, String fn, String mw, String ft, String ww, String bs) {
-        String condition = cond;
-        if(condition.equals("fn") && fn.equals("empty")) {
-            condition = "mw";
-            if(mw.equals("empty")) {
-                condition = "ft";
-                if(ft.equals("empty")) {
-                    condition = "ww";
-                    if(ww.equals("empty")) {
-                        condition = "bs";
-                    }
-                }
-            }
-        } else if(condition.equals("mw") && mw.equals("empty")) {
-            condition = "fn";
-            if(fn.equals("empty")) {
-                condition = "ft";
-                if(ft.equals("empty")) {
-                    condition = "ww";
-                    if(ww.equals("empty")) {
-                        condition = "bs";
-                    }
-                }
-            }
-        } else if(condition.equals("ft") && ft.equals("empty")) {
-            condition = "ww";
-            if(ww.equals("empty")) {
-                condition = "mw";
-                if(mw.equals("empty")) {
-                    condition = "bs";
-                    if(bs.equals("empty")) {
-                        condition = "fn";
-                    }
-                }
-            }
-        } else if(condition.equals("ww") && ww.equals("empty")) {
-            condition = "bs";
-            if(bs.equals("empty")) {
-                condition = "ft";
-                if(ft.equals("empty")) {
-                    condition = "mw";
-                    if(mw.equals("empty")) {
-                        condition = "fn";
-                    }
-                }
-            }
-        } else if(condition.equals("bs") && bs.equals("empty")) {
-            condition = "ww";
-            if(ww.equals("empty")) {
-                condition = "ft";
-                if(ft.equals("empty")) {
-                    condition = "mw";
-                    if(mw.equals("empty")) {
-                        condition = "fn";
-                    }
-                }
-            }
-        }
-        String imageURL = "";
-        switch (condition) {
-            case "fn":
-                condition = "Factory New";
-                imageURL = fn;
-                break;
-            case "mw":
-                condition = "Minimal Wear";
-                imageURL = mw;
-                break;
-            case "ft":
-                condition = "Field-Tested";
-                imageURL = ft;
-                break;
-            case "ww":
-                condition = "Well-Worn";
-                imageURL = ww;
-                break;
-            case "bs":
-                condition = "Battle-Scarred";
-                imageURL = bs;
-                break;
-        }
-        return new Pair<>(condition, imageURL);
     }
 
     private void displayCasesCommandEmbed(GuildMessageReceivedEvent event, String titleMessage) {

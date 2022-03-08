@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class OpenCollection extends BaseCommand {
 
@@ -81,19 +80,8 @@ public class OpenCollection extends BaseCommand {
                             return;
                         }
                         if(collectionContents!=null) {
+                            condition = getCaseItemCondition();
                             Random random = new Random();
-                            int skinFloat = random.nextInt(10000);
-                            if(skinFloat<1471) {
-                                condition = "fn";
-                            } else if(skinFloat<3939) {
-                                condition = "mw";
-                            } else if(skinFloat<8257) {
-                                condition = "ft";
-                            } else if(skinFloat<9049) {
-                                condition = "ww";
-                            } else {
-                                condition = "bs";
-                            }
                             int rarityRandom = random.nextInt(998936);
 //                            rarityRandom = 998935;
                             if(rarityRandom<799200) {
@@ -184,16 +172,7 @@ public class OpenCollection extends BaseCommand {
                         Pair<String, String> conditions = processCondition(condition, fn, mw, ft, ww, bs);
                         condition = conditions.getFirst();
                         String imageURL = conditions.getSecond();
-                        EmbedBuilder drop = new EmbedBuilder();
-                        drop.setAuthor(selectedCollectionName, selectedCollectionURL, selectedCollectionIconURL);
-                        drop.addField(itemName, condition, false);
-                        drop.setImage(imageURL);
-                        drop.setColor(embedColor);
-                        if(!flavorText.equals("emptyFlavorLOL")) {
-                            drop.setFooter(flavorText);
-                        }
-                        event.getChannel().sendTyping().queue();
-                        event.getMessage().replyEmbeds(drop.build()).mentionRepliedUser(false).queueAfter(250, TimeUnit.MILLISECONDS);
+                        sendDroppedItemEmbed(event, selectedCollectionName, selectedCollectionURL, selectedCollectionIconURL, condition, itemName, embedColor, flavorText, imageURL);
                     } else {
                         event.getMessage().reply("[8] An error occurred while executing this command.").mentionRepliedUser(false).queue();
                     }
@@ -202,90 +181,6 @@ public class OpenCollection extends BaseCommand {
                 }
             }
         }
-    }
-
-    private Pair<String, String> processCondition(String cond, String fn, String mw, String ft, String ww, String bs) {
-        String condition = cond;
-        if(condition.equals("fn") && fn.equals("empty")) {
-            condition = "mw";
-            if(mw.equals("empty")) {
-                condition = "ft";
-                if(ft.equals("empty")) {
-                    condition = "ww";
-                    if(ww.equals("empty")) {
-                        condition = "bs";
-                    }
-                }
-            }
-        } else if(condition.equals("mw") && mw.equals("empty")) {
-            condition = "fn";
-            if(fn.equals("empty")) {
-                condition = "ft";
-                if(ft.equals("empty")) {
-                    condition = "ww";
-                    if(ww.equals("empty")) {
-                        condition = "bs";
-                    }
-                }
-            }
-        } else if(condition.equals("ft") && ft.equals("empty")) {
-            condition = "ww";
-            if(ww.equals("empty")) {
-                condition = "mw";
-                if(mw.equals("empty")) {
-                    condition = "bs";
-                    if(bs.equals("empty")) {
-                        condition = "fn";
-                    }
-                }
-            }
-        } else if(condition.equals("ww") && ww.equals("empty")) {
-            condition = "bs";
-            if(bs.equals("empty")) {
-                condition = "ft";
-                if(ft.equals("empty")) {
-                    condition = "mw";
-                    if(mw.equals("empty")) {
-                        condition = "fn";
-                    }
-                }
-            }
-        } else if(condition.equals("bs") && bs.equals("empty")) {
-            condition = "ww";
-            if(ww.equals("empty")) {
-                condition = "ft";
-                if(ft.equals("empty")) {
-                    condition = "mw";
-                    if(mw.equals("empty")) {
-                        condition = "fn";
-                    }
-                }
-            }
-        }
-        String imageURL = "";
-        switch (condition) {
-            case "fn":
-                condition = "Factory New";
-                imageURL = fn;
-                break;
-            case "mw":
-                condition = "Minimal Wear";
-                imageURL = mw;
-                break;
-            case "ft":
-                condition = "Field-Tested";
-                imageURL = ft;
-                break;
-            case "ww":
-                condition = "Well-Worn";
-                imageURL = ww;
-                break;
-            case "bs":
-                condition = "Battle-Scarred";
-                imageURL = bs;
-                break;
-        }
-        return new Pair<>(condition, imageURL);
     }
 
     private void displayCollectionsCommandEmbed(GuildMessageReceivedEvent event, String titleMessage) {
