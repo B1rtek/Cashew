@@ -13,8 +13,6 @@ import java.util.Timer;
 
 public class TimedMessagesManager {
 
-    int DAY_IN_MILLISECONDS = 86400*1000;
-
     ArrayList<TimedMessage> timedMessagesArrayList = new ArrayList<>();
     Timer timer = new Timer();
     JDA jda;
