@@ -11,7 +11,7 @@ import java.util.List;
 
 public final class Database {
 
-    protected static volatile Database instance;
+    private static volatile Database instance;
 
     public static final String DRIVER = "org.sqlite.JDBC";
     public static final String CHANNEL_ACTIVITY_DB = "jdbc:sqlite:channelActivity.db";
@@ -25,17 +25,11 @@ public final class Database {
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
     private Connection boBurnhamConnection;
-    private Statement boBurnhamStatement;
     private Connection caseOpeningConnection;
-    private Statement caseOpeningStatement;
     private Connection collectionOpeningConnection;
-    private Statement collectionOpeningStatement;
     private Connection timedMessagesConnection;
-    private Statement timedMessagesStatement;
     private Connection socialCreditConnection;
-    private Statement socialCreditStatement;
     private Connection countingConnection;
-    private Statement countingStatement;
 
     private Database() {
 
@@ -50,17 +44,11 @@ public final class Database {
             channelActivityConnection = DriverManager.getConnection(CHANNEL_ACTIVITY_DB);
             channelActivityStatement = channelActivityConnection.createStatement();
             boBurnhamConnection = DriverManager.getConnection(BO_BURNHAM_DB);
-            boBurnhamStatement = boBurnhamConnection.createStatement();
             caseOpeningConnection = DriverManager.getConnection(CASE_OPENING_DB);
-            caseOpeningStatement = caseOpeningConnection.createStatement();
             collectionOpeningConnection = DriverManager.getConnection(COLLECTION_OPENING_DB);
-            collectionOpeningStatement = collectionOpeningConnection.createStatement();
             timedMessagesConnection = DriverManager.getConnection(TIMED_MESSAGES_DB);
-            timedMessagesStatement = timedMessagesConnection.createStatement();
             socialCreditConnection = DriverManager.getConnection(SOCIALCREDIT_DB);
-            socialCreditStatement = socialCreditConnection.createStatement();
             countingConnection = DriverManager.getConnection(COUNTING_DB);
-            countingStatement = countingConnection.createStatement();
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the databases");
             e.printStackTrace();
@@ -82,7 +70,7 @@ public final class Database {
         }
     }
 
-    private boolean createTables() {
+    private void createTables() {
         String createTestTable = "CREATE TABLE IF NOT EXISTS ChannelActivity(_id INTEGER PRIMARY KEY AUTOINCREMENT, channelID TEXT, activity INTEGER)";
         try {
             channelActivityStatement.execute(createTestTable);
@@ -90,12 +78,10 @@ public final class Database {
         } catch (SQLException e) {
             System.err.println("An error occurred while creating the tables");
             e.printStackTrace();
-            return false;
         }
-        return true;
     }
 
-    public boolean channelActivityInsert(String channelID, int activitySetting) {
+    public void channelActivityInsert(String channelID, int activitySetting) {
         try {
             PreparedStatement prepStmt = channelActivityConnection.prepareStatement("INSERT INTO ChannelActivity(channelID, activity) VALUES(?, ?);");
             prepStmt.setString(1, channelID);
@@ -104,9 +90,7 @@ public final class Database {
         } catch (SQLException e) {
             System.err.println("An error occured while inserting the values");
             e.printStackTrace();
-            return false;
         }
-        return true;
     }
 
     public ResultSet channelActivitySelect(String channelID) {
@@ -516,7 +500,7 @@ public final class Database {
             PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userID, current FROM Counting WHERE channelID = ?");
             prepStmt.setString(1, channelID);
             ResultSet result = prepStmt.executeQuery();
-            while(result.next()) {
+            if(result.next()) {
                 return new CountingInfo(result.getBoolean(1), result.getString(2), result.getInt(3));
             }
             return new CountingInfo(false, " ", 0);
