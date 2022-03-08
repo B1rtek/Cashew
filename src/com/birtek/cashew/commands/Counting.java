@@ -25,6 +25,7 @@ public class Counting extends BaseCommand {
                 if(argument.equalsIgnoreCase("reset")) {
                     Database database = Database.getInstance();
                     database.setCount(new CountingInfo(true, " ", 0), event.getChannel().getId());
+                    event.getMessage().reply("Counter has been reset.").mentionRepliedUser(false).queue();
                 } else {
                     if (saveToDatabase(argument.toLowerCase(Locale.ROOT), event.getChannel().getId())) {
                         event.getMessage().reply("Counting has been turned " + args[1] + " in this channel.").mentionRepliedUser(false).queue();
