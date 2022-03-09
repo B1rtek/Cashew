@@ -21,3 +21,7 @@
 /caseOpeningGenerator/cmake-build-debug/.cmake/
 /CashewJDA.iml
 /runcashew.bat
+/gradlew.bat
+/build/
+/.gradle/
+/gradlew

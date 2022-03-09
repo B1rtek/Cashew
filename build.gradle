@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+}
+
+group 'com.birtek.cashew'
+version '1.23.2'
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+    }
+}
+
+task runCashew(dependsOn: configurations.compileClasspath, type: JavaExec) {
+    group = "app"
+    classpath = sourceSets.test.runtimeClasspath
+    main = 'com.birtek.cashew.Cashew'
+}
+
+dependencies {
+    implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.36.0.3'
+    implementation("net.dv8tion:JDA:4.3.0_283")
+    implementation group: 'de.congrace', name: 'exp4j', version: '0.3.11'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
+}
