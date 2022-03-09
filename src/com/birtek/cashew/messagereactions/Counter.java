@@ -43,7 +43,8 @@ public class Counter extends BaseReaction {
                 return;
             }
             if (result != current + 1) {
-                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up! The next number should have been " + (current + 1) + "! Counter has been reset!").queue();
+                event.getMessage().addReaction("❌").queue();
+                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
                 database.setCount(new CountingInfo(true, " ", 0, " "), event.getChannel().getId());
             } else {
                 event.getMessage().addReaction("✅").queue();

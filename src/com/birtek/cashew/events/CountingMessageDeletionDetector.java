@@ -14,7 +14,7 @@ public class CountingMessageDeletionDetector extends ListenerAdapter {
         CountingInfo info = database.getCountingData(channelID);
         if (info.getActive() && info.getMessageID().equals(event.getMessageId())) {
             String userName = "<@!" + info.getUserID() + ">";
-            Objects.requireNonNull(event.getJDA().getTextChannelById(channelID)).sendMessage(userName + " deleted their message with a count of `" + info.getValue() + "`!").queue();
+            Objects.requireNonNull(event.getJDA().getTextChannelById(channelID)).sendMessage(userName + " deleted their message with a count of ` " + info.getValue() + " `! The next number is ` "+(info.getValue()+1)+" `!").queue();
         }
     }
 }
