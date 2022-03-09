@@ -47,7 +47,17 @@ public class Counter extends BaseReaction {
                 event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
                 database.setCount(new CountingInfo(true, " ", 0, " "), event.getChannel().getId());
             } else {
-                event.getMessage().addReaction("✅").queue();
+                String reactionEmote = "✅";
+                if (result == 69) {
+                    reactionEmote = "♋";
+                } else if (result == 100) {
+                    reactionEmote = "\uD83D\uDCAF";
+                } else if (result == 420 || result == 2137) {
+                    reactionEmote = "\uD83D\uDE01";
+                } else if (result == 1337) {
+                    reactionEmote = "\uD83D\uDE0E";
+                }
+                event.getMessage().addReaction(reactionEmote).queue();
                 database.setCount(new CountingInfo(true, event.getAuthor().getId(), result, event.getMessageId()), event.getChannel().getId());
             }
         }
