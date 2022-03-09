@@ -497,26 +497,27 @@ public final class Database {
 
     public CountingInfo getCountingData(String channelID) {
         try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userID, current FROM Counting WHERE channelID = ?");
+            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userID, current, messageID FROM Counting WHERE channelID = ?");
             prepStmt.setString(1, channelID);
             ResultSet result = prepStmt.executeQuery();
             if(result.next()) {
-                return new CountingInfo(result.getBoolean(1), result.getString(2), result.getInt(3));
+                return new CountingInfo(result.getBoolean(1), result.getString(2), result.getInt(3), result.getString(4));
             }
-            return new CountingInfo(false, " ", 0);
+            return new CountingInfo(false, " ", 0, " ");
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while querying into the Counting table.");
-            return new CountingInfo(false, " ", 0);
+            return new CountingInfo(false, " ", 0, " ");
         }
     }
 
     public void setCount(CountingInfo countingInfo, String channelID) {
         try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("UPDATE Counting SET current = ?, userID = ? WHERE channelID = ?");
+            PreparedStatement prepStmt = countingConnection.prepareStatement("UPDATE Counting SET current = ?, userID = ?, messageID = ? WHERE channelID = ?");
             prepStmt.setInt(1, countingInfo.getValue());
             prepStmt.setString(2, countingInfo.getUserID());
-            prepStmt.setString(3, channelID);
+            prepStmt.setString(3, countingInfo.getMessageID());
+            prepStmt.setString(4, channelID);
             prepStmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

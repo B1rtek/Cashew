@@ -44,10 +44,10 @@ public class Counter extends BaseReaction {
             }
             if(result != current + 1) {
                 event.getChannel().sendMessage("Wrong number! Counter reset!").queue();
-                database.setCount(new CountingInfo(true, " ", 0), event.getChannel().getId());
+                database.setCount(new CountingInfo(true, " ", 0, " "), event.getChannel().getId());
             } else {
                 event.getMessage().addReaction("✅").queue();
-                database.setCount(new CountingInfo(true, event.getAuthor().getId(), result), event.getChannel().getId());
+                database.setCount(new CountingInfo(true, event.getAuthor().getId(), result, event.getMessageId()), event.getChannel().getId());
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.birtek.cashew;
 
 import com.birtek.cashew.commands.*;
+import com.birtek.cashew.events.CountingMessageDeletionDetector;
 import com.birtek.cashew.events.GuildMemberJoinAndLeave;
 import com.birtek.cashew.events.GuildMessageReactionAdd;
 import com.birtek.cashew.messagereactions.Counter;
@@ -43,7 +44,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new OpenCase(), new OpenCollection(), new TimedMessageCommand(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), //commands
-                        new GuildMemberJoinAndLeave(), new GuildMessageReactionAdd(), //events
+                        new GuildMemberJoinAndLeave(), new GuildMessageReactionAdd(), new CountingMessageDeletionDetector(), //events
                         new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
