@@ -14,13 +14,13 @@ public final class Database {
     private static volatile Database instance;
 
     public static final String DRIVER = "org.sqlite.JDBC";
-    public static final String CHANNEL_ACTIVITY_DB = "jdbc:sqlite:channelActivity.db";
-    public static final String BO_BURNHAM_DB = "jdbc:sqlite:boBurnhamQuotes.db";
-    public static final String CASE_OPENING_DB = "jdbc:sqlite:caseOpening.db";
-    public static final String COLLECTION_OPENING_DB = "jdbc:sqlite:collectionOpening.db";
-    public static final String TIMED_MESSAGES_DB = "jdbc:sqlite:timedMessages.db";
-    public static final String SOCIALCREDIT_DB = "jdbc:sqlite:socialCredit.db";
-    public static final String COUNTING_DB = "jdbc:sqlite:counting.db";
+    public static final String CHANNEL_ACTIVITY_DB = "jdbc:sqlite:databases/channelActivity.db";
+    public static final String BO_BURNHAM_DB = "jdbc:sqlite:databases/boBurnhamQuotes.db";
+    public static final String CASE_OPENING_DB = "jdbc:sqlite:databases/caseOpening.db";
+    public static final String COLLECTION_OPENING_DB = "jdbc:sqlite:databases/collectionOpening.db";
+    public static final String TIMED_MESSAGES_DB = "jdbc:sqlite:databases/timedMessages.db";
+    public static final String SOCIALCREDIT_DB = "jdbc:sqlite:databases/socialCredit.db";
+    public static final String COUNTING_DB = "jdbc:sqlite:databases/counting.db";
 
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
