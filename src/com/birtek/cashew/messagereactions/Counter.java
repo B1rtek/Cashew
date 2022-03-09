@@ -14,21 +14,21 @@ import java.util.Objects;
 public class Counter extends BaseReaction {
 
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
-        if(!checkIfNotBot(event) || event.isWebhookMessage()) {
+        if (!checkIfNotBot(event) || event.isWebhookMessage()) {
             return;
         }
         String message = event.getMessage().getContentDisplay().toLowerCase(Locale.ROOT);
-        if(message.isEmpty()) {
+        if (message.isEmpty()) {
             return;
         }
         Database database = Database.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
-        if(countingData.getActive() && !Objects.equals(countingData.getUserID(), event.getAuthor().getId())) {
+        if (countingData.getActive() && !Objects.equals(countingData.getUserID(), event.getAuthor().getId())) {
             message = message.replace(',', '.');
             ExpressionBuilder test = new ExpressionBuilder(message);
             int result, current = countingData.getValue();
             try {
-                result = (int)Math.round(test.build().calculate());
+                result = (int) Math.round(test.build().calculate());
             } catch (UnknownFunctionException e) {
                 e.printStackTrace();
                 System.err.println("Something weird happened idk counting failed");
@@ -39,11 +39,11 @@ public class Counter extends BaseReaction {
                 event.getMessage().reply("This is illegal bruh").mentionRepliedUser(false).queue();
                 return;
             }
-            if(result == 0) {
+            if (result == 0) {
                 return;
             }
-            if(result != current + 1) {
-                event.getChannel().sendMessage("Wrong number! Counter reset!").queue();
+            if (result != current + 1) {
+                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up! The next number should have been " + (current + 1) + "! Counter has been reset!").queue();
                 database.setCount(new CountingInfo(true, " ", 0, " "), event.getChannel().getId());
             } else {
                 event.getMessage().addReaction("✅").queue();

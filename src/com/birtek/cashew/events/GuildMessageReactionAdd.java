@@ -30,7 +30,7 @@ public class GuildMessageReactionAdd extends ListenerAdapter {
                     }
                     break;
                 } catch (Exception ignored) {
-
+                    
                 }
             }
         }
