@@ -16,7 +16,7 @@ public class GuildMessageReactionAdd extends ListenerAdapter {
 
     @Override
     public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
-        if (event.getReactionEmote().getName().equals("❌") && !event.getUser().getId().equals(Cashew.CASHEW_USER_ID)) {
+        if (event.getReactionEmote().getName().equals("❌") && !Objects.requireNonNull(event.getUser()).getId().equals(Cashew.CASHEW_USER_ID)) {
             Message message = event.getChannel().retrieveMessageById(event.getMessageId()).complete();
             List<MessageEmbed> messageEmbeds = message.getEmbeds();
             for (MessageEmbed embed : messageEmbeds) {
@@ -42,7 +42,7 @@ public class GuildMessageReactionAdd extends ListenerAdapter {
 
     public static boolean checkPermissions(MessageReactionAddEvent event, Permission[] neededPermissions) {
         EnumSet<Permission> permissionsSet = Objects.requireNonNull(event.getMember()).getPermissions();
-        if (event.getUser().getId().equals(Cashew.BIRTEK_USER_ID)) {
+        if (Objects.requireNonNull(event.getUser()).getId().equals(Cashew.BIRTEK_USER_ID)) {
             return true;
         }
         if (event.getUser().isBot() || event.getUser().getId().equals(Cashew.CASHEW_USER_ID)) {

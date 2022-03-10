@@ -3,20 +3,12 @@ plugins {
 }
 
 group 'com.birtek.cashew'
-version '1.23.2'
+version '1.23.2-JDA5a9'
 
 compileJava.options.encoding = 'UTF-8'
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-
 repositories {
     mavenCentral()
-    maven {
-        name 'm2-dv8tion'
-        url 'https://m2.dv8tion.net/releases'
-    }
 }
 
 sourceSets {
@@ -30,7 +22,7 @@ sourceSets {
 task runCashew(dependsOn: configurations.compileClasspath, type: JavaExec) {
     group = "app"
     classpath = sourceSets.test.runtimeClasspath
-    main = 'com.birtek.cashew.Cashew'
+    main('com.birtek.cashew.Cashew')
 }
 
 dependencies {
