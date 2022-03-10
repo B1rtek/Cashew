@@ -84,6 +84,11 @@ public class OwosEtc extends BaseReaction {
                 event.getMessage().reply("nyaaa :3").mentionRepliedUser(false).queue();
             }
 
+            //literal reactions
+            if(message.contains("sex") && rawMessage.contains("sex") && checkActivitySettings(event, 1)) {
+                event.getMessage().addReaction("👍").queue();
+            }
+
             // $kromer command
             if (message.startsWith(Cashew.COMMAND_PREFIX + "kromer") && rawMessage.startsWith(Cashew.COMMAND_PREFIX + "kromer") && checkActivitySettings(event, 0)) {
                 if (!(message.length() > 6 + Cashew.COMMAND_PREFIX.length() && message.charAt(6 + Cashew.COMMAND_PREFIX.length()) != ' ')) {
