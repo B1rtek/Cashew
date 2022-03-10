@@ -2,7 +2,7 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -13,11 +13,11 @@ import java.net.URLConnection;
 public class Inspirobot extends BaseCommand {
 
     Permission[] inspirobotCommandPermissions = {
-            Permission.MESSAGE_WRITE
+            Permission.MESSAGE_SEND
     };
 
     @Override
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "inspirobot") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "insp")) {
             if (checkPermissions(event, inspirobotCommandPermissions)) {

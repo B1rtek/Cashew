@@ -4,7 +4,7 @@ import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class Clear extends BaseCommand {
     };
 
     @Override
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "clear")) {
             if (checkPermissions(event, clearCommandPermissions)) {
@@ -29,7 +29,7 @@ public class Clear extends BaseCommand {
                         int count = Integer.parseInt(args[1]) + 1;
                         List<Message> recentMessages = event.getChannel().getHistory().retrievePast(count).complete();
                         count--;
-                        event.getChannel().deleteMessages(recentMessages).queue();
+                        event.getChannel().purgeMessages(recentMessages);
                         EmbedBuilder success = new EmbedBuilder();
                         String deleteMessage = " message";
                         if (count > 1) {
@@ -109,7 +109,7 @@ public class Clear extends BaseCommand {
                         return;
                     }
                     try {
-                        event.getChannel().deleteMessages(toDeleteMessages).queue();
+                        event.getChannel().purgeMessages(toDeleteMessages);
                     } catch (IllegalArgumentException e) {
                         event.getChannel().sendMessage("You can't delete messages that are older than 2 weeks.").queue();
                         return;

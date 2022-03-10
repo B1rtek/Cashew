@@ -4,7 +4,7 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -16,7 +16,7 @@ public class Counting extends BaseCommand {
     };
 
     @Override
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "counting")) {
             if (checkPermissions(event, helpCommandPermissions)) {

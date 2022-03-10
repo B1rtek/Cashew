@@ -4,7 +4,7 @@ import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +15,7 @@ import java.util.Objects;
 public class GuildMessageReactionAdd extends ListenerAdapter {
 
     @Override
-    public void onGuildMessageReactionAdd(@NotNull GuildMessageReactionAddEvent event) {
+    public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
         if (event.getReactionEmote().getName().equals("❌") && !event.getUser().getId().equals(Cashew.CASHEW_USER_ID)) {
             Message message = event.getChannel().retrieveMessageById(event.getMessageId()).complete();
             List<MessageEmbed> messageEmbeds = message.getEmbeds();
@@ -40,7 +40,7 @@ public class GuildMessageReactionAdd extends ListenerAdapter {
             Permission.ADMINISTRATOR
     };
 
-    public static boolean checkPermissions(GuildMessageReactionAddEvent event, Permission[] neededPermissions) {
+    public static boolean checkPermissions(MessageReactionAddEvent event, Permission[] neededPermissions) {
         EnumSet<Permission> permissionsSet = Objects.requireNonNull(event.getMember()).getPermissions();
         if (event.getUser().getId().equals(Cashew.BIRTEK_USER_ID)) {
             return true;

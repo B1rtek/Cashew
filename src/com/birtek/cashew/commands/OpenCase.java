@@ -4,7 +4,7 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
@@ -18,11 +18,11 @@ import java.util.concurrent.TimeUnit;
 public class OpenCase extends BaseCommand {
 
     Permission[] openCaseCommandPermissions = {
-            Permission.MESSAGE_WRITE
+            Permission.MESSAGE_SEND
     };
 
     @Override
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "opencase")) {
             if(checkPermissions(event, openCaseCommandPermissions)) {
@@ -161,7 +161,7 @@ public class OpenCase extends BaseCommand {
         }
     }
 
-    private void handleKnives(GuildMessageReceivedEvent event, int knifeGroup, String condition, String selectedCaseName, String selectedCaseURL, String selectedCaseIconURL) {
+    private void handleKnives(MessageReceivedEvent event, int knifeGroup, String condition, String selectedCaseName, String selectedCaseURL, String selectedCaseIconURL) {
         if(knifeGroup==0) {
             event.getMessage().reply("An error occurred while executing this command (you got a knife btw but there was an error idk) [1]").mentionRepliedUser(false).queue();
             return;
@@ -218,7 +218,7 @@ public class OpenCase extends BaseCommand {
         }
     }
 
-    private void displayCasesCommandEmbed(GuildMessageReceivedEvent event, String titleMessage) {
+    private void displayCasesCommandEmbed(MessageReceivedEvent event, String titleMessage) {
         Database database = Database.getInstance();
         ResultSet cases = database.getCases();
         if(cases!=null) {

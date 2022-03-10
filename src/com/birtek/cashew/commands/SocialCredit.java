@@ -4,7 +4,7 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,7 +17,7 @@ import static java.lang.Math.abs;
 public class SocialCredit extends BaseCommand {
 
     Permission[] socialCreditCommandPermissions = {
-            Permission.MESSAGE_WRITE
+            Permission.MESSAGE_SEND
     };
 
     String[] socialCreditGainURLs = {
@@ -40,7 +40,7 @@ public class SocialCredit extends BaseCommand {
     };
 
     @Override
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         String[] display = event.getMessage().getContentDisplay().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "socialcredit") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "soc")) {

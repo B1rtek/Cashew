@@ -1,7 +1,7 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -73,7 +73,7 @@ public class ReactToMaple extends BaseReaction {
     };
 
     @Override
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String message = event.getMessage().getContentDisplay().toLowerCase(Locale.ROOT);
         if(!event.getAuthor().getId().equals(Cashew.CASHEW_USER_ID) && checkIfNotBot(event) && checkActivitySettings(event, 2)) {
             for(String mention: mapleMentions) {
@@ -97,14 +97,14 @@ public class ReactToMaple extends BaseReaction {
         }
     }
 
-    public void sendTheBestNekoGif(GuildMessageReceivedEvent event) {
+    public void sendTheBestNekoGif(MessageReceivedEvent event) {
         Random rand = new Random();
         int index = rand.nextInt(mapleGifs.length);
         event.getMessage().reply(mapleGifs[index]).mentionRepliedUser(false).queue();
         event.getChannel().sendMessage("Best neko!").complete();
     }
 
-    private void sendTheMayPullGif(GuildMessageReceivedEvent event) {
+    private void sendTheMayPullGif(MessageReceivedEvent event) {
         event.getMessage().reply(mayPullGif).mentionRepliedUser(false).queue();
         Random rand = new Random();
         int index = rand.nextInt(mayPullQuotes.length);

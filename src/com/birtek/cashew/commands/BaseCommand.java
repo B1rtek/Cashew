@@ -3,7 +3,7 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +22,7 @@ public class BaseCommand extends ListenerAdapter {
             Permission.ADMINISTRATOR
     };
 
-    public static boolean checkPermissions(GuildMessageReceivedEvent event, Permission[] neededPermissions) {
+    public static boolean checkPermissions(MessageReceivedEvent event, Permission[] neededPermissions) {
         if(event.isWebhookMessage()) {
             return true;
         }
@@ -62,7 +62,7 @@ public class BaseCommand extends ListenerAdapter {
         return response.toString();
     }
 
-    protected static void sendCuddlyCommandGif(@NotNull GuildMessageReceivedEvent event, Random random, int gifNumber, String[] betterArgs, StringBuilder embedMessage, String[] reactions, EmbedGif[] gifs) {
+    protected static void sendCuddlyCommandGif(@NotNull MessageReceivedEvent event, Random random, int gifNumber, String[] betterArgs, StringBuilder embedMessage, String[] reactions, EmbedGif[] gifs) {
         for(int i=1; i<betterArgs.length; i++)
         {
             embedMessage.append(" ");
@@ -177,7 +177,7 @@ public class BaseCommand extends ListenerAdapter {
         return new TwoStringsPair(condition, imageURL);
     }
 
-    protected static void sendDroppedItemEmbed(@NotNull GuildMessageReceivedEvent event, String selectedCollectionName, String selectedCollectionURL, String selectedCollectionIconURL, String condition, String itemName, int embedColor, String flavorText, String imageURL) {
+    protected static void sendDroppedItemEmbed(@NotNull MessageReceivedEvent event, String selectedCollectionName, String selectedCollectionURL, String selectedCollectionIconURL, String condition, String itemName, int embedColor, String flavorText, String imageURL) {
         EmbedBuilder drop = new EmbedBuilder();
         drop.setAuthor(selectedCollectionName, selectedCollectionURL, selectedCollectionIconURL);
         drop.addField(itemName, condition, false);

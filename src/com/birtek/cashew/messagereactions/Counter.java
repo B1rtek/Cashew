@@ -1,7 +1,7 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.Database;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,7 +11,8 @@ import java.util.Objects;
 
 public class Counter extends BaseReaction {
 
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+    @Override
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if (!checkIfNotBot(event) || event.isWebhookMessage()) {
             return;
         }

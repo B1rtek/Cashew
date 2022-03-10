@@ -1,7 +1,7 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -25,7 +25,7 @@ public class OwosEtc extends BaseReaction {
     };
 
     @Override
-    public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String message = event.getMessage().getContentDisplay().toLowerCase(Locale.ROOT);
         String rawMessage = event.getMessage().getContentRaw().toLowerCase(Locale.ROOT);
         //System.out.println(message);

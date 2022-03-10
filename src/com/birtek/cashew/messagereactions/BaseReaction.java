@@ -1,7 +1,7 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.Database;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.sql.ResultSet;
@@ -9,11 +9,11 @@ import java.sql.SQLException;
 
 public class BaseReaction extends ListenerAdapter {
 
-    public boolean checkIfNotBot(GuildMessageReceivedEvent event) {
+    public boolean checkIfNotBot(MessageReceivedEvent event) {
         return !event.getAuthor().isBot();
     }
 
-    public boolean checkActivitySettings(GuildMessageReceivedEvent event, int requiredActivity) {
+    public boolean checkActivitySettings(MessageReceivedEvent event, int requiredActivity) {
         String channelID = event.getChannel().getId();
         int activityPermission = 0;
         try {
