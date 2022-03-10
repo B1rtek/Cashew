@@ -3,6 +3,8 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -26,11 +28,33 @@ public class BaseCommand extends ListenerAdapter {
         if(event.isWebhookMessage()) {
             return true;
         }
+        if(event.isFromType(ChannelType.PRIVATE)) {
+            return true;
+        }
         EnumSet<Permission> permissionsSet = Objects.requireNonNull(event.getMember()).getPermissions();
         if(event.getAuthor().getId().equals(Cashew.BIRTEK_USER_ID)) {
             return true;
         }
         if(event.getAuthor().isBot() || event.getAuthor().getId().equals(Cashew.CASHEW_USER_ID)) {
+            return false;
+        }
+        for(Permission neededPermission:neededPermissions) {
+            if(!(permissionsSet.contains(neededPermission) || permissionsSet.contains(Permission.ADMINISTRATOR))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean checkSlashCommandPermissions(SlashCommandInteractionEvent event, Permission[] neededPermissions) {
+        if(event.getChannelType() == ChannelType.PRIVATE) {
+            return true;
+        }
+        if(event.getUser().getId().equals(Cashew.BIRTEK_USER_ID)) {
+            return true;
+        }
+        EnumSet<Permission> permissionsSet = Objects.requireNonNull(event.getMember()).getPermissions();
+        if(event.getUser().isBot() || event.getUser().getId().equals(Cashew.CASHEW_USER_ID)) {
             return false;
         }
         for(Permission neededPermission:neededPermissions) {

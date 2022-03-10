@@ -13,12 +13,16 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
 import javax.security.auth.login.LoginException;
 import java.text.ParseException;
+
+import static net.dv8tion.jda.api.interactions.commands.OptionType.STRING;
 
 public class Cashew {
 
@@ -50,6 +54,14 @@ public class Cashew {
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .build();
+        CommandListUpdateAction commands = jda.updateCommands();
+        commands.addCommands(
+                Commands.slash("ping", "Meaasures bot's ping"),
+                Commands.slash("help", "Shows the help embed containing information about commands")
+                        .addOption(STRING, "command", "Command to show help of"),
+                Commands.slash("info", "Shows the help embed containing information about commands")
+                        .addOption(STRING, "command", "Command to show help of")
+        ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
 }
