@@ -61,7 +61,9 @@ public class Cashew {
                         .addOption(STRING, "command", "Command to show help of"),
                 Commands.slash("info", "Shows the help embed containing information about commands")
                         .addOption(STRING, "command", "Command to show help of"),
-                Commands.slash("bestneko", "Sends you a gif of the best neko <3")
+                Commands.slash("bestneko", "Sends you a gif of the best neko <3"),
+                Commands.slash("boburnham", "Sends you a random quote from Bo Burnham's songs")
+                        .addOption(STRING, "nsfw", "Decide whether you want an nsfw quote or not", false, true)
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
