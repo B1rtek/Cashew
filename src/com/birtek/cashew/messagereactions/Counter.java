@@ -1,10 +1,8 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.Database;
-import de.congrace.exp4j.ExpressionBuilder;
-import de.congrace.exp4j.UnknownFunctionException;
-import de.congrace.exp4j.UnparsableExpressionException;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EmptyStackException;
@@ -28,12 +26,8 @@ public class Counter extends BaseReaction {
             ExpressionBuilder test = new ExpressionBuilder(message);
             int result, current = countingData.getValue();
             try {
-                result = (int) Math.round(test.build().calculate());
-            } catch (UnknownFunctionException e) {
-                e.printStackTrace();
-                System.err.println("Something weird happened idk counting failed");
-                return;
-            } catch (UnparsableExpressionException | EmptyStackException e) {
+                result = (int) Math.round(test.build().evaluate());
+            } catch (IllegalArgumentException | EmptyStackException e) {
                 return;
             } catch (ArithmeticException e) {
                 event.getMessage().reply("This is illegal bruh").mentionRepliedUser(false).queue();
