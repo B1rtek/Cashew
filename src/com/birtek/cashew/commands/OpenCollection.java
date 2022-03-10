@@ -2,7 +2,6 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
-import kotlin.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -74,7 +73,7 @@ public class OpenCollection extends BaseCommand {
                     int embedColor;
                     if(selectedCollectionID!=0) {
                         List<String> availableRarities = database.getCollectionRarities(selectedCollectionID);
-                        List<Pair<String,String>> collectionContents = database.getCollectionItems(selectedCollectionID);
+                        List<TwoStringsPair> collectionContents = database.getCollectionItems(selectedCollectionID);
                         if(availableRarities==null) {
                             event.getMessage().reply("[9] An error occurred while executing this command.").mentionRepliedUser(false).queue();
                             return;
@@ -133,7 +132,7 @@ public class OpenCollection extends BaseCommand {
                                 embedColor = 0x4b69ff;
                             }
                             List<String> correspondingSkins = new ArrayList<>();
-                            for(Pair<String,String> item:collectionContents) {
+                            for(TwoStringsPair item:collectionContents) {
                                 if(item.getSecond().equals(rarity)) {
                                     correspondingSkins.add(item.getFirst());
                                 }
@@ -169,7 +168,7 @@ public class OpenCollection extends BaseCommand {
                             event.getMessage().reply("[7] An error occurred while executing this command.").mentionRepliedUser(false).queue();
                             return;
                         }
-                        Pair<String, String> conditions = processCondition(condition, fn, mw, ft, ww, bs);
+                        TwoStringsPair conditions = processCondition(condition, fn, mw, ft, ww, bs);
                         condition = conditions.getFirst();
                         String imageURL = conditions.getSecond();
                         sendDroppedItemEmbed(event, selectedCollectionName, selectedCollectionURL, selectedCollectionIconURL, condition, itemName, embedColor, flavorText, imageURL);

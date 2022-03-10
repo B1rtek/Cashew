@@ -2,7 +2,6 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
-import kotlin.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -144,7 +143,7 @@ public class OpenCase extends BaseCommand {
                             event.getMessage().reply("An error occurred while executing this command.").mentionRepliedUser(false).queue();
                             return;
                         }
-                        Pair<String, String> conditions = processCondition(condition, fn, mw, ft, ww, bs);
+                        TwoStringsPair conditions = processCondition(condition, fn, mw, ft, ww, bs);
                         condition = conditions.getFirst();
                         String imageURL = conditions.getSecond();
                         Random random = new Random();
@@ -198,7 +197,7 @@ public class OpenCase extends BaseCommand {
                 e.printStackTrace();
                 return;
             }
-            Pair<String, String> conditions = processCondition(condition, fn, mw, ft, ww, bs);
+            TwoStringsPair conditions = processCondition(condition, fn, mw, ft, ww, bs);
             condition = conditions.getFirst();
             String imageURL = conditions.getSecond();
             if(random.nextInt(10)==0) {

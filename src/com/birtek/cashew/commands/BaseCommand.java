@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import kotlin.Pair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -94,7 +93,7 @@ public class BaseCommand extends ListenerAdapter {
         }
     }
 
-    protected Pair<String, String> processCondition(String cond, String fn, String mw, String ft, String ww, String bs) {
+    protected TwoStringsPair processCondition(String cond, String fn, String mw, String ft, String ww, String bs) {
         String condition = cond;
         if(condition.equals("fn") && fn.equals("empty")) {
             condition = "mw";
@@ -175,7 +174,7 @@ public class BaseCommand extends ListenerAdapter {
                 imageURL = bs;
                 break;
         }
-        return new Pair<>(condition, imageURL);
+        return new TwoStringsPair(condition, imageURL);
     }
 
     protected static void sendDroppedItemEmbed(@NotNull GuildMessageReceivedEvent event, String selectedCollectionName, String selectedCollectionURL, String selectedCollectionIconURL, String condition, String itemName, int embedColor, String flavorText, String imageURL) {

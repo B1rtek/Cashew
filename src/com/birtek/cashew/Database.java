@@ -1,8 +1,8 @@
 package com.birtek.cashew;
 
+import com.birtek.cashew.commands.TwoStringsPair;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.TimedMessage;
-import kotlin.Pair;
 
 import java.sql.*;
 import java.text.ParseException;
@@ -255,15 +255,15 @@ public final class Database {
         }
     }
 
-    public List<Pair<String, String>> getCollectionItems(int collectionID) {
+    public List<TwoStringsPair> getCollectionItems(int collectionID) {
         try {
-            List<Pair<String, String>> skins = new ArrayList<>();
+            List<TwoStringsPair> skins = new ArrayList<>();
             PreparedStatement prepStmt = collectionOpeningConnection.prepareStatement("SELECT DISTINCT itemName, rarity FROM Skins WHERE collectionID = ?");
             prepStmt.setInt(1, collectionID);
             ResultSet results = prepStmt.executeQuery();
             if (results != null) {
                 while (results.next()) {
-                    skins.add(new Pair<>(results.getString("itemName"), results.getString("rarity")));
+                    skins.add(new TwoStringsPair(results.getString("itemName"), results.getString("rarity")));
                 }
                 return skins;
             } else return null;

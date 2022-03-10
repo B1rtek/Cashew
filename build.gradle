@@ -37,5 +37,4 @@ dependencies {
     implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.36.0.3'
     implementation("net.dv8tion:JDA:4.3.0_283")
     implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
 }
