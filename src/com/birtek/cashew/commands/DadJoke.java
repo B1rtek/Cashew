@@ -2,6 +2,7 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,31 +17,38 @@ public class DadJoke extends BaseCommand {
             Permission.MESSAGE_SEND
     };
 
+    private String getADadJoke() {
+        URL dadJokeURL;
+        try {
+            dadJokeURL = new URL("https://icanhazdadjoke.com/");
+        } catch (MalformedURLException e) {
+            return "Something went wrong while performing the command...";
+        }
+        URLConnection dadJokeConnection;
+        try {
+            dadJokeConnection = dadJokeURL.openConnection();
+            dadJokeConnection.addRequestProperty("Accept", "text/plain");
+            return readURL(dadJokeConnection);
+        } catch (IOException e) {
+            return "Something went wrong while requesting the joke :thinking:";
+        }
+    }
+
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "dadjoke")) {
             if (checkPermissions(event, dadJokeCommandPermissions)) {
-                URL dadJokeURL;
-                try {
-                    dadJokeURL = new URL("https://icanhazdadjoke.com/");
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                    event.getMessage().reply("Something went wrong while performing the command...").mentionRepliedUser(false).queue();
-                    return;
-                }
-                URLConnection dadJokeConnection;
-                String joke;
-                try {
-                    dadJokeConnection = dadJokeURL.openConnection();
-                    dadJokeConnection.addRequestProperty("Accept", "text/plain");
-                    joke = readURL(dadJokeConnection);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    event.getMessage().reply("Something went wrong while requesting the joke :thinking:").mentionRepliedUser(false).queue();
-                    return;
-                }
-                event.getMessage().reply(joke).mentionRepliedUser(false).queue();
+                event.getMessage().reply(getADadJoke()).mentionRepliedUser(false).queue();
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (event.getName().equals("dadjoke")) {
+            if (checkSlashCommandPermissions(event, dadJokeCommandPermissions)) {
+                event.reply(getADadJoke()).queue();
             }
         }
     }
