@@ -97,10 +97,14 @@ public class ReactToMaple extends BaseReaction {
         }
     }
 
-    public void sendTheBestNekoGif(MessageReceivedEvent event) {
+    public String getABestNekoGif() {
         Random rand = new Random();
         int index = rand.nextInt(mapleGifs.length);
-        event.getMessage().reply(mapleGifs[index]).mentionRepliedUser(false).queue();
+        return mapleGifs[index];
+    }
+
+    public void sendTheBestNekoGif(MessageReceivedEvent event) {
+        event.getMessage().reply(getABestNekoGif()).mentionRepliedUser(false).queue();
         event.getChannel().sendMessage("Best neko!").complete();
     }
 

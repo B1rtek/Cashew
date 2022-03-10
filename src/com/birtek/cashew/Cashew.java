@@ -56,11 +56,12 @@ public class Cashew {
                 .build();
         CommandListUpdateAction commands = jda.updateCommands();
         commands.addCommands(
-                Commands.slash("ping", "Meaasures bot's ping"),
+                Commands.slash("ping", "Measures bot's ping"),
                 Commands.slash("help", "Shows the help embed containing information about commands")
                         .addOption(STRING, "command", "Command to show help of"),
                 Commands.slash("info", "Shows the help embed containing information about commands")
-                        .addOption(STRING, "command", "Command to show help of")
+                        .addOption(STRING, "command", "Command to show help of"),
+                Commands.slash("bestneko", "Sends you a gif of the best neko <3")
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }

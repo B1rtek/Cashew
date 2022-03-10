@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -49,6 +50,8 @@ public class Clear extends BaseCommand {
                         } else {
                             event.getChannel().sendMessage("You can't delete messages that are older than 2 weeks. Change the amount and try again.").queue();
                         }
+                    } catch (InsufficientPermissionException e) {
+                        event.getChannel().sendMessage("Missing MESSAGE_MANAGE permission").queue();
                     }
                 } else {
                     Boolean[] toDelete = new Boolean[100];
@@ -113,6 +116,8 @@ public class Clear extends BaseCommand {
                     } catch (IllegalArgumentException e) {
                         event.getChannel().sendMessage("You can't delete messages that are older than 2 weeks.").queue();
                         return;
+                    } catch (InsufficientPermissionException e) {
+                        event.getChannel().sendMessage("Missing MESSAGE_MANAGE permission").queue();
                     }
                     EmbedBuilder success = new EmbedBuilder();
                     success.setTitle("✅ Messages successfully deleted!");
