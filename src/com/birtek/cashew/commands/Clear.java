@@ -188,11 +188,11 @@ public class Clear extends BaseCommand {
                 int recent = event.getOption("recent", 0, OptionMapping::getAsInt);
                 String range = event.getOption("range", "", OptionMapping::getAsString);
                 if (recent == 0 && range.isEmpty()) {
-                    event.replyEmbeds(removeRecentMessages(event.getChannel(), 1, true)).queue();
+                    event.replyEmbeds(removeRecentMessages(event.getChannel(), 1, true)).queue(message -> message.retrieveOriginal().queue(message2 -> message2.addReaction("❌").queue()));
                 } else if (recent != 0) {
-                    event.replyEmbeds(removeRecentMessages(event.getChannel(), recent, true)).queue();
+                    event.replyEmbeds(removeRecentMessages(event.getChannel(), recent, true)).queue(message -> message.retrieveOriginal().queue(message2 -> message2.addReaction("❌").queue()));
                 } else {
-                    event.replyEmbeds(removeMessagesByRange(event.getChannel(), range, true)).queue();
+                    event.replyEmbeds(removeMessagesByRange(event.getChannel(), range, true)).queue(message -> message.retrieveOriginal().queue(message2 -> message2.addReaction("❌").queue()));
                 }
             } else {
                 event.reply("You do not have permission to use this command").setEphemeral(true).queue();
