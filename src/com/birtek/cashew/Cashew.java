@@ -64,7 +64,9 @@ public class Cashew {
                 Commands.slash("bestneko", "Sends you a gif of the best neko <3"),
                 Commands.slash("boburnham", "Sends you a random quote from Bo Burnham's songs")
                         .addOption(STRING, "nsfw", "Decide whether you want an nsfw quote or not", false, true),
-                Commands.slash("dadjoke", "Sends you a random dad joke from icanhazdadjoke.com")
+                Commands.slash("dadjoke", "Sends you a random dad joke from icanhazdadjoke.com"),
+                Commands.slash("inspirobot", "Sends you an inspiring quote from inspirobot.me"),
+                Commands.slash("insp", "Sends you an inspiring quote from inspirobot.me")
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
