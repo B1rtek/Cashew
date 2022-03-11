@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import javax.security.auth.login.LoginException;
 import java.text.ParseException;
 
+import static net.dv8tion.jda.api.interactions.commands.OptionType.INTEGER;
 import static net.dv8tion.jda.api.interactions.commands.OptionType.STRING;
 
 public class Cashew {
@@ -68,7 +69,10 @@ public class Cashew {
                 Commands.slash("inspirobot", "Sends you an inspiring quote from inspirobot.me"),
                 Commands.slash("insp", "Sends you an inspiring quote from inspirobot.me"),
                 Commands.slash("korwin", "Sends you a totally legit quote from an infamous politician Janusz Korwin-Mikke"),
-                Commands.slash("nekoichi", "Sends two first lines of Nekoichi by Duca, the Nekopara Vol. 3 opening")
+                Commands.slash("nekoichi", "Sends two first lines of Nekoichi by Duca, the Nekopara Vol. 3 opening"),
+                Commands.slash("clear", "Purges messages from chat")
+                        .addOption(INTEGER, "recent", "Number of recent messages to remove")
+                        .addOption(STRING, "range", "Range(s) of messages to remove, see help for more information")
                 ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
