@@ -3,6 +3,8 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -188,24 +190,35 @@ public class Korwin extends BaseCommand {
             "https://cdn.discordapp.com/attachments/857711843282649158/921167498219495524/korwin21.png"
     };
 
+    private MessageEmbed generateAKorwinQuote() {
+        Random random = new Random();
+        EmbedBuilder korwinEmbed = new EmbedBuilder();
+        String cytat = cytaty1[random.nextInt(cytaty1.length)] + ' ' +
+                cytaty2[random.nextInt(cytaty2.length)] + ' ' +
+                cytaty3[random.nextInt(cytaty3.length)] + ' ' +
+                cytaty4[random.nextInt(cytaty4.length)] + ' ' +
+                cytaty5[random.nextInt(cytaty5.length)] + ' ' +
+                cytaty6[random.nextInt(cytaty6.length)];
+        korwinEmbed.addField("A 100% legit quote from Janusz Korwin-Mikke: ", cytat, false);
+        korwinEmbed.setImage(korwiny[random.nextInt(korwiny.length)]);
+        return korwinEmbed.build();
+    }
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "korwin")) {
             if (checkPermissions(event, korwinCommandPermissions)) {
-                Random random = new Random();
-                EmbedBuilder korwinEmbed = new EmbedBuilder();
-                String cytat = cytaty1[random.nextInt(cytaty1.length)] + ' ' +
-                        cytaty2[random.nextInt(cytaty2.length)] + ' ' +
-                        cytaty3[random.nextInt(cytaty3.length)] + ' ' +
-                        cytaty4[random.nextInt(cytaty4.length)] + ' ' +
-                        cytaty5[random.nextInt(cytaty5.length)] + ' ' +
-                        cytaty6[random.nextInt(cytaty6.length)];
-                korwinEmbed.addField("A 100% legit quote from Janusz Korwin-Mikke: ", cytat, false);
-                korwinEmbed.setImage(korwiny[random.nextInt(korwiny.length)]);
-                event.getChannel().sendMessageEmbeds(korwinEmbed.build()).queue();
-                korwinEmbed.clear();
+                event.getChannel().sendMessageEmbeds(generateAKorwinQuote()).queue();
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if(event.getName().equals("korwin")) {
+            if(checkSlashCommandPermissions(event, korwinCommandPermissions)) {
+                event.replyEmbeds(generateAKorwinQuote()).queue();
             }
         }
     }
