@@ -4,8 +4,12 @@ import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -16,6 +20,14 @@ public class Clear extends BaseCommand {
     Permission[] clearCommandPermissions = {
             Permission.MESSAGE_MANAGE
     };
+
+    private MessageEmbed removeRecentMessages(MessageChannel channel, int count) {
+        return null;
+    }
+
+    private MessageEmbed removeMessagesByRange(MessageChannel channel, String ranges) {
+        return null;
+    }
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
@@ -128,6 +140,19 @@ public class Clear extends BaseCommand {
                 }
             } else {
                 event.getMessage().delete().complete();
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if(event.getName().equals("clear")) {
+            if(checkSlashCommandPermissions(event, clearCommandPermissions)) {
+                int recent = event.getOption("recent", 0, OptionMapping::getAsInt);
+                String range = event.getOption("range", "", OptionMapping::getAsString);
+                if(recent == 0 && range.isEmpty()) {
+                    removeRecentMessages(event.getChannel(), 1);
+                }
             }
         }
     }
