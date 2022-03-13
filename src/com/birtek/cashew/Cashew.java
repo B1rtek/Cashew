@@ -75,7 +75,10 @@ public class Cashew {
                 Commands.slash("counting", "Manages the counting game")
                         .addOption(STRING, "toggle", "Toggles counting on or off", false, true)
                         .addOption(INTEGER, "setcount", "Sets the current count to the specified number")
-                        .addOption(STRING, "reset", "Resets the counter (only if it's a definitive decision)", false, true)
+                        .addOption(STRING, "reset", "Resets the counter (only if it's a definitive decision)", false, true),
+                Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
+                        .addOption(STRING, "toggle", "Toggles reactions on, off or turns even the annoying ones (all) on", false, true)
+                        .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one")
                 ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }

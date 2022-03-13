@@ -3,17 +3,54 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.Locale;
+import java.util.Map;
 
 public class Reactions extends BaseCommand {
 
     Permission[] reactionsCommandPermissions = {
             Permission.MANAGE_CHANNEL
     };
+
+    Map<String, Integer> mapToggleToActivity = Map.of(
+            "off", 0,
+            "on", 1,
+            "all", 2
+    );
+
+    String setActivity(String channelID, int newActivitySetting, boolean differentChannelSpecified) {
+        Database database = Database.getInstance();
+        try {
+            if (database.updateChannelActivity(channelID, newActivitySetting)) {
+                String target = "this";
+                String annoying = "";
+                String state = "off";
+                if (newActivitySetting > 0) {
+                    state = "on";
+                }
+                if (newActivitySetting == 2) {
+                    annoying = "(including the ann0y1ng ones) ";
+                }
+                if (differentChannelSpecified) {
+                    target = "the specified";
+                }
+                return "Reactions in " + target + " channel " + annoying + "have been turned " + state + ".";
+            } else {
+                return "An error occurred while executing this command.";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "An error occurred while updating the setting. Try again in a few minutes.";
+        }
+    }
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
@@ -48,7 +85,7 @@ public class Reactions extends BaseCommand {
                     }
                 } else if (args.length == 3) {
                     try {
-                        channelID = args[1].substring(2, args[1].length()-1);
+                        channelID = args[1].substring(2, args[1].length() - 1);
                     } catch (StringIndexOutOfBoundsException e) {
                         event.getMessage().reply("Incorrect syntax. Type `" + Cashew.COMMAND_PREFIX + "help` for help.").mentionRepliedUser(false).queue();
                         return;
@@ -85,31 +122,41 @@ public class Reactions extends BaseCommand {
                     event.getMessage().reply("Incorrect syntax. Type `" + Cashew.COMMAND_PREFIX + "help` for help.").mentionRepliedUser(false).queue();
                     return;
                 }
-                Database database = Database.getInstance();
-                try {
-                    if(database.updateChannelActivity(channelID, newActivitySetting)) {
-                        String target = "this";
-                        String annoying = "";
-                        String state = "off";
-                        if (newActivitySetting > 0) {
-                            state = "on";
-                        }
-                        if (newActivitySetting == 2) {
-                            annoying = "(including the ann0y1ng ones) ";
-                        }
-                        if (args.length == 3) {
-                            target = "the specified";
-                        }
-                        event.getMessage().reply("Reactions in "+target+" channel "+annoying+"have been turned "+state+".").mentionRepliedUser(false).queue();
-                    } else {
-                        event.getMessage().reply("An error occurred while executing this command.").mentionRepliedUser(false).queue();
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    event.getMessage().reply("An error occurred while updating the setting. Try again in a few minutes.").mentionRepliedUser(false).queue();
-                }
+                //tutaj rzeczy
+                String creationMessage = setActivity(channelID, newActivitySetting, args.length >= 3);
+                event.getMessage().reply(creationMessage).mentionRepliedUser(false).queue();
             } else {
                 event.getMessage().delete().complete();
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (event.getName().equals("reactions")) {
+            if (checkSlashCommandPermissions(event, reactionsCommandPermissions)) {
+                String toggle = event.getOption("toggle", "", OptionMapping::getAsString);
+                MessageChannel channel = event.getOption("channel", null, OptionMapping::getAsMessageChannel);
+                if (!toggle.isEmpty()) {
+                    int newActivity = mapToggleToActivity.get(toggle);
+                    String channelID = event.getChannel().getId();
+                    if (channel != null) {
+                        channelID = channel.getId();
+                    }
+                    String creationMessage = setActivity(channelID, newActivity, channel != null);
+                    event.reply(creationMessage).queue();
+                }
+            } else {
+                event.reply("You do not have permission to use this command").setEphemeral(true).queue();
+            }
+        }
+    }
+
+    @Override
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+        if(event.getName().equals("reactions")) {
+            if(event.getFocusedOption().getName().equals("toggle")) {
+                event.replyChoiceStrings("on", "off", "all").queue();
             }
         }
     }
