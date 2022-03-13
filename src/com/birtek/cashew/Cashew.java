@@ -22,8 +22,7 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import javax.security.auth.login.LoginException;
 import java.text.ParseException;
 
-import static net.dv8tion.jda.api.interactions.commands.OptionType.INTEGER;
-import static net.dv8tion.jda.api.interactions.commands.OptionType.STRING;
+import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
 public class Cashew {
 
@@ -72,7 +71,11 @@ public class Cashew {
                 Commands.slash("nekoichi", "Sends two first lines of Nekoichi by Duca, the Nekopara Vol. 3 opening"),
                 Commands.slash("clear", "Purges messages from chat")
                         .addOption(INTEGER, "recent", "Number of recent messages to remove")
-                        .addOption(STRING, "range", "Range(s) of messages to remove, see help for more information")
+                        .addOption(STRING, "range", "Range(s) of messages to remove, see help for more information"),
+                Commands.slash("counting", "Manages the counting game")
+                        .addOption(STRING, "toggle", "Toggles counting on or off", false, true)
+                        .addOption(INTEGER, "setcount", "Sets the current count to the specified number")
+                        .addOption(STRING, "reset", "Resets the counter (only if it's a definitive decision)", false, true)
                 ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
