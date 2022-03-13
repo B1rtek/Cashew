@@ -48,7 +48,7 @@ public class Cashew {
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new OpenCase(), new OpenCollection(), new TimedMessageCommand(),
-                        new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(), //commands
+                        new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(), new ChoccyMilk(), //commands
                         new GuildMemberJoinAndLeave(), new GuildMessageReactionAdd(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
                         new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
@@ -78,7 +78,8 @@ public class Cashew {
                         .addOption(STRING, "reset", "Resets the counter (only if it's a definitive decision)", false, true),
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
                         .addOption(STRING, "toggle", "Toggles reactions on, off or turns even the annoying ones (all) on", false, true)
-                        .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one")
+                        .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one"),
+                Commands.slash("choccymilk", "Gift someone some Choccy Milk!")
                 ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }

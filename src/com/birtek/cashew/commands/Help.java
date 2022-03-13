@@ -70,7 +70,11 @@ public class Help extends BaseCommand {
         } else if (command.equalsIgnoreCase("ping")) {
             specificHelpEmbed.setTitle("Ping");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "ping`", "Measures bot's ping", false);
-        } else if (command.equalsIgnoreCase("help")) {
+        } else if (command.equalsIgnoreCase("choccymilk")) {
+            specificHelpEmbed.setTitle("Choccy Milk");
+            specificHelpEmbed.addField("`/choccymilk`", "Gift someone some Choccy Milk!", false);
+        }
+        else if (command.equalsIgnoreCase("help")) {
             specificHelpEmbed.setTitle("Help");
             specificHelpEmbed.addField('`'+Cashew.COMMAND_PREFIX+"help`", "bruh.", false);
         } else {
@@ -85,7 +89,7 @@ public class Help extends BaseCommand {
         helpEmbed.setAuthor("🥜 Cashew's commands 🥜", cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("🔫 CS:GO", "`opencase`, `opencollection`", false);
-        helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`, `inspirobot`, `dadjoke` , `ping`", false);
+        helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`, `inspirobot`, `dadjoke` , `ping`, `choccymilk`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type "+Cashew.COMMAND_PREFIX+"help <command>.", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
