@@ -88,7 +88,10 @@ public class Cashew {
                         .addOption(STRING, "topat", "A person (or a group of people) to pat"),
                 Commands.slash("kiss", "Kiss someone!")
                         .addOption(STRING, "tokiss", "A person (or a group of people) to kiss"),
-                Commands.slash("kromer", "Sends you a random kromer gif")
+                Commands.slash("kromer", "Sends you a random kromer gif"),
+                Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
+                        .addOption(USER,"user","User to check or modify social credit of (to check yours, leave blank)")
+                        .addOption(INTEGER, "amount", "Amount of social credit to add or subtract")
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }

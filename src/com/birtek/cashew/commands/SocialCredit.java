@@ -4,8 +4,11 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.utils.MiscUtil;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -39,101 +42,122 @@ public class SocialCredit extends BaseCommand {
             "https://cdn.discordapp.com/attachments/519234942526292002/897214371976052777/BC6FjYlKqhQAAAAAElFTkSuQmCC.png"
     };
 
+    String extractUserID(String maybeUserID) {
+        if(!maybeUserID.startsWith("<@!") || !maybeUserID.endsWith(">") || maybeUserID.length() != 22) {
+            return "";
+        } else {
+            return maybeUserID.substring(3, 21);
+        }
+    }
+
+    private MessageEmbed modifySocialCredit(String userID, Guild server, int socialCreditChange) {
+        Database database = Database.getInstance();
+        database.addSocialCredit(userID, server.getId(), socialCreditChange);
+        EmbedBuilder socialCreditEmbed = new EmbedBuilder();
+        String embedTitle = Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName();
+        Random random = new Random();
+        if (socialCreditChange < 0) {
+            embedTitle += " loses " + abs(socialCreditChange) + " social credit! :(";
+            socialCreditEmbed.setTitle(embedTitle);
+            socialCreditEmbed.setImage(socialCreditLossURLs[random.nextInt(socialCreditLossURLs.length)]);
+            socialCreditEmbed.setColor(Color.red);
+        } else {
+            embedTitle += " gains " + socialCreditChange + " social credit! ;)";
+            socialCreditEmbed.setTitle(embedTitle);
+            socialCreditEmbed.setImage(socialCreditGainURLs[random.nextInt(socialCreditGainURLs.length)]);
+            socialCreditEmbed.setColor(Color.green);
+        }
+        return socialCreditEmbed.build();
+    }
+
+    private String checkSocialCredit(String userID, Guild server) {
+        Database database = Database.getInstance();
+        int socialCredit = database.getSocialCredit(userID, server.getId());
+        if (socialCredit == 648294745) {
+            database.addSocialCredit(userID, server.getId(), 0);
+            socialCredit = 0;
+        }
+        String effectiveUserName = Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName();
+        return "User " + effectiveUserName + " has " + socialCredit + " social credit.";
+    }
+
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         String[] display = event.getMessage().getContentDisplay().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "socialcredit") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "soc")) {
-            if(checkPermissions(event, socialCreditCommandPermissions)) {
-                if(event.isWebhookMessage()) return;
-                boolean youFailed=false;
-                Database database = Database.getInstance();
-                if(args.length==1) {
-                    String message = "$socialcredit "+event.getMessage().getAuthor().getId();
+            if (checkPermissions(event, socialCreditCommandPermissions)) {
+                if (event.isWebhookMessage()) return;
+                boolean youFailed = false;
+                if (args.length == 1) {
+                    String message = "$socialcredit " + event.getMessage().getAuthor().getId();
                     args = message.split("\\s+");
                 } else {
-                    try {
-                        int notSpecial=0;
-                        while(args[1].charAt(notSpecial)=='<' || args[1].charAt(notSpecial)=='@' || args[1].charAt(notSpecial)=='!') {
-                            notSpecial++;
-                        }
-                        args[1] = args[1].substring(notSpecial, args[1].length()-1);
-                        MiscUtil.parseSnowflake(args[1]);
-                        if(args[1].length()!=18) {
-                            youFailed=true;
-                        }
-                    } catch (Exception e) {
+                    args[1] = extractUserID(args[1]);
+                    if(args[1].isEmpty()) {
                         youFailed = true;
                     }
                 }
-                if(!youFailed) {
-                    if(args.length==2) {
-                        int socialCredit = database.getSocialCredit(args[1], event.getGuild().getId());
-                        if(socialCredit==648294745) {
-                            database.addSocialCredit(args[1], event.getGuild().getId(), 0);
-                            socialCredit=0;
-                        }
-                        String messageContent;
-                        try {
-                            messageContent = "User "+Objects.requireNonNull(event.getGuild().getMemberById(args[1])).getUser().getName()
-                                    +" has "+ socialCredit +" social credit.";
-                        } catch (Exception e) {
-                            messageContent = "User "+CombineName(display) +" has "+ socialCredit +" social credit.";
-                        }
-                        event.getMessage().reply(messageContent).mentionRepliedUser(false).queue();
-                    } else if (args.length==3) {
-                        if(checkPermissions(event, adminPermissions)) {
-                            int socialCreditChange=0;
+                if (!youFailed) {
+                    if (args.length == 2) {
+                        event.getMessage().reply(checkSocialCredit(args[1], event.getGuild())).mentionRepliedUser(false).queue();
+                    } else if (args.length == 3) {
+                        if (checkPermissions(event, adminPermissions)) {
+                            int socialCreditChange = 0;
                             try {
                                 socialCreditChange = Integer.parseInt(args[2]);
                             } catch (NumberFormatException e) {
                                 youFailed = true;
                             }
-                            if(!youFailed) {
-                                database.addSocialCredit(args[1], event.getGuild().getId(), socialCreditChange);
-                                EmbedBuilder socialCreditEmbed = new EmbedBuilder();
-                                String embedTitle;
-                                try {
-                                    embedTitle = Objects.requireNonNull(event.getGuild().getMemberById(args[1])).getUser().getName();
-                                } catch (Exception e) {
-                                    embedTitle = CombineName(display);
-                                }
-                                Random random = new Random();
-                                if (socialCreditChange < 0) {
-                                    embedTitle += " loses " + abs(socialCreditChange) + " social credit! :(";
-                                    socialCreditEmbed.setTitle(embedTitle);
-                                    socialCreditEmbed.setImage(socialCreditLossURLs[random.nextInt(socialCreditLossURLs.length)]);
-                                    socialCreditEmbed.setColor(Color.red);
-                                } else {
-                                    embedTitle += " gains " + socialCreditChange + " social credit! ;)";
-                                    socialCreditEmbed.setTitle(embedTitle);
-                                    socialCreditEmbed.setImage(socialCreditGainURLs[random.nextInt(socialCreditGainURLs.length)]);
-                                    socialCreditEmbed.setColor(Color.green);
-                                }
-                                event.getChannel().sendMessageEmbeds(socialCreditEmbed.build()).queue();
+                            if (!youFailed) {
+                                MessageEmbed socialCreditEmbed = modifySocialCredit(args[1], event.getGuild(), socialCreditChange);
+                                event.getChannel().sendMessageEmbeds(socialCreditEmbed).queue();
                             }
                         } else {
-                            youFailed=true;
+                            youFailed = true;
                         }
                     } else {
-                        youFailed=true;
+                        youFailed = true;
                     }
                 }
-                if(youFailed) {
-                    if(!checkPermissions(event, adminPermissions)) {
-                        database.addSocialCredit(event.getAuthor().getId(), event.getGuild().getId(), -1);
-                        event.getMessage().reply("You lose 1 social credit for misuse of the social credit system.").mentionRepliedUser(false).queue();
+                if (youFailed) {
+                    if (!checkPermissions(event, adminPermissions)) {
+                        int amountLost = loseSocialCredit(event.getAuthor().getId(), Objects.requireNonNull(event.getGuild()).getId());
+                        event.getMessage().reply("You lose " + amountLost + " social credit for misuse of the social credit system.").mentionRepliedUser(false).queue();
                     }
                 }
             }
         }
     }
 
-    private String CombineName(String[] display) {
-        StringBuilder name = new StringBuilder(display[1].substring(1));
-        for(int i=2; i<display.length-1; i++) {
-            name.append(" ").append(display[i]);
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (event.getName().equals("socialcredit")) {
+            if (checkSlashCommandPermissions(event, socialCreditCommandPermissions)) {
+                String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
+                int amount = event.getOption("amount", 0, OptionMapping::getAsInt);
+                if (amount == 0) { // credit check
+                    event.reply(checkSocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()))).queue();
+                } else {
+                    if (checkSlashCommandPermissions(event, adminPermissions)) {
+                        MessageEmbed socialCreditEmbed = modifySocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()), amount);
+                        event.replyEmbeds(socialCreditEmbed).queue();
+                    } else {
+                        int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
+                        event.reply("You lose " + amountLost + "social credit for misuse of the social credit system.").queue();
+                    }
+                }
+            } else {
+                event.reply("It seems like Xi-sama doesn't want you in their country.").queue();
+            }
         }
-        return name.toString();
+    }
+
+    private int loseSocialCredit(String userID, String serverID) {
+        Database database = Database.getInstance();
+        Random random = new Random();
+        int amountLost = random.nextInt(100) + 1;
+        database.addSocialCredit(userID, serverID, -amountLost);
+        return amountLost;
     }
 }
