@@ -11,18 +11,6 @@ public class OwosEtc extends BaseReaction {
 
     String maplegasm = "https://cdn.discordapp.com/attachments/852812258677358592/857877021756620810/856925111809474610.png";
     String whentheimposterissus = "https://cdn.discordapp.com/attachments/857711843282649158/858835663179481118/maxresdefault.png";
-    String[] kromerGifs = {
-            "https://tenor.com/view/spamton-spamton-neo-deltarune-deltarune-spamton-amogus-gif-23353265",
-            "https://tenor.com/view/kromer-deltarune-spamton-deltarune-chapter2-gif-23177285",
-            "https://tenor.com/view/deltarune-spamton-kromer-0001kromer-money-gif-23199506",
-            "https://tenor.com/view/spamton-kromer-deltarune-big-shot-1997-gif-23301374",
-            "https://tenor.com/view/kromer-big-shot-deltarune-spamton-gif-23245662",
-            "https://tenor.com/view/spamton-0kromer-death-kromer-gif-23230738",
-            "https://tenor.com/view/kromer-spamton-gif-23227110",
-            "https://tenor.com/view/spamton-deltarune-punching-punching-wall-punching-the-wall-gif-23393913",
-            "https://tenor.com/view/spamton-deltarune-undertale-spamton-neo-gif-23320706",
-            "https://cdn.discordapp.com/attachments/903333009435029586/903716167326236732/Spamton_Unintelligible720P_HD.mp4"
-    };
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
@@ -87,14 +75,6 @@ public class OwosEtc extends BaseReaction {
             //literal reactions
             if(message.contains("sex") && rawMessage.contains("sex") && checkActivitySettings(event, 1)) {
                 event.getMessage().addReaction("👍").queue();
-            }
-
-            // $kromer command
-            if (message.startsWith(Cashew.COMMAND_PREFIX + "kromer") && rawMessage.startsWith(Cashew.COMMAND_PREFIX + "kromer") && checkActivitySettings(event, 0)) {
-                if (!(message.length() > 6 + Cashew.COMMAND_PREFIX.length() && message.charAt(6 + Cashew.COMMAND_PREFIX.length()) != ' ')) {
-                    Random random = new Random();
-                    event.getMessage().reply(kromerGifs[random.nextInt(kromerGifs.length)]).mentionRepliedUser(false).queue();
-                }
             }
 
             if (message.contains("bot") && rawMessage.contains("bot") && checkActivitySettings(event, 2)) {
