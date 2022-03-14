@@ -54,7 +54,7 @@ public class SocialCredit extends BaseCommand {
         Database database = Database.getInstance();
         database.addSocialCredit(userID, server.getId(), socialCreditChange);
         EmbedBuilder socialCreditEmbed = new EmbedBuilder();
-        String embedTitle = Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName();
+        String embedTitle = "**"+Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName()+"**";
         Random random = new Random();
         if (socialCreditChange < 0) {
             embedTitle += " loses " + abs(socialCreditChange) + " social credit! :(";
@@ -78,7 +78,7 @@ public class SocialCredit extends BaseCommand {
             socialCredit = 0;
         }
         String effectiveUserName = Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName();
-        return "User " + effectiveUserName + " has " + socialCredit + " social credit.";
+        return "User **" + effectiveUserName + "** has " + socialCredit + " social credit.";
     }
 
     @Override
@@ -144,7 +144,7 @@ public class SocialCredit extends BaseCommand {
                         event.replyEmbeds(socialCreditEmbed).queue();
                     } else {
                         int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
-                        event.reply("You lose " + amountLost + "social credit for misuse of the social credit system.").queue();
+                        event.reply("You lose " + amountLost + " social credit for misuse of the social credit system.").queue();
                     }
                 }
             } else {
