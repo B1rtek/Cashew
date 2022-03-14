@@ -33,6 +33,10 @@ public class Cuddle extends BaseCuddlyCommand {
             new EmbedGif("https://media1.tenor.com/images/5aa0da336b4d96c4ba836ea0d8cd4984/tenor.gif", 0x666DA0)
     };
 
+    String[] reactions = {
+            "UwU", "OwO", ":3", ";3", "Nyaaa!", "<3", "Yayy!", "Cute~", "Adorable~"
+    };
+
     String action = "cuddles";
 
     @Override
@@ -45,7 +49,7 @@ public class Cuddle extends BaseCuddlyCommand {
                     event.getMessage().reply("You can't cuddle no one!").mentionRepliedUser(false).queue();
                     return;
                 }
-                sendCuddlyEmbedFromPrefix(event, cuddlyString, cuddleGifs, action);
+                sendCuddlyEmbedFromPrefix(event, cuddlyString, cuddleGifs, action, reactions);
             } else {
                 event.getMessage().reply("For some reason, you can't cuddle :(").mentionRepliedUser(false).queue();
             }
@@ -60,7 +64,7 @@ public class Cuddle extends BaseCuddlyCommand {
                 String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
                 String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
                 if (!cuddlyString.isEmpty()) {
-                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, cuddleGifs, action)).queue();
+                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, cuddleGifs, action, reactions)).queue();
                 } else {
                     event.reply("You can't cuddle no one!").setEphemeral(true).queue();
                 }

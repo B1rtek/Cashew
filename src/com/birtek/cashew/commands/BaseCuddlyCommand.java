@@ -30,11 +30,7 @@ public class BaseCuddlyCommand extends BaseCommand {
         return result.toString();
     }
 
-    String[] reactions = {
-            "UwU", "OwO", ":3", ";3", "Nyaaa!", "<3", "Yayy!", "Cute~", "Adorable~"
-    };
-
-    protected MessageEmbed createCuddlyEmbed(String cuddlyString, User author, String authorName, EmbedGif[] cuddlyGifs, String action) {
+    protected MessageEmbed createCuddlyEmbed(String cuddlyString, User author, String authorName, EmbedGif[] cuddlyGifs, String action, String[] reactions) {
         Random random = new Random();
         int gifNumber = random.nextInt(cuddlyGifs.length);
         EmbedBuilder cuddleEmbed = new EmbedBuilder();
@@ -45,15 +41,15 @@ public class BaseCuddlyCommand extends BaseCommand {
         return cuddleEmbed.build();
     }
 
-    protected void sendCuddlyEmbedFromPrefix(MessageReceivedEvent event, String cuddlyString, EmbedGif[] gifs, String action) {
+    protected void sendCuddlyEmbedFromPrefix(MessageReceivedEvent event, String cuddlyString, EmbedGif[] gifs, String action, String[] reactions) {
         String author;
         MessageEmbed cuddlyEmbed;
         if (event.isWebhookMessage()) {
             author = event.getAuthor().getName();
-            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getAuthor(), author, gifs, action);
+            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getAuthor(), author, gifs, action, reactions);
         } else {
             author = Objects.requireNonNull(event.getMember()).getEffectiveName();
-            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getMember().getUser(), author, gifs, action);
+            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getMember().getUser(), author, gifs, action, reactions);
         }
         event.getMessage().replyEmbeds(cuddlyEmbed).queue();
     }

@@ -36,6 +36,10 @@ public class Hug extends BaseCuddlyCommand {
             new EmbedGif("https://c.tenor.com/cqrKEII-huIAAAAC/coconut-azuki.gif", 0x949EF0)
     };
 
+    String[] reactions = {
+            "UwU", "OwO", ":3", ";3", "Nyaaa!", "<3", "Yayy!", "Cute~", "Adorable~"
+    };
+
     String action = "hugs";
 
     @Override
@@ -48,7 +52,7 @@ public class Hug extends BaseCuddlyCommand {
                     event.getMessage().reply("You can't hug no one!").mentionRepliedUser(false).queue();
                     return;
                 }
-                sendCuddlyEmbedFromPrefix(event, cuddlyString, hugGifs, action);
+                sendCuddlyEmbedFromPrefix(event, cuddlyString, hugGifs, action, reactions);
             } else {
                 event.getMessage().reply("For some reason, you can't hug anyone :(").mentionRepliedUser(false).queue();
             }
@@ -63,7 +67,7 @@ public class Hug extends BaseCuddlyCommand {
                 String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
                 String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
                 if (!cuddlyString.isEmpty()) {
-                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, hugGifs, action)).queue();
+                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, hugGifs, action, reactions)).queue();
                 } else {
                     event.reply("You can't hug no one!").setEphemeral(true).queue();
                 }
