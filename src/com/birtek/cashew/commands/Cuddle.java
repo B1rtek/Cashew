@@ -1,8 +1,13 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -31,6 +36,16 @@ public class Cuddle extends BaseCommand {
             "UwU", "OwO", ":3", ";3", "Nyaaa!", "<3", "Yayy!", "Cute~", "Adorable~"
     };
 
+    MessageEmbed createCuddlyEmbed(String cuddlyString, User author) {
+        Random random = new Random();
+        int gifNumber = random.nextInt(cuddleGifs.length);
+        EmbedBuilder cuddleEmbed = new EmbedBuilder();
+        cuddleEmbed.setColor(cuddleGifs[gifNumber].getColor());
+        cuddleEmbed.setImage(cuddleGifs[gifNumber].getGifURL());
+        cuddleEmbed.setAuthor(cuddlyString, null, author.getAvatarUrl());
+        return cuddleEmbed.build();
+    }
+
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
@@ -50,6 +65,22 @@ public class Cuddle extends BaseCommand {
                     }
                 }
                 sendCuddlyCommandGif(event, random, gifNumber, betterArgs, embedMessage, reactions, cuddleGifs);
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if(event.getName().equals("cuddle")) {
+            if(checkSlashCommandPermissions(event, cuddleCommandPermissions)) {
+                String cuddlyString = event.getOption("cuddled", "", OptionMapping::getAsString);
+                if(!cuddlyString.isEmpty()) {
+                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser())).queue();
+                } else {
+                    event.reply("You can't cuddle no one!").queue();
+                }
+            } else {
+                event.reply("For some reason, you can't cuddle :(").setEphemeral(true).queue();
             }
         }
     }

@@ -79,7 +79,9 @@ public class Cashew {
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
                         .addOption(STRING, "toggle", "Toggles reactions on, off or turns even the annoying ones (all) on", false, true)
                         .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one"),
-                Commands.slash("choccymilk", "Gift someone some Choccy Milk!")
+                Commands.slash("choccymilk", "Gift someone some Choccy Milk!"),
+                Commands.slash("cuddle", "Cuddle someone!")
+                        .addOption(STRING, "cuddled", "A person (or a group of people) to cuddle")
                 ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
