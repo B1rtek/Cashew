@@ -2,13 +2,15 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.Random;
 
-public class Hug extends BaseCommand {
+public class Hug extends BaseCuddlyCommand {
 
     Permission[] hugCommandPermissions = {
             Permission.MESSAGE_SEND
@@ -34,29 +36,48 @@ public class Hug extends BaseCommand {
             new EmbedGif("https://c.tenor.com/cqrKEII-huIAAAAC/coconut-azuki.gif", 0x949EF0)
     };
 
-    String[] reactions = {
-            "UwU", "OwO", ":3", ";3", "Nyaaa!", "<3", "Yayy!", "Cute~", "Adorable~"
-    };
+    String action = "hugs";
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "hug")) {
             if(checkPermissions(event, hugCommandPermissions)) {
-                Random random = new Random();
-                int gifNumber = random.nextInt(hugGifs.length);
-                String[] betterArgs = event.getMessage().getContentDisplay().replaceAll("@", "").split("\\s+");
-                StringBuilder embedMessage;
-                if(event.isWebhookMessage()) {
-                    embedMessage = new StringBuilder(event.getAuthor().getName() + " hugs");
-                } else {
-                    if(Objects.requireNonNull(event.getMember()).getNickname()==null) {
-                        embedMessage = new StringBuilder(event.getAuthor().getName() + " hugs");
-                    } else {
-                        embedMessage = new StringBuilder(Objects.requireNonNull(event.getMember()).getNickname() + " hugs");
-                    }
+                String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
+                if (cuddlyString.isEmpty()) {
+                    event.getMessage().reply("You can't hug no one!").mentionRepliedUser(false).queue();
+                    return;
                 }
-                sendCuddlyCommandGif(event, random, gifNumber, betterArgs, embedMessage, reactions, hugGifs);
+                String author;
+                MessageEmbed cuddlyEmbed;
+                if (event.isWebhookMessage()) {
+                    author = event.getAuthor().getName();
+                    cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getAuthor(), author, hugGifs, action);
+                } else {
+                    author = Objects.requireNonNull(event.getMember()).getEffectiveName();
+                    cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getMember().getUser(), author, hugGifs, action);
+                }
+                event.getMessage().replyEmbeds(cuddlyEmbed).queue();
+            } else {
+                event.getMessage().reply("For some reason, you can't hug anyone :(").mentionRepliedUser(false).queue();
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (event.getName().equals("hug")) {
+            if (checkSlashCommandPermissions(event, hugCommandPermissions)) {
+                String[] cuddlyStringSplit = event.getOption("tohug", "", OptionMapping::getAsString).split("\\s+");
+                String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
+                String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
+                if (!cuddlyString.isEmpty()) {
+                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, hugGifs, action)).queue();
+                } else {
+                    event.reply("You can't hug no one!").setEphemeral(true).queue();
+                }
+            } else {
+                event.reply("For some reason, you can't hug anyone :(").setEphemeral(true).queue();
             }
         }
     }
