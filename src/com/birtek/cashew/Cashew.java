@@ -58,7 +58,7 @@ public class Cashew {
         commands.addCommands(
                 Commands.slash("ping", "Measures bot's ping"),
                 Commands.slash("help", "Shows the help embed containing information about commands")
-                        .addOption(STRING, "command", "Command to show help of"),
+                        .addOption(STRING, "command", "Command to show help of", false, true),
                 Commands.slash("info", "Shows the help embed containing information about commands")
                         .addOption(STRING, "command", "Command to show help of"),
                 Commands.slash("bestneko", "Sends you a gif of the best neko <3"),
