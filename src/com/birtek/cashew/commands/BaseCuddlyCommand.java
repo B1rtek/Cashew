@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Objects;
 import java.util.Random;
@@ -42,5 +43,18 @@ public class BaseCuddlyCommand extends BaseCommand {
         cuddleEmbed.setImage(cuddlyGifs[gifNumber].getGifURL());
         cuddleEmbed.setAuthor(cuddlyString, null, author.getAvatarUrl());
         return cuddleEmbed.build();
+    }
+
+    protected void sendCuddlyEmbedFromPrefix(MessageReceivedEvent event, String cuddlyString, EmbedGif[] gifs, String action) {
+        String author;
+        MessageEmbed cuddlyEmbed;
+        if (event.isWebhookMessage()) {
+            author = event.getAuthor().getName();
+            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getAuthor(), author, gifs, action);
+        } else {
+            author = Objects.requireNonNull(event.getMember()).getEffectiveName();
+            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getMember().getUser(), author, gifs, action);
+        }
+        event.getMessage().replyEmbeds(cuddlyEmbed).queue();
     }
 }

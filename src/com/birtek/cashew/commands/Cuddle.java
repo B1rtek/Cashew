@@ -45,16 +45,7 @@ public class Cuddle extends BaseCuddlyCommand {
                     event.getMessage().reply("You can't cuddle no one!").mentionRepliedUser(false).queue();
                     return;
                 }
-                String author;
-                MessageEmbed cuddlyEmbed;
-                if (event.isWebhookMessage()) {
-                    author = event.getAuthor().getName();
-                    cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getAuthor(), author, cuddleGifs, action);
-                } else {
-                    author = Objects.requireNonNull(event.getMember()).getEffectiveName();
-                    cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getMember().getUser(), author, cuddleGifs, action);
-                }
-                event.getMessage().replyEmbeds(cuddlyEmbed).queue();
+                sendCuddlyEmbedFromPrefix(event, cuddlyString, cuddleGifs, action);
             } else {
                 event.getMessage().reply("For some reason, you can't cuddle :(").mentionRepliedUser(false).queue();
             }
