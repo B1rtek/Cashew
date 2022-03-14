@@ -86,21 +86,6 @@ public class BaseCommand extends ListenerAdapter {
         return response.toString();
     }
 
-    protected static void sendCuddlyCommandGif(@NotNull MessageReceivedEvent event, Random random, int gifNumber, String[] betterArgs, StringBuilder embedMessage, String[] reactions, EmbedGif[] gifs) {
-        for(int i=1; i<betterArgs.length; i++)
-        {
-            embedMessage.append(" ");
-            embedMessage.append(betterArgs[i]);
-        }
-        embedMessage.append("! ").append(reactions[random.nextInt(reactions.length)]);
-        EmbedBuilder cuddleEmbed = new EmbedBuilder();
-        cuddleEmbed.setColor(gifs[gifNumber].getColor());
-        cuddleEmbed.setImage(gifs[gifNumber].getGifURL());
-        cuddleEmbed.setAuthor(embedMessage.toString(), null, event.getAuthor().getAvatarUrl());
-        event.getChannel().sendMessageEmbeds(cuddleEmbed.build()).queue();
-        cuddleEmbed.clear();
-    }
-
     protected String getCaseItemCondition() {
         Random random = new Random();
         int skinFloat = random.nextInt(10000);
