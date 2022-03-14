@@ -83,7 +83,11 @@ public class Cashew {
                 Commands.slash("cuddle", "Cuddle someone!")
                         .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle"),
                 Commands.slash("hug", "Hug someone!")
-                        .addOption(STRING, "tohug", "A person (or a group of people) to hug")
+                        .addOption(STRING, "tohug", "A person (or a group of people) to hug"),
+                Commands.slash("pat", "Pat someone!")
+                        .addOption(STRING, "topat", "A person (or a group of people) to pat"),
+                Commands.slash("kiss", "Kiss someone!")
+                        .addOption(STRING, "tokiss", "A person (or a group of people) to kiss")
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }

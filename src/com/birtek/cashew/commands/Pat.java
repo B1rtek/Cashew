@@ -2,13 +2,14 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.Random;
 
-public class Pat extends BaseCommand {
+public class Pat extends BaseCuddlyCommand {
 
     Permission[] patCommandPermissions = {
             Permission.MESSAGE_SEND
@@ -33,25 +34,39 @@ public class Pat extends BaseCommand {
             "UwU", "OwO", ":3", ";3", "Nyaaa!", "<3", "Yayy!", "Cute~", "Adorable~"
     };
 
+    String action = "pats";
+
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "pat")) {
-            if(checkPermissions(event, patCommandPermissions)) {
-                Random random = new Random();
-                int gifNumber = random.nextInt(patGifs.length);
-                String[] betterArgs = event.getMessage().getContentDisplay().replaceAll("@", "").split("\\s+");
-                StringBuilder embedMessage;
-                if(event.isWebhookMessage()) {
-                    embedMessage = new StringBuilder(event.getAuthor().getName() + " pats");
-                } else {
-                    if(Objects.requireNonNull(event.getMember()).getNickname()==null) {
-                        embedMessage = new StringBuilder(event.getAuthor().getName() + " pats");
-                    } else {
-                        embedMessage = new StringBuilder(Objects.requireNonNull(event.getMember()).getNickname() + " pats");
-                    }
+            if (checkPermissions(event, patCommandPermissions)) {
+                String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
+                if (cuddlyString.isEmpty()) {
+                    event.getMessage().reply("You can't pat no one!").mentionRepliedUser(false).queue();
+                    return;
                 }
-                Cuddle.sendCuddlyCommandGif(event, random, gifNumber, betterArgs, embedMessage, reactions, patGifs);
+                sendCuddlyEmbedFromPrefix(event, cuddlyString, patGifs, action, reactions);
+            } else {
+                event.getMessage().reply("For some reason, you can't pat :(").mentionRepliedUser(false).queue();
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (event.getName().equals("pat")) {
+            if (checkSlashCommandPermissions(event, patCommandPermissions)) {
+                String[] cuddlyStringSplit = event.getOption("topat", "", OptionMapping::getAsString).split("\\s+");
+                String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
+                String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
+                if (!cuddlyString.isEmpty()) {
+                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, patGifs, action, reactions)).queue();
+                } else {
+                    event.reply("You can't pat no one!").setEphemeral(true).queue();
+                }
+            } else {
+                event.reply("For some reason, you can't pat :(").setEphemeral(true).queue();
             }
         }
     }
