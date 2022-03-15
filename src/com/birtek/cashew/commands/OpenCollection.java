@@ -4,6 +4,7 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class OpenCollection extends BaseCommand {
 
@@ -171,7 +173,12 @@ public class OpenCollection extends BaseCommand {
                         TwoStringsPair conditions = processCondition(condition, fn, mw, ft, ww, bs);
                         condition = conditions.getFirst();
                         String imageURL = conditions.getSecond();
-                        sendDroppedItemEmbed(event, selectedCollectionName, selectedCollectionURL, selectedCollectionIconURL, condition, itemName, embedColor, flavorText, imageURL);
+                        MessageEmbed collectionOpeningEmbed = generateDroppedItemEmbed(selectedCollectionName, selectedCollectionURL, selectedCollectionIconURL, condition, itemName, embedColor, flavorText, imageURL);
+                        if(collectionOpeningEmbed == null) {
+                            event.getMessage().reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
+                        } else {
+                            event.getMessage().replyEmbeds(collectionOpeningEmbed).mentionRepliedUser(false).queueAfter(250, TimeUnit.MILLISECONDS);
+                        }
                     } else {
                         event.getMessage().reply("[8] An error occurred while executing this command.").mentionRepliedUser(false).queue();
                     }
