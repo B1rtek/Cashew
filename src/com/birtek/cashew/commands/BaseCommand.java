@@ -69,10 +69,14 @@ public class BaseCommand extends ListenerAdapter {
         if (strNum == null) {
             return false;
         }
-        try {
-            Integer.parseInt(strNum);
-        } catch (NumberFormatException nfe) {
-            return false;
+        int start = 0;
+        if(strNum.charAt(0) == '-') {
+            start = 1;
+        }
+        for(int i=start; i<strNum.length(); i++) {
+            if (strNum.charAt(i) > '9' || strNum.charAt(i) < '0') {
+                return false;
+            }
         }
         return true;
     }
@@ -162,26 +166,26 @@ public class BaseCommand extends ListenerAdapter {
         }
         String imageURL = "";
         switch (condition) {
-            case "fn":
+            case "fn" -> {
                 condition = "Factory New";
                 imageURL = fn;
-                break;
-            case "mw":
+            }
+            case "mw" -> {
                 condition = "Minimal Wear";
                 imageURL = mw;
-                break;
-            case "ft":
+            }
+            case "ft" -> {
                 condition = "Field-Tested";
                 imageURL = ft;
-                break;
-            case "ww":
+            }
+            case "ww" -> {
                 condition = "Well-Worn";
                 imageURL = ww;
-                break;
-            case "bs":
+            }
+            case "bs" -> {
                 condition = "Battle-Scarred";
                 imageURL = bs;
-                break;
+            }
         }
         return new TwoStringsPair(condition, imageURL);
     }
