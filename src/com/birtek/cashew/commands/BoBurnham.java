@@ -21,6 +21,21 @@ public class BoBurnham extends BaseCommand {
             Permission.MESSAGE_SEND
     };
 
+    private MessageEmbed createQuoteEmbedFromRecord(ResultSet quotes) throws SQLException {
+        EmbedBuilder quoteEmbed = new EmbedBuilder();
+        String quoteContent = quotes.getString("quote");
+        String[] quoteParts = quoteContent.split("▒");
+        StringBuilder description = new StringBuilder();
+        for (String quotePart : quoteParts) {
+            description.append(quotePart);
+            description.append('\n');
+        }
+        quoteEmbed.setDescription(description.toString());
+        quoteEmbed.setAuthor(quotes.getString("track"), quotes.getString("link"), quotes.getString("albumCover"));
+        quoteEmbed.setFooter("from \"" + quotes.getString("album") + "\"");
+        return quoteEmbed.build();
+    }
+
     private MessageEmbed getQuoteEmbed(boolean nsfw) {
         Database database = Database.getInstance();
         int count = database.getQuoteCount(nsfw ? 1 : 0);
@@ -30,23 +45,12 @@ public class BoBurnham extends BaseCommand {
         ResultSet quotes = database.getQuotes(nsfw ? 1 : 0);
         if (quotes == null) return null;
         try {
-            EmbedBuilder quoteEmbed = new EmbedBuilder();
             int rowNumber = 1;
             while (quotes.next()) {
                 if (rowNumber < quoteNumber) {
                     rowNumber++;
                 } else {
-                    String quoteContent = quotes.getString("quote");
-                    String[] quoteParts = quoteContent.split("▒");
-                    StringBuilder description = new StringBuilder();
-                    for (String quotePart : quoteParts) {
-                        description.append(quotePart);
-                        description.append('\n');
-                    }
-                    quoteEmbed.setDescription(description.toString());
-                    quoteEmbed.setAuthor(quotes.getString("track"), quotes.getString("link"), quotes.getString("albumCover"));
-                    quoteEmbed.setFooter("from \"" + quotes.getString("album") + "\"");
-                    return quoteEmbed.build();
+                    return createQuoteEmbedFromRecord(quotes);
                 }
             }
 
