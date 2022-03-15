@@ -232,7 +232,7 @@ public class OpenCase extends BaseCommand {
                         event.getMessage().replyEmbeds(caseOpeningEmbed).mentionRepliedUser(false).queueAfter(250, TimeUnit.MILLISECONDS);
                     }
                 } else {
-                    event.getMessage().reply("An error occurred while executing this command.").mentionRepliedUser(false).queue();
+                    event.getMessage().replyEmbeds(generateCasesCommandEmbed("Here's the list of available cases:")).mentionRepliedUser(false).queue();
                 }
             } else {
                 event.getMessage().reply("For some reason, you can't open cases :(").mentionRepliedUser(false).queue();
