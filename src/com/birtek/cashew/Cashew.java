@@ -102,7 +102,13 @@ public class Cashew {
                                 .addOption(INTEGER, "id", "ID of the message to display (optional)"))
                         .addSubcommands(new SubcommandData("delete", "Deletes the specified messages")
                                 .addOption(STRING, "all", "Deletes ALL scheduled messages (type \"definitely\" to confirm)")
-                                .addOption(INTEGER, "id", "ID of the messsage to delete"))
+                                .addOption(INTEGER, "id", "ID of the messsage to delete")),
+                Commands.slash("opencase", "CS:GO case opening simulator")
+                        .addOption(STRING, "case", "Name of the case to open", false, true)
+                        .addOption(INTEGER, "id", "ID of the case to open (IDs are assigned in chronological order)"),
+                Commands.slash("opencollection", "CS:GO collection opening simulator")
+                        .addOption(STRING, "collection", "Name of the collection to open", false, true)
+                        .addOption(INTEGER, "id", "ID of the collection to open (IDs are assigned in chronological order)")
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }

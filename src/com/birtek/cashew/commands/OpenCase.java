@@ -5,15 +5,15 @@ import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class OpenCase extends BaseCommand {
@@ -21,6 +21,22 @@ public class OpenCase extends BaseCommand {
     Permission[] openCaseCommandPermissions = {
             Permission.MESSAGE_SEND
     };
+
+    ArrayList<String> availableCases = new ArrayList<>();
+
+    public OpenCase() {
+        Database database = Database.getInstance();
+        ResultSet cases = database.getCases();
+        if (cases != null) {
+            try {
+                while (cases.next()) {
+                    availableCases.add(cases.getString("caseName"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     MessageEmbed openCase(String caseChoice) {
         if (caseChoice.equals("cases") || caseChoice.equals("list")) {
@@ -44,7 +60,7 @@ public class OpenCase extends BaseCommand {
                             selectedCaseKnifeGroup = cases.getInt("knifeGroup");
                             break;
                         }
-                    } else if (caseName.contains(caseChoice)) {
+                    } else if (caseName.contains(caseChoice.toLowerCase(Locale.ROOT))) {
                         selectedCaseID = Integer.parseInt(caseID);
                         selectedCaseName = cases.getString("caseName");
                         selectedCaseURL = cases.getString("caseURL");
@@ -187,26 +203,14 @@ public class OpenCase extends BaseCommand {
     }
 
     private MessageEmbed generateCasesCommandEmbed(String titleMessage) {
-        Database database = Database.getInstance();
-        ResultSet cases = database.getCases();
-        if (cases != null) {
-            try {
-                StringBuilder availableCases = new StringBuilder();
-                while (cases.next()) {
-                    String name = cases.getString("caseName");
-                    int number = cases.getInt("caseID");
-                    availableCases.append(number).append(" - ").append(name).append('\n');
-                }
-                EmbedBuilder caseOpeningInfo = new EmbedBuilder();
-                caseOpeningInfo.setTitle(titleMessage);
-                caseOpeningInfo.addField("Available cases:", availableCases.toString(), false);
-                return caseOpeningInfo.build();
-            } catch (SQLException e) {
-                return null;
-            }
-        } else {
-            return null;
+        StringBuilder availableCasesString = new StringBuilder();
+        for (int i = 0; i < availableCases.size(); i++) {
+            availableCasesString.append(i + 1).append(" - ").append(availableCases.get(i)).append('\n');
         }
+        EmbedBuilder caseOpeningInfo = new EmbedBuilder();
+        caseOpeningInfo.setTitle(titleMessage);
+        caseOpeningInfo.addField("Available cases:", availableCasesString.toString(), false);
+        return caseOpeningInfo.build();
     }
 
     @Override
@@ -222,7 +226,7 @@ public class OpenCase extends BaseCommand {
                     String caseChoice = caseNameBuilder.toString().toLowerCase(Locale.ROOT);
                     event.getChannel().sendTyping().queue();
                     MessageEmbed caseOpeningEmbed = openCase(caseChoice);
-                    if(caseOpeningEmbed == null) {
+                    if (caseOpeningEmbed == null) {
                         event.getMessage().reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
                     } else {
                         event.getMessage().replyEmbeds(caseOpeningEmbed).mentionRepliedUser(false).queueAfter(250, TimeUnit.MILLISECONDS);
@@ -231,10 +235,53 @@ public class OpenCase extends BaseCommand {
                     event.getMessage().reply("An error occurred while executing this command.").mentionRepliedUser(false).queue();
                 }
             } else {
-                generateCasesCommandEmbed("You haven't specified which case you want to open.");
+                event.getMessage().reply("For some reason, you can't open cases :(").mentionRepliedUser(false).queue();
             }
         }
     }
 
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (event.getName().equals("opencase")) {
+            if (checkSlashCommandPermissions(event, openCaseCommandPermissions)) {
+                String caseChoice = event.getOption("case", "", OptionMapping::getAsString);
+                int caseID = event.getOption("id", -1, OptionMapping::getAsInt);
+                if (caseID == -1 && caseChoice.isEmpty()) {
+                    event.replyEmbeds(Objects.requireNonNull(generateCasesCommandEmbed("Here's the list of available cases:"))).setEphemeral(true).queue();
+                    return;
+                }
+                if (caseID != -1) {
+                    caseChoice = String.valueOf(caseID);
+                }
+                MessageEmbed caseOpeningEmbed = openCase(caseChoice);
+                if (caseOpeningEmbed == null) {
+                    event.reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
+                } else {
+                    event.replyEmbeds(caseOpeningEmbed).queueAfter(250, TimeUnit.MILLISECONDS);
+                }
+            } else {
+                event.reply("For some reason, you can't open cases :(").setEphemeral(true).queue();
+            }
+        }
+    }
 
+    @Override
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+        if (event.getName().equals("opencase")) {
+            if (event.getFocusedOption().getName().equals("case")) {
+                String typed = event.getOption("case", "", OptionMapping::getAsString);
+                ArrayList<String> matching = new ArrayList<>();
+                for (String caseName : availableCases) {
+                    if(caseName.toLowerCase().contains(typed.toLowerCase(Locale.ROOT))) {
+                        matching.add(caseName);
+                    }
+                }
+                if(matching.size() > 25) {
+                    event.replyChoiceStrings("There's more than 25 matching choices").queue();
+                } else {
+                    event.replyChoiceStrings(matching).queue();
+                }
+            }
+        }
+    }
 }
