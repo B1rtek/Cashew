@@ -12,6 +12,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
+import static com.birtek.cashew.commands.BaseCommand.verifyCommonPermissionSubset;
+
 public class GuildMessageReactionAdd extends ListenerAdapter {
 
     @Override
@@ -45,14 +47,6 @@ public class GuildMessageReactionAdd extends ListenerAdapter {
         if (Objects.requireNonNull(event.getUser()).getId().equals(Cashew.BIRTEK_USER_ID)) {
             return true;
         }
-        if (event.getUser().isBot() || event.getUser().getId().equals(Cashew.CASHEW_USER_ID)) {
-            return false;
-        }
-        for (Permission neededPermission : neededPermissions) {
-            if (!(permissionsSet.contains(neededPermission) || permissionsSet.contains(Permission.ADMINISTRATOR))) {
-                return false;
-            }
-        }
-        return true;
+        return verifyCommonPermissionSubset(neededPermissions, permissionsSet, event.getUser());
     }
 }

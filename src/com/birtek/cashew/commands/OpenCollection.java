@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class OpenCollection extends BaseCommand {
+public class OpenCollection extends BaseOpeningCommand {
 
     Permission[] openCollectionCommandPermissions = {
             Permission.MESSAGE_SEND

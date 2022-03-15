@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class OpenCase extends BaseCommand {
+public class OpenCase extends BaseOpeningCommand {
 
     Permission[] openCaseCommandPermissions = {
             Permission.MESSAGE_SEND
