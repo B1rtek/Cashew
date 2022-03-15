@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dv8tion.jda.api.utils.Compression;
@@ -91,7 +92,17 @@ public class Cashew {
                 Commands.slash("kromer", "Sends you a random kromer gif"),
                 Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
                         .addOption(USER,"user","User to check or modify social credit of (to check yours, leave blank)")
-                        .addOption(INTEGER, "amount", "Amount of social credit to add or subtract")
+                        .addOption(INTEGER, "amount", "Amount of social credit to add or subtract"),
+                Commands.slash("scheduler", "Message scheduler command")
+                        .addSubcommands(new SubcommandData("add", "Schedule a new message")
+                                .addOption(CHANNEL, "channel", "Destination channel of the message", true, false)
+                                .addOption(STRING, "time", "Exact hour to send the message on (HH:MM:SS CET)", true, false)
+                                .addOption(STRING, "content", "Content of the message", true, false))
+                        .addSubcommands(new SubcommandData("list", "Shows all messages scheduled on this server")
+                                .addOption(INTEGER, "id", "ID of the message to display (optional)"))
+                        .addSubcommands(new SubcommandData("delete", "Deletes the specified messages")
+                                .addOption(STRING, "all", "Deletes ALL scheduled messages (type \"definitely\" to confirm)")
+                                .addOption(INTEGER, "id", "ID of the messsage to delete"))
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
