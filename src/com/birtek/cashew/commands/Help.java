@@ -10,6 +10,9 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 public class Help extends BaseCommand {
@@ -170,7 +173,15 @@ public class Help extends BaseCommand {
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
         if (event.getName().equals("help")) {
             if (event.getFocusedOption().getName().equals("command")) {
-                event.replyChoiceStrings("cuddle", "hug", "kiss", "pat", "opencase", "opencollection", "bestneko", "boburnham", "nekoichi", "kromer", "socialcredit", "korwin", "inspirobot", "dadjoke", "ping", "choccymilk", "help").queue();
+                String typed = event.getOption("command", "", OptionMapping::getAsString);
+                String[] options = {"bestneko", "boburnham", "choccymilk", "cuddle", "dadjoke", "help", "hug", "inspirobot", "kiss", "korwin", "kromer", "nekoichi", "opencase", "opencollection", "pat", "ping", "socialcredit"};
+                List<String> matching = new ArrayList<>();
+                for (String option : options) {
+                    if (option.contains(typed)) {
+                        matching.add(option);
+                    }
+                }
+                event.replyChoiceStrings(matching).queue();
             }
         }
     }
