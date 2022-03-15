@@ -1,6 +1,8 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.Cashew;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +34,7 @@ public class ReactToMaple extends BaseReaction {
             "pulling maple"
     };
 
-    String[] mapleGifs = {
+    static String[] mapleGifsSources = {
             "https://tenor.com/view/maple-maple-minaduki-nekopara-nekopara-vol4-sayori-gif-21935718",
             "https://tenor.com/view/maple-nekopara-pretty-gif-16356346",
             "https://tenor.com/view/nekopara-maple-music-game-visual-gif-7835668",
@@ -62,6 +64,36 @@ public class ReactToMaple extends BaseReaction {
             "https://tenor.com/view/nekopara-maple-catgirl-drink-water-gif-16504890"
     };
 
+    static String[] mapleGifsLiterally = {
+            "https://c.tenor.com/ttFE6USydOgAAAAC/maple-maple-minaduki.gif",
+            "https://c.tenor.com/fwbCIgfPTNEAAAAC/maple-nekopara.gif",
+            "https://c.tenor.com/yeVevx38rxkAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/0iXqBDXCxP0AAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/goLDw66TwboAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/9LKbpLfhNV0AAAAC/nekopara-catgirl.gif",
+            "https://c.tenor.com/k8DbaTxiWnQAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/lcVK2ktvSv8AAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/PmnYujvFjV0AAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/Towqnie-lhcAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/b-Erfr4uoI0AAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/864A3pmamfcAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/HupG69cVmNMAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/-lcA81boM9oAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/23ZvFvwfTesAAAAC/maple-nekopara.gif",
+            "https://c.tenor.com/eZiFQbzHbdMAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/3zSMEahlfikAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/2xdztO3lMXYAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/uEy6gVfDb4gAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/YrAV8AaOUp0AAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/KyTa0nfu388AAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/zKYj5pFZFpYAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/W2vnAsiF5LIAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/SYXLI5jnhCMAAAAC/nekopara-catgirl.gif",
+            "https://c.tenor.com/4VJudrOesn4AAAAC/nekopara-catgirl.gif",
+            "https://c.tenor.com/f-JscnqR_7MAAAAC/nekopara-maple.gif",
+            "https://c.tenor.com/H3dK2_w3vsUAAAAC/nekopara-maple.gif"
+    };
+
     String mayPullGif = "https://cdn.discordapp.com/attachments/852811110158827533/858365564077735977/MayPull.gif";
 
     String[] mayPullQuotes = {
@@ -80,38 +112,39 @@ public class ReactToMaple extends BaseReaction {
                 if(message.contains(mention)) {
                     if(mention.equals("best catgirl") || mention.equals("best neko")) {
                         if(!message.contains("dumbest")) {
-                            sendTheBestNekoGif(event);
+                            event.getMessage().replyEmbeds(getABestNekoEmbed()).mentionRepliedUser(false).queue();
                         }
                     } else {
-                        sendTheBestNekoGif(event);
+                        event.getMessage().replyEmbeds(getABestNekoEmbed()).mentionRepliedUser(false).queue();
                     }
                     break;
                 }
             }
             for(String mention: mayPullMentions) {
                 if(message.contains(mention)) {
-                    sendTheMayPullGif(event);
+                    event.getMessage().replyEmbeds(getTheMayPullGifEmbed()).mentionRepliedUser(false).queue();
                     break;
                 }
             }
         }
     }
 
-    public String getABestNekoGif() {
-        Random rand = new Random();
-        int index = rand.nextInt(mapleGifs.length);
-        return mapleGifs[index];
+    public static MessageEmbed getABestNekoEmbed() {
+        Random random = new Random();
+        int choice = random.nextInt(mapleGifsSources.length);
+        EmbedBuilder bestNekoEmbed = new EmbedBuilder();
+        bestNekoEmbed.setAuthor("Maple Minaduki <3", mapleGifsSources[choice]);
+        bestNekoEmbed.setImage(mapleGifsLiterally[choice]);
+        bestNekoEmbed.setFooter("Best neko!");
+        return bestNekoEmbed.build();
     }
 
-    public void sendTheBestNekoGif(MessageReceivedEvent event) {
-        event.getMessage().reply(getABestNekoGif()).mentionRepliedUser(false).queue();
-        event.getChannel().sendMessage("Best neko!").complete();
-    }
-
-    private void sendTheMayPullGif(MessageReceivedEvent event) {
-        event.getMessage().reply(mayPullGif).mentionRepliedUser(false).queue();
-        Random rand = new Random();
-        int index = rand.nextInt(mayPullQuotes.length);
-        event.getChannel().sendMessage(mayPullQuotes[index]).complete();
+    private MessageEmbed getTheMayPullGifEmbed() {
+        Random random = new Random();
+        EmbedBuilder maypullEmbed = new EmbedBuilder();
+        maypullEmbed.setAuthor("Maypull");
+        maypullEmbed.setImage(mayPullGif);
+        maypullEmbed.setFooter(mayPullQuotes[random.nextInt(mayPullQuotes.length)]);
+        return maypullEmbed.build();
     }
 }
