@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.birtek.cashew'
-version '1.23.2-JDA5a9'
+version '2.0.1-pre1'
 
 compileJava.options.encoding = 'UTF-8'
 
