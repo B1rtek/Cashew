@@ -108,7 +108,12 @@ public class Cashew {
                         .addOption(INTEGER, "id", "ID of the case to open (IDs are assigned in chronological order)"),
                 Commands.slash("opencollection", "CS:GO collection opening simulator")
                         .addOption(STRING, "collection", "Name of the collection to open", false, true)
-                        .addOption(INTEGER, "id", "ID of the collection to open (IDs are assigned in chronological order)")
+                        .addOption(INTEGER, "id", "ID of the collection to open (IDs are assigned in chronological order)"),
+                Commands.slash("gifts", "Gift system command")
+                        .addSubcommands(new SubcommandData("gift", "Give someone a gift!")
+                                .addOption(STRING, "gift", "Name of the gift to gift", true, true))
+                        .addSubcommands(new SubcommandData("stats", "Show your gifting stats")
+                                .addOption(STRING, "gift", "Gift to show stats of"))
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }

@@ -1,5 +1,7 @@
 package com.birtek.cashew;
 
+import com.birtek.cashew.commands.GiftInfo;
+import com.birtek.cashew.commands.GiftStats;
 import com.birtek.cashew.commands.TwoStringsPair;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.TimedMessage;
@@ -21,6 +23,7 @@ public final class Database {
     public static final String TIMED_MESSAGES_DB = "jdbc:sqlite:databases/timedMessages.db";
     public static final String SOCIALCREDIT_DB = "jdbc:sqlite:databases/socialCredit.db";
     public static final String COUNTING_DB = "jdbc:sqlite:databases/counting.db";
+    public static final String GIFTS_DB = "jdbc:sqlite:databases/gifts.db";
 
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
@@ -30,6 +33,7 @@ public final class Database {
     private Connection timedMessagesConnection;
     private Connection socialCreditConnection;
     private Connection countingConnection;
+    private Connection giftsConnection;
 
     private Database() {
 
@@ -49,6 +53,7 @@ public final class Database {
             timedMessagesConnection = DriverManager.getConnection(TIMED_MESSAGES_DB);
             socialCreditConnection = DriverManager.getConnection(SOCIALCREDIT_DB);
             countingConnection = DriverManager.getConnection(COUNTING_DB);
+            giftsConnection = DriverManager.getConnection(GIFTS_DB);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the databases");
             e.printStackTrace();
@@ -523,5 +528,65 @@ public final class Database {
             e.printStackTrace();
             System.err.println("An error occured while inserting into the Counting table.");
         }
+    }
+
+    public ArrayList<GiftInfo> getAvailableGifts() {
+        try {
+            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT giftID, giftName, giftImageURL FROM Gifts");
+            ResultSet results = prepStmt.executeQuery();
+            ArrayList<GiftInfo> availableGifts = new ArrayList<>();
+            if(results == null) {
+                return availableGifts;
+            }
+            while(results.next()) {
+                availableGifts.add(new GiftInfo(results.getInt(1), results.getString(2), results.getString(3)));
+            }
+            return availableGifts;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    private void insertNewGiftStats(GiftStats stats, int giftID, String userID, String serverID) {
+        try {
+            PreparedStatement prepStmt = giftsConnection.prepareStatement("INSERT INTO GiftHistory(giftID, userID, serverID, amountGifted, amountReceived, lastGifted) VALUES(?, ?, ?, ?, ?, ?)");
+            prepStmt.setInt(1, giftID);
+            prepStmt.setString(2, userID);
+            prepStmt.setString(3, serverID);
+            prepStmt.setInt(4, stats.getAmountGifted());
+            prepStmt.setInt(5, stats.getAmountReceived());
+            prepStmt.setLong(6, stats.getLastGifted());
+            prepStmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public GiftStats getUserGiftStats(int giftID, String userID, String serverID) {
+        try {
+            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT amountGifted, amountReceived, lastGifted FROM GiftHistory WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
+            prepStmt.setString(1, serverID);
+            prepStmt.setString(2, userID);
+            prepStmt.setInt(3, giftID);
+            ResultSet results = prepStmt.executeQuery();
+            if(results == null) {
+                return null;
+            }
+            if(results.next()) {
+                return new GiftStats(results.getInt(1), results.getInt(2), results.getLong(3));
+            } else {
+                GiftStats newGiftStats = new GiftStats(0, 0, 0);
+                insertNewGiftStats(newGiftStats, giftID, userID, serverID);
+                return newGiftStats;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void updateUserGiftStats(GiftStats stats, int giftID, String userID, String serverID) {
+
     }
 }
