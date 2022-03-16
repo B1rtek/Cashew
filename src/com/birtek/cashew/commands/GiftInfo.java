@@ -1,14 +1,6 @@
 package com.birtek.cashew.commands;
 
-public class GiftInfo {
-    int id;
-    String name, imageURL;
-
-    public GiftInfo(int id, String name, String imageURL) {
-        this.id = id;
-        this.name = name;
-        this.imageURL = imageURL;
-    }
+public record GiftInfo(int id, String name, String imageURL, String reactionLine1, String reactionLine2) {
 
     public int getId() {
         return id;
@@ -20,5 +12,13 @@ public class GiftInfo {
 
     public String getImageURL() {
         return imageURL;
+    }
+
+    public String reactionLine1() {
+        return reactionLine1;
+    }
+
+    public String reactionLine2() {
+        return reactionLine2;
     }
 }

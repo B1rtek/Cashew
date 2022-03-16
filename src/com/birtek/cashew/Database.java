@@ -532,14 +532,14 @@ public final class Database {
 
     public ArrayList<GiftInfo> getAvailableGifts() {
         try {
-            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT giftID, giftName, giftImageURL FROM Gifts");
+            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT giftID, giftName, giftImageURL, reactionLine1, reactionLine2 FROM Gifts");
             ResultSet results = prepStmt.executeQuery();
             ArrayList<GiftInfo> availableGifts = new ArrayList<>();
             if(results == null) {
                 return availableGifts;
             }
             while(results.next()) {
-                availableGifts.add(new GiftInfo(results.getInt(1), results.getString(2), results.getString(3)));
+                availableGifts.add(new GiftInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5)));
             }
             return availableGifts;
         } catch (SQLException e) {
@@ -587,6 +587,17 @@ public final class Database {
     }
 
     public void updateUserGiftStats(GiftStats stats, int giftID, String userID, String serverID) {
-
+        try {
+            PreparedStatement prepStmt = giftsConnection.prepareStatement("UPDATE GiftHistory SET amountGifted = ?, amountReceived = ?, lastGifted = ? WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
+            prepStmt.setInt(1, stats.getAmountGifted());
+            prepStmt.setInt(2, stats.getAmountReceived());
+            prepStmt.setLong(3, stats.getLastGifted());
+            prepStmt.setString(4, serverID);
+            prepStmt.setString(5, userID);
+            prepStmt.setInt(6, giftID);
+            prepStmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

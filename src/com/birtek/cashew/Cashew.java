@@ -113,7 +113,8 @@ public class Cashew {
                         .addSubcommands(new SubcommandData("gift", "Give someone a gift!")
                                 .addOption(STRING, "gift", "Name of the gift to gift", true, true))
                         .addSubcommands(new SubcommandData("stats", "Show your gifting stats")
-                                .addOption(STRING, "gift", "Gift to show stats of"))
+                                .addOption(STRING, "gift", "Gift to show stats of", true, true)
+                                .addOption(USER, "user", "User to show stats of"))
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
