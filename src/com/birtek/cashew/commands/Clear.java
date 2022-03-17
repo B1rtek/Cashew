@@ -7,13 +7,16 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Clear extends BaseCommand {
 
@@ -50,7 +53,7 @@ public class Clear extends BaseCommand {
             clearEmbed.setColor(0xdd2e45);
             clearEmbed.setTitle("❌ Clear failed! Missing MESSAGE_MANAGE permission");
         }
-        clearEmbed.setDescription("React with ❌ to delete this message");
+        clearEmbed.setDescription("Click OK to remove this message");
         return clearEmbed.build();
     }
 
@@ -146,7 +149,7 @@ public class Clear extends BaseCommand {
 
             }
         }
-        clearEmbed.setDescription("React with ❌ to delete this message");
+        clearEmbed.setDescription("Click OK to remove this message");
         return clearEmbed.build();
     }
 
@@ -187,16 +190,42 @@ public class Clear extends BaseCommand {
             if (checkSlashCommandPermissions(event, clearCommandPermissions)) {
                 int recent = event.getOption("recent", 0, OptionMapping::getAsInt);
                 String range = event.getOption("range", "", OptionMapping::getAsString);
+                MessageEmbed clearEmbed;
                 if (recent == 0 && range.isEmpty()) {
-                    event.replyEmbeds(removeRecentMessages(event.getChannel(), 1, true)).queue(message -> message.retrieveOriginal().queue(message2 -> message2.addReaction("❌").queue()));
+                    clearEmbed = removeRecentMessages(event.getChannel(), 1, true);
                 } else if (recent != 0) {
-                    event.replyEmbeds(removeRecentMessages(event.getChannel(), recent, true)).queue(message -> message.retrieveOriginal().queue(message2 -> message2.addReaction("❌").queue()));
+                    clearEmbed = removeRecentMessages(event.getChannel(), recent, true);
                 } else {
-                    event.replyEmbeds(removeMessagesByRange(event.getChannel(), range, true)).queue(message -> message.retrieveOriginal().queue(message2 -> message2.addReaction("❌").queue()));
+                    clearEmbed = removeMessagesByRange(event.getChannel(), range, true);
+                }
+                if(Objects.requireNonNull(clearEmbed.getTitle()).startsWith("✅")) {
+                    String buttonID = event.getUser().getId() + ":clear";
+                    event.replyEmbeds(clearEmbed).addActionRow(Button.danger(buttonID, "OK")).queue();
+                } else {
+                    event.replyEmbeds(clearEmbed).setEphemeral(true).queue();
                 }
             } else {
                 event.reply("You do not have permission to use this command").setEphemeral(true).queue();
             }
         }
+    }
+
+    @Override
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        String[] buttonID = event.getComponentId().split(":");
+        if(buttonID.length != 2) {
+            return;
+        }
+        String type = buttonID[1];
+        if(!type.equals("clear")) {
+            return;
+        }
+        String userID = buttonID[0];
+        if(!event.getUser().getId().equals(userID)) {
+            event.reply("You don't have permission to remove this embed.").setEphemeral(true).queue();
+            return;
+        }
+        //success
+        event.getMessage().delete().queue();
     }
 }
