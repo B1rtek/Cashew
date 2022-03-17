@@ -85,7 +85,7 @@ public class Gifts extends BaseCommand {
         long timeDifference = calculateTimeFromLastGift(userGiftStats.getLastGifted());
         long cooldown = 600;
         if (timeDifference < cooldown) {
-            return generateGiftErrorEmbed("You need to wait for " + formatTime(3600 - timeDifference) + " before you can gift " + chosenGift.getName() + " again.");
+            return generateGiftErrorEmbed("You need to wait for " + formatTime(cooldown - timeDifference) + " before you can gift " + chosenGift.getName() + " again.");
         }
         //success
         GiftStats newStats = new GiftStats(userGiftStats.getAmountGifted() + 1, userGiftStats.getAmountReceived(), Instant.now().getEpochSecond());
