@@ -64,6 +64,9 @@ public class Gifts extends BaseCommand {
     }
 
     GiftInfo findGiftByName(String giftName) {
+        if(giftName.isEmpty()) {
+            return new GiftInfo(0, "all", "", "", "");
+        }
         for (GiftInfo availableGift : availableGifts) {
             if (availableGift.getName().toLowerCase(Locale.ROOT).contains(giftName.toLowerCase(Locale.ROOT))) {
                 return availableGift;
@@ -96,7 +99,7 @@ public class Gifts extends BaseCommand {
     MessageEmbed generateGiftStatsEmbed(GiftStats userGiftStats, GiftInfo giftInfo, User user, Guild server) {
         EmbedBuilder giftStatsEmbed = new EmbedBuilder();
         giftStatsEmbed.setTitle(Objects.requireNonNull(server.getMemberById(user.getId())).getEffectiveName() + "'s " + giftInfo.getName() + " gift stats");
-        giftStatsEmbed.setThumbnail(giftInfo.getImageURL());
+        giftStatsEmbed.setThumbnail(giftInfo.getId()!=0?giftInfo.getImageURL():user.getAvatarUrl());
         giftStatsEmbed.addField("Amount gifted", String.valueOf(userGiftStats.getAmountGifted()), true);
         giftStatsEmbed.addField("Amount received", String.valueOf(userGiftStats.getAmountReceived()), true);
         return giftStatsEmbed.build();

@@ -565,10 +565,17 @@ public final class Database {
 
     public GiftStats getUserGiftStats(int giftID, String userID, String serverID) {
         try {
-            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT amountGifted, amountReceived, lastGifted FROM GiftHistory WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
-            prepStmt.setString(1, serverID);
-            prepStmt.setString(2, userID);
-            prepStmt.setInt(3, giftID);
+            PreparedStatement prepStmt;
+            if(giftID != 0) {
+                prepStmt = giftsConnection.prepareStatement("SELECT amountGifted, amountReceived, lastGifted FROM GiftHistory WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
+                prepStmt.setString(1, serverID);
+                prepStmt.setString(2, userID);
+                prepStmt.setInt(3, giftID);
+            } else {
+                prepStmt = giftsConnection.prepareStatement("SELECT SUM(amountGifted), SUM(amountReceived), AVG(lastGifted) FROM GiftHistory WHERE (serverID = ? AND userID = ?)");
+                prepStmt.setString(1, serverID);
+                prepStmt.setString(2, userID);
+            }
             ResultSet results = prepStmt.executeQuery();
             if(results == null) {
                 return null;
