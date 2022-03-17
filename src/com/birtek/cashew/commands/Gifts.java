@@ -64,7 +64,7 @@ public class Gifts extends BaseCommand {
     }
 
     GiftInfo findGiftByName(String giftName) {
-        if(giftName.isEmpty()) {
+        if (giftName.isEmpty()) {
             return new GiftInfo(0, "all", "", "", "");
         }
         for (GiftInfo availableGift : availableGifts) {
@@ -98,8 +98,8 @@ public class Gifts extends BaseCommand {
 
     MessageEmbed generateGiftStatsEmbed(GiftStats userGiftStats, GiftInfo giftInfo, User user, Guild server) {
         EmbedBuilder giftStatsEmbed = new EmbedBuilder();
-        giftStatsEmbed.setTitle(Objects.requireNonNull(server.getMemberById(user.getId())).getEffectiveName() + "'s " + giftInfo.getName() + " gift stats");
-        giftStatsEmbed.setThumbnail(giftInfo.getId()!=0?giftInfo.getImageURL():user.getAvatarUrl());
+        giftStatsEmbed.setTitle("\uD83D\uDCCA " + Objects.requireNonNull(server.getMemberById(user.getId())).getEffectiveName() + "'s " + giftInfo.getName() + " gift stats");
+        giftStatsEmbed.setThumbnail(giftInfo.getId() != 0 ? giftInfo.getImageURL() : user.getAvatarUrl());
         giftStatsEmbed.addField("Amount gifted", String.valueOf(userGiftStats.getAmountGifted()), true);
         giftStatsEmbed.addField("Amount received", String.valueOf(userGiftStats.getAmountReceived()), true);
         return giftStatsEmbed.build();
@@ -112,7 +112,7 @@ public class Gifts extends BaseCommand {
         }
         Database database = Database.getInstance();
         GiftStats userGiftStats = database.getUserGiftStats(chosenGift.getId(), user.getId(), server.getId());
-        if(userGiftStats == null) {
+        if (userGiftStats == null) {
             return generateGiftErrorEmbed("Gift stats could not be obtained, there was an error while querying the gift database.");
         }
         return generateGiftStatsEmbed(userGiftStats, chosenGift, user, server);
@@ -139,7 +139,7 @@ public class Gifts extends BaseCommand {
                 }
             } else if (event.getSubcommandName().equals("stats")) {
                 String targetUserID = event.getOption("user", "", OptionMapping::getAsString);
-                User user = targetUserID.isEmpty()?event.getUser(): Objects.requireNonNull(Objects.requireNonNull(event.getGuild()).getMemberById(targetUserID)).getUser();
+                User user = targetUserID.isEmpty() ? event.getUser() : Objects.requireNonNull(Objects.requireNonNull(event.getGuild()).getMemberById(targetUserID)).getUser();
                 MessageEmbed statsEmbed = obtainStats(giftName, user, event.getGuild());
                 if (statsEmbed != null) {
                     if (!Objects.requireNonNull(statsEmbed.getTitle()).startsWith("❌")) {
@@ -165,13 +165,13 @@ public class Gifts extends BaseCommand {
             return;
         }
         String userID = buttonID[0];
-        if(event.getUser().getId().equals(userID)) {
+        if (event.getUser().getId().equals(userID)) {
             event.reply("You can't accept a gift from yourself!").setEphemeral(true).queue();
             return;
         }
         String giftName = buttonID[2];
         GiftInfo giftInfo = findGiftByName(giftName);
-        if(giftInfo == null) {
+        if (giftInfo == null) {
             event.reply("This gift doesn't exist").setEphemeral(true).queue();
             return;
         }
@@ -184,8 +184,8 @@ public class Gifts extends BaseCommand {
         event.getMessage().delete().queue();
         Database database = Database.getInstance();
         GiftStats oldGiftStats = database.getUserGiftStats(giftInfo.getId(), event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
-        if(oldGiftStats != null) {
-            database.updateUserGiftStats(new GiftStats(oldGiftStats.getAmountGifted(), oldGiftStats.getAmountReceived()+1, oldGiftStats.getLastGifted()), giftInfo.getId(), event.getUser().getId(), event.getGuild().getId());
+        if (oldGiftStats != null) {
+            database.updateUserGiftStats(new GiftStats(oldGiftStats.getAmountGifted(), oldGiftStats.getAmountReceived() + 1, oldGiftStats.getLastGifted()), giftInfo.getId(), event.getUser().getId(), event.getGuild().getId());
         } else {
             event.reply("Updating gift stats failed :(").setEphemeral(true).queue();
         }
@@ -193,16 +193,16 @@ public class Gifts extends BaseCommand {
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if(event.getName().startsWith("gifts")) {
-            if(event.getFocusedOption().getName().equals("gift")) {
+        if (event.getName().startsWith("gifts")) {
+            if (event.getFocusedOption().getName().equals("gift")) {
                 String typed = event.getOption("gift", "", OptionMapping::getAsString);
                 ArrayList<String> matching = new ArrayList<>();
                 for (GiftInfo gift : availableGifts) {
-                    if(gift.getName().toLowerCase().contains(typed.toLowerCase(Locale.ROOT))) {
+                    if (gift.getName().toLowerCase().contains(typed.toLowerCase(Locale.ROOT))) {
                         matching.add(gift.getName());
                     }
                 }
-                if(matching.size() > 25) {
+                if (matching.size() > 25) {
                     event.replyChoiceStrings("There's more than 25 matching choices").queue();
                 } else {
                     event.replyChoiceStrings(matching).queue();

@@ -133,7 +133,7 @@ public class ReactToMaple extends BaseReaction {
         Random random = new Random();
         int choice = random.nextInt(mapleGifsSources.length);
         EmbedBuilder bestNekoEmbed = new EmbedBuilder();
-        bestNekoEmbed.setAuthor("Maple Minaduki <3", mapleGifsSources[choice]);
+        bestNekoEmbed.setAuthor("\uD83C\uDF41 Maple Minaduki <3 \uD83C\uDF41", mapleGifsSources[choice]);
         bestNekoEmbed.setImage(mapleGifsLiterally[choice]);
         bestNekoEmbed.setFooter("Best neko!");
         return bestNekoEmbed.build();
