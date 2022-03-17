@@ -83,7 +83,8 @@ public class Gifts extends BaseCommand {
             return generateGiftErrorEmbed("Gift could not be obtained, there was an error while querying the gift database.");
         }
         long timeDifference = calculateTimeFromLastGift(userGiftStats.getLastGifted());
-        if (timeDifference < 3600) {
+        long cooldown = 600;
+        if (timeDifference < cooldown) {
             return generateGiftErrorEmbed("You need to wait for " + formatTime(3600 - timeDifference) + " before you can gift " + chosenGift.getName() + " again.");
         }
         //success
