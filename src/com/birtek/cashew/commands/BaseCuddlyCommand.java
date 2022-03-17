@@ -19,6 +19,11 @@ public class BaseCuddlyCommand extends BaseCommand {
                 String name = Objects.requireNonNull(guild.getMemberById(id)).getEffectiveName();
                 splitWithMentions[i] = name;
             }
+            if (splitWithMentions[i].length() == 21 && splitWithMentions[i].startsWith("<@") && splitWithMentions[i].endsWith(">")) {
+                String id = splitWithMentions[i].substring(2, 20);
+                String name = Objects.requireNonNull(guild.getMemberById(id)).getEffectiveName();
+                splitWithMentions[i] = name;
+            }
         }
         StringBuilder result = new StringBuilder();
         for (int i = start; i < splitWithMentions.length; i++) {
