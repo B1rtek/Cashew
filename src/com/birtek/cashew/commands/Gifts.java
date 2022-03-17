@@ -28,7 +28,7 @@ public class Gifts extends BaseCommand {
 
     MessageEmbed generateGiftErrorEmbed(String message) {
         EmbedBuilder giftNotFoundEmbed = new EmbedBuilder();
-        giftNotFoundEmbed.setTitle("❌ " + message);
+        giftNotFoundEmbed.setAuthor("❌ " + message);
         return giftNotFoundEmbed.build();
     }
 
@@ -96,8 +96,8 @@ public class Gifts extends BaseCommand {
         EmbedBuilder giftStatsEmbed = new EmbedBuilder();
         giftStatsEmbed.setTitle(Objects.requireNonNull(server.getMemberById(user.getId())).getEffectiveName() + "'s " + giftInfo.getName() + " gift stats");
         giftStatsEmbed.setThumbnail(giftInfo.getImageURL());
-        giftStatsEmbed.addField("Amount gifted", String.valueOf(userGiftStats.getAmountGifted()), false);
-        giftStatsEmbed.addField("Amount received", String.valueOf(userGiftStats.getAmountReceived()), false);
+        giftStatsEmbed.addField("Amount gifted", String.valueOf(userGiftStats.getAmountGifted()), true);
+        giftStatsEmbed.addField("Amount received", String.valueOf(userGiftStats.getAmountReceived()), true);
         return giftStatsEmbed.build();
     }
 
