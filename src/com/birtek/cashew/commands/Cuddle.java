@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -10,10 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class Cuddle extends BaseCuddlyCommand {
-
-    Permission[] cuddleCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     EmbedGif[] cuddleGifs = {
             new EmbedGif("https://media1.tenor.com/images/b9a38b215d3fc3ba3439f681fbf24bee/tenor.gif", 0xE5F5FB),
@@ -38,33 +33,25 @@ public class Cuddle extends BaseCuddlyCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "cuddle")) {
-            if (checkPermissions(event, cuddleCommandPermissions)) {
-                String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
-                if (cuddlyString.isEmpty()) {
-                    event.getMessage().reply("You can't cuddle no one!").mentionRepliedUser(false).queue();
-                    return;
-                }
-                sendCuddlyEmbedFromPrefix(event, cuddlyString, cuddleGifs, action, reactions);
-            } else {
-                event.getMessage().reply("For some reason, you can't cuddle :(").mentionRepliedUser(false).queue();
+            String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
+            if (cuddlyString.isEmpty()) {
+                event.getMessage().reply("You can't cuddle no one!").mentionRepliedUser(false).queue();
+                return;
             }
+            sendCuddlyEmbedFromPrefix(event, cuddlyString, cuddleGifs, action, reactions);
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("cuddle")) {
-            if (checkSlashCommandPermissions(event, cuddleCommandPermissions)) {
-                String[] cuddlyStringSplit = event.getOption("tocuddle", "", OptionMapping::getAsString).split("\\s+");
-                String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
-                String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
-                if (!cuddlyString.isEmpty()) {
-                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, cuddleGifs, action, reactions)).queue();
-                } else {
-                    event.reply("You can't cuddle no one!").setEphemeral(true).queue();
-                }
+            String[] cuddlyStringSplit = event.getOption("tocuddle", "", OptionMapping::getAsString).split("\\s+");
+            String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
+            String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
+            if (!cuddlyString.isEmpty()) {
+                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, cuddleGifs, action, reactions)).queue();
             } else {
-                event.reply("For some reason, you can't cuddle :(").setEphemeral(true).queue();
+                event.reply("You can't cuddle no one!").setEphemeral(true).queue();
             }
         }
     }

@@ -3,7 +3,6 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -16,10 +15,6 @@ import java.sql.SQLException;
 import java.util.Random;
 
 public class BoBurnham extends BaseCommand {
-
-    Permission[] boBurnhamCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     private MessageEmbed createQuoteEmbedFromRecord(ResultSet quotes) throws SQLException {
         EmbedBuilder quoteEmbed = new EmbedBuilder();
@@ -64,19 +59,17 @@ public class BoBurnham extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "boburnham")) {
-            if (checkPermissions(event, boBurnhamCommandPermissions)) {
-                boolean nsfw = false;
-                if (args.length >= 2) {
-                    if (args[1].equalsIgnoreCase("nsfw")) {
-                        nsfw = true;
-                    }
+            boolean nsfw = false;
+            if (args.length >= 2) {
+                if (args[1].equalsIgnoreCase("nsfw")) {
+                    nsfw = true;
                 }
-                MessageEmbed quoteEmbed = getQuoteEmbed(nsfw);
-                if (quoteEmbed != null) {
-                    event.getChannel().sendMessageEmbeds(quoteEmbed).queue();
-                } else {
-                    event.getMessage().reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
-                }
+            }
+            MessageEmbed quoteEmbed = getQuoteEmbed(nsfw);
+            if (quoteEmbed != null) {
+                event.getChannel().sendMessageEmbeds(quoteEmbed).queue();
+            } else {
+                event.getMessage().reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
             }
         }
     }
@@ -84,14 +77,12 @@ public class BoBurnham extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("boburnham")) {
-            if (checkSlashCommandPermissions(event, boBurnhamCommandPermissions)) {
-                boolean nsfw = event.getOption("nsfw", "sfw", OptionMapping::getAsString).equals("nsfw");
-                MessageEmbed quoteEmbed = getQuoteEmbed(nsfw);
-                if (quoteEmbed != null) {
-                    event.replyEmbeds(quoteEmbed).queue();
-                } else {
-                    event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
-                }
+            boolean nsfw = event.getOption("nsfw", "sfw", OptionMapping::getAsString).equals("nsfw");
+            MessageEmbed quoteEmbed = getQuoteEmbed(nsfw);
+            if (quoteEmbed != null) {
+                event.replyEmbeds(quoteEmbed).queue();
+            } else {
+                event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
             }
         }
     }

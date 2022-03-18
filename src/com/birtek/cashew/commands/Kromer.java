@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
@@ -9,10 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Random;
 
 public class Kromer extends BaseCommand {
-
-    Permission[] kromerCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     String[] kromerGifs = {
             "https://tenor.com/view/spamton-spamton-neo-deltarune-deltarune-spamton-amogus-gif-23353265",
@@ -31,20 +26,16 @@ public class Kromer extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "kromer")) {
-            if(checkPermissions(event, kromerCommandPermissions)) {
-                Random random = new Random();
-                event.getMessage().reply(kromerGifs[random.nextInt(kromerGifs.length)]).mentionRepliedUser(false).queue();
-            }
+            Random random = new Random();
+            event.getMessage().reply(kromerGifs[random.nextInt(kromerGifs.length)]).mentionRepliedUser(false).queue();
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("kromer")) {
-            if(checkSlashCommandPermissions(event, kromerCommandPermissions)) {
-                Random random = new Random();
-                event.reply(kromerGifs[random.nextInt(kromerGifs.length)]).queue();
-            }
+            Random random = new Random();
+            event.reply(kromerGifs[random.nextInt(kromerGifs.length)]).queue();
         }
     }
 }

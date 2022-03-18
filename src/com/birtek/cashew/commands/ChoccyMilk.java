@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -11,25 +10,19 @@ import java.util.Objects;
 
 public class ChoccyMilk extends BaseCommand {
 
-    Permission[] choccyMilkCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
-
     String choccyMilkURL = "https://cdn.discordapp.com/attachments/857711843282649158/952645669598945290/unknown.png";
     String choccyMilkButtonID = "choccyMilkGet";
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("choccymilk")) {
-            if (checkSlashCommandPermissions(event, choccyMilkCommandPermissions)) {
-                String buttonID = Objects.requireNonNull(event.getMember()).getId() + ":" + choccyMilkButtonID;
-                EmbedBuilder choccyMilkEmbed = new EmbedBuilder();
-                choccyMilkEmbed.setTitle("A wild gift appears!");
-                choccyMilkEmbed.setThumbnail(choccyMilkURL);
-                choccyMilkEmbed.setDescription("Choccy Milk");
-                event.replyEmbeds(choccyMilkEmbed.build()).addActionRow(Button.success(buttonID, "ACCEPT")).queue();
-                choccyMilkEmbed.clear();
-            }
+            String buttonID = Objects.requireNonNull(event.getMember()).getId() + ":" + choccyMilkButtonID;
+            EmbedBuilder choccyMilkEmbed = new EmbedBuilder();
+            choccyMilkEmbed.setTitle("A wild gift appears!");
+            choccyMilkEmbed.setThumbnail(choccyMilkURL);
+            choccyMilkEmbed.setDescription("Choccy Milk");
+            event.replyEmbeds(choccyMilkEmbed.build()).addActionRow(Button.success(buttonID, "ACCEPT")).queue();
+            choccyMilkEmbed.clear();
         }
     }
 

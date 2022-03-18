@@ -2,7 +2,6 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -11,10 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Random;
 
 public class Korwin extends BaseCommand {
-
-    Permission[] korwinCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     String[] cytaty1 = {
             "Proszę zwrócić uwagę, że",
@@ -208,18 +203,14 @@ public class Korwin extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "korwin")) {
-            if (checkPermissions(event, korwinCommandPermissions)) {
-                event.getChannel().sendMessageEmbeds(generateAKorwinQuote()).queue();
-            }
+            event.getChannel().sendMessageEmbeds(generateAKorwinQuote()).queue();
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("korwin")) {
-            if(checkSlashCommandPermissions(event, korwinCommandPermissions)) {
-                event.replyEmbeds(generateAKorwinQuote()).queue();
-            }
+            event.replyEmbeds(generateAKorwinQuote()).queue();
         }
     }
 }

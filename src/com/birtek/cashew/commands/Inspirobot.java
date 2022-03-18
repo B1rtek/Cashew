@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
@@ -12,10 +11,6 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class Inspirobot extends BaseCommand {
-
-    Permission[] inspirobotCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     private String getAnInspirobotQuote() {
         URL inspirobot;
@@ -39,18 +34,14 @@ public class Inspirobot extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "inspirobot") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "insp")) {
-            if (checkPermissions(event, inspirobotCommandPermissions)) {
-                event.getMessage().reply(getAnInspirobotQuote()).mentionRepliedUser(false).queue();
-            }
+            event.getMessage().reply(getAnInspirobotQuote()).mentionRepliedUser(false).queue();
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("inspirobot") || event.getName().equals("insp")) {
-            if(checkSlashCommandPermissions(event, inspirobotCommandPermissions)) {
-                event.reply(getAnInspirobotQuote()).queue();
-            }
+            event.reply(getAnInspirobotQuote()).queue();
         }
     }
 }

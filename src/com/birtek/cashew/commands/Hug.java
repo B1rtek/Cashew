@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -10,10 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class Hug extends BaseCuddlyCommand {
-
-    Permission[] hugCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     EmbedGif[] hugGifs = {
             new EmbedGif("https://c.tenor.com/NE54PXHDQ8sAAAAC/chocola-vanilla.gif", 0xFCA6C4),
@@ -45,33 +40,25 @@ public class Hug extends BaseCuddlyCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "hug")) {
-            if(checkPermissions(event, hugCommandPermissions)) {
-                String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
-                if (cuddlyString.isEmpty()) {
-                    event.getMessage().reply("You can't hug no one!").mentionRepliedUser(false).queue();
-                    return;
-                }
-                sendCuddlyEmbedFromPrefix(event, cuddlyString, hugGifs, action, reactions);
-            } else {
-                event.getMessage().reply("For some reason, you can't hug anyone :(").mentionRepliedUser(false).queue();
+            String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
+            if (cuddlyString.isEmpty()) {
+                event.getMessage().reply("You can't hug no one!").mentionRepliedUser(false).queue();
+                return;
             }
+            sendCuddlyEmbedFromPrefix(event, cuddlyString, hugGifs, action, reactions);
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("hug")) {
-            if (checkSlashCommandPermissions(event, hugCommandPermissions)) {
-                String[] cuddlyStringSplit = event.getOption("tohug", "", OptionMapping::getAsString).split("\\s+");
-                String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
-                String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
-                if (!cuddlyString.isEmpty()) {
-                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, hugGifs, action, reactions)).queue();
-                } else {
-                    event.reply("You can't hug no one!").setEphemeral(true).queue();
-                }
+            String[] cuddlyStringSplit = event.getOption("tohug", "", OptionMapping::getAsString).split("\\s+");
+            String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
+            String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
+            if (!cuddlyString.isEmpty()) {
+                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, hugGifs, action, reactions)).queue();
             } else {
-                event.reply("For some reason, you can't hug anyone :(").setEphemeral(true).queue();
+                event.reply("You can't hug no one!").setEphemeral(true).queue();
             }
         }
     }

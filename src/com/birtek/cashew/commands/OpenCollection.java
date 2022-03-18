@@ -3,7 +3,6 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -17,10 +16,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class OpenCollection extends BaseOpeningCommand {
-
-    Permission[] openCollectionCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     ArrayList<String> availableCollections = new ArrayList<>();
 
@@ -190,25 +185,21 @@ public class OpenCollection extends BaseOpeningCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "opencollection") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "opencol")) {
-            if (checkPermissions(event, openCollectionCommandPermissions)) {
-                if (args.length >= 2) {
-                    StringBuilder collectionNameBuilder = new StringBuilder(args[1]);
-                    for (int i = 2; i < args.length; i++) {
-                        collectionNameBuilder.append(" ").append(args[i]);
-                    }
-                    String collectionChoice = collectionNameBuilder.toString().toLowerCase(Locale.ROOT);
-                    event.getChannel().sendTyping().queue();
-                    MessageEmbed collectionOpeningEmbed = openCollection(collectionChoice);
-                    if (collectionOpeningEmbed == null) {
-                        event.getMessage().reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
-                    } else {
-                        event.getMessage().replyEmbeds(collectionOpeningEmbed).mentionRepliedUser(false).queueAfter(250, TimeUnit.MILLISECONDS);
-                    }
+            if (args.length >= 2) {
+                StringBuilder collectionNameBuilder = new StringBuilder(args[1]);
+                for (int i = 2; i < args.length; i++) {
+                    collectionNameBuilder.append(" ").append(args[i]);
+                }
+                String collectionChoice = collectionNameBuilder.toString().toLowerCase(Locale.ROOT);
+                event.getChannel().sendTyping().queue();
+                MessageEmbed collectionOpeningEmbed = openCollection(collectionChoice);
+                if (collectionOpeningEmbed == null) {
+                    event.getMessage().reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
                 } else {
-                    event.getMessage().replyEmbeds(generateCollectionsCommandEmbed("Here's the list of available collections:")).mentionRepliedUser(false).queue();
+                    event.getMessage().replyEmbeds(collectionOpeningEmbed).mentionRepliedUser(false).queueAfter(250, TimeUnit.MILLISECONDS);
                 }
             } else {
-                event.getMessage().reply("For some reason, you can't open collections :(").mentionRepliedUser(false).queue();
+                event.getMessage().replyEmbeds(generateCollectionsCommandEmbed("Here's the list of available collections:")).mentionRepliedUser(false).queue();
             }
         }
     }
@@ -216,24 +207,20 @@ public class OpenCollection extends BaseOpeningCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("opencollection")) {
-            if (checkSlashCommandPermissions(event, openCollectionCommandPermissions)) {
-                String collectionChoice = event.getOption("collection", "", OptionMapping::getAsString);
-                int collectionID = event.getOption("id", -1, OptionMapping::getAsInt);
-                if (collectionID == -1 && collectionChoice.isEmpty()) {
-                    event.replyEmbeds(Objects.requireNonNull(generateCollectionsCommandEmbed("Here's the list of available collections:"))).setEphemeral(true).queue();
-                    return;
-                }
-                if (collectionID != -1) {
-                    collectionChoice = String.valueOf(collectionID);
-                }
-                MessageEmbed collectionOpeningEmbed = openCollection(collectionChoice);
-                if (collectionOpeningEmbed == null) {
-                    event.reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
-                } else {
-                    event.replyEmbeds(collectionOpeningEmbed).queueAfter(250, TimeUnit.MILLISECONDS);
-                }
+            String collectionChoice = event.getOption("collection", "", OptionMapping::getAsString);
+            int collectionID = event.getOption("id", -1, OptionMapping::getAsInt);
+            if (collectionID == -1 && collectionChoice.isEmpty()) {
+                event.replyEmbeds(Objects.requireNonNull(generateCollectionsCommandEmbed("Here's the list of available collections:"))).setEphemeral(true).queue();
+                return;
+            }
+            if (collectionID != -1) {
+                collectionChoice = String.valueOf(collectionID);
+            }
+            MessageEmbed collectionOpeningEmbed = openCollection(collectionChoice);
+            if (collectionOpeningEmbed == null) {
+                event.reply("Something went wrong while executing this command").mentionRepliedUser(false).queue();
             } else {
-                event.reply("For some reason, you can't open collections :(").setEphemeral(true).queue();
+                event.replyEmbeds(collectionOpeningEmbed).queueAfter(250, TimeUnit.MILLISECONDS);
             }
         }
     }

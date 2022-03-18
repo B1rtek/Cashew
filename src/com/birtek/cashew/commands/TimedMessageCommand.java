@@ -239,7 +239,7 @@ public class TimedMessageCommand extends BaseCommand {
                     event.reply(response).queue();
                 }
             } else {
-                event.reply("You don't have permission to use this command").setEphemeral(true).queue();
+                event.reply("You do not have permission to use this command").setEphemeral(true).queue();
             }
         }
     }

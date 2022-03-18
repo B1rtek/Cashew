@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
@@ -12,10 +11,6 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class DadJoke extends BaseCommand {
-
-    Permission[] dadJokeCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     private String getADadJoke() {
         URL dadJokeURL;
@@ -38,18 +33,14 @@ public class DadJoke extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "dadjoke")) {
-            if (checkPermissions(event, dadJokeCommandPermissions)) {
-                event.getMessage().reply(getADadJoke()).mentionRepliedUser(false).queue();
-            }
+            event.getMessage().reply(getADadJoke()).mentionRepliedUser(false).queue();
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("dadjoke")) {
-            if (checkSlashCommandPermissions(event, dadJokeCommandPermissions)) {
-                event.reply(getADadJoke()).queue();
-            }
+            event.reply(getADadJoke()).queue();
         }
     }
 }

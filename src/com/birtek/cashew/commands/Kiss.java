@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -10,10 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class Kiss extends BaseCuddlyCommand {
-
-    Permission[] kissCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     EmbedGif[] kissGifs = {
             new EmbedGif("https://c.tenor.com/3Y9B4si5mR4AAAAC/maple-cinnamon.gif", 0xF78ECB),
@@ -30,33 +25,25 @@ public class Kiss extends BaseCuddlyCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "kiss")) {
-            if (checkPermissions(event, kissCommandPermissions)) {
-                String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
-                if (cuddlyString.isEmpty()) {
-                    event.getMessage().reply("You can't kiss no one!").mentionRepliedUser(false).queue();
-                    return;
-                }
-                sendCuddlyEmbedFromPrefix(event, cuddlyString, kissGifs, action, reactions);
-            } else {
-                event.getMessage().reply("For some reason, you can't kiss :(").mentionRepliedUser(false).queue();
+            String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
+            if (cuddlyString.isEmpty()) {
+                event.getMessage().reply("You can't kiss no one!").mentionRepliedUser(false).queue();
+                return;
             }
+            sendCuddlyEmbedFromPrefix(event, cuddlyString, kissGifs, action, reactions);
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("kiss")) {
-            if (checkSlashCommandPermissions(event, kissCommandPermissions)) {
-                String[] cuddlyStringSplit = event.getOption("tokiss", "", OptionMapping::getAsString).split("\\s+");
-                String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
-                String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
-                if (!cuddlyString.isEmpty()) {
-                    event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, kissGifs, action, reactions)).queue();
-                } else {
-                    event.reply("You can't kiss no one!").setEphemeral(true).queue();
-                }
+            String[] cuddlyStringSplit = event.getOption("tokiss", "", OptionMapping::getAsString).split("\\s+");
+            String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
+            String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
+            if (!cuddlyString.isEmpty()) {
+                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, kissGifs, action, reactions)).queue();
             } else {
-                event.reply("For some reason, you can't kiss :(").setEphemeral(true).queue();
+                event.reply("You can't kiss no one!").setEphemeral(true).queue();
             }
         }
     }

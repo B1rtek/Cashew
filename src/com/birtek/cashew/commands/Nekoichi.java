@@ -1,7 +1,6 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -12,10 +11,6 @@ public class Nekoichi extends BaseCommand {
     String[] nekoichi = {
             "ずっと大切だよ いつだって隣にいるよ",
             "同じ時間の中で そっと寄り添っていたい"
-    };
-
-    Permission[] nekoichiCommandPermissions = {
-            Permission.MESSAGE_SEND
     };
 
     private void singNekoichi(MessageChannel destinationChannel) {
@@ -33,18 +28,14 @@ public class Nekoichi extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "nekoichi")) {
-            if(checkPermissions(event, nekoichiCommandPermissions)) {
-                singNekoichi(event.getChannel());
-            }
+            singNekoichi(event.getChannel());
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("nekoichi")) {
-            if(checkSlashCommandPermissions(event, nekoichiCommandPermissions)) {
-                singNekoichi(event.getChannel());
-            }
+            singNekoichi(event.getChannel());
         }
     }
 }

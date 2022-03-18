@@ -2,7 +2,6 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -11,15 +10,10 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
 public class Help extends BaseCommand {
-
-    Permission[] helpCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     private MessageEmbed createSpecificHelpEmbed(String command) {
         EmbedBuilder specificHelpEmbed = new EmbedBuilder();
@@ -128,20 +122,18 @@ public class Help extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "help")) {
-            if (checkPermissions(event, helpCommandPermissions)) {
-                if (args.length == 2) {
-                    MessageEmbed helpEmbed = createSpecificHelpEmbed(args[1]);
-                    event.getChannel().sendMessageEmbeds(helpEmbed).queue();
-                } else {
-                    String cashewAvatarUrl = getCashewAvatarFromMessageCommand(event);
-                    EmbedBuilder helpEmbed = createGeneralHelpEmbed(cashewAvatarUrl);
-                    helpEmbed.setFooter("Called by " + Objects.requireNonNull(event.getMember()).getUser().getName(), event.getMember().getUser().getAvatarUrl());
-                    event.getChannel().sendMessageEmbeds(helpEmbed.build()).queue();
-                    helpEmbed.clear();
-                    if (event.isWebhookMessage()) return;
-                    if (checkPermissions(event, adminPermissions)) {
-                        event.getAuthor().openPrivateChannel().complete().sendMessageEmbeds(createAdminHelpEmbed(cashewAvatarUrl)).queue();
-                    }
+            if (args.length == 2) {
+                MessageEmbed helpEmbed = createSpecificHelpEmbed(args[1]);
+                event.getChannel().sendMessageEmbeds(helpEmbed).queue();
+            } else {
+                String cashewAvatarUrl = getCashewAvatarFromMessageCommand(event);
+                EmbedBuilder helpEmbed = createGeneralHelpEmbed(cashewAvatarUrl);
+                helpEmbed.setFooter("Called by " + Objects.requireNonNull(event.getMember()).getUser().getName(), event.getMember().getUser().getAvatarUrl());
+                event.getChannel().sendMessageEmbeds(helpEmbed.build()).queue();
+                helpEmbed.clear();
+                if (event.isWebhookMessage()) return;
+                if (checkPermissions(event, adminPermissions)) {
+                    event.getAuthor().openPrivateChannel().complete().sendMessageEmbeds(createAdminHelpEmbed(cashewAvatarUrl)).queue();
                 }
             }
         }
@@ -150,21 +142,17 @@ public class Help extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("help") || event.getName().equals("info")) {
-            if (checkSlashCommandPermissions(event, helpCommandPermissions)) {
-                String fallbackString = "gaukuvcgdhnvukcgbhkbvxdbkgvcnhjmdbdh(hopefullynoooneevertypesthis)";
-                String command = event.getOption("command", fallbackString, OptionMapping::getAsString);
-                if (command.equals(fallbackString)) {
-                    String cashewAvatarUrl = getCashewAvatarFromSlashCommand(event);
-                    event.replyEmbeds(createGeneralHelpEmbed(cashewAvatarUrl).build()).queue();
-                    if (checkSlashCommandPermissions(event, adminPermissions)) {
-                        event.getUser().openPrivateChannel().complete().sendMessageEmbeds(createAdminHelpEmbed(cashewAvatarUrl)).queue();
-                    }
-                } else {
-                    MessageEmbed helpEmbed = createSpecificHelpEmbed(command);
-                    event.replyEmbeds(helpEmbed).queue();
+            String fallbackString = "gaukuvcgdhnvukcgbhkbvxdbkgvcnhjmdbdh(hopefullynoooneevertypesthis)";
+            String command = event.getOption("command", fallbackString, OptionMapping::getAsString);
+            if (command.equals(fallbackString)) {
+                String cashewAvatarUrl = getCashewAvatarFromSlashCommand(event);
+                event.replyEmbeds(createGeneralHelpEmbed(cashewAvatarUrl).build()).queue();
+                if (checkSlashCommandPermissions(event, adminPermissions)) {
+                    event.getUser().openPrivateChannel().complete().sendMessageEmbeds(createAdminHelpEmbed(cashewAvatarUrl)).queue();
                 }
             } else {
-                event.reply("You do not have the permissions required to use this command, good job!").queue();
+                MessageEmbed helpEmbed = createSpecificHelpEmbed(command);
+                event.replyEmbeds(helpEmbed).queue();
             }
         }
     }
