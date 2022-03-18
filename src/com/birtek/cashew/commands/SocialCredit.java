@@ -87,7 +87,6 @@ public class SocialCredit extends BaseCommand {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
-        String[] display = event.getMessage().getContentDisplay().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "socialcredit") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "soc")) {
             if (checkPermissions(event, socialCreditCommandPermissions)) {
                 if (event.isWebhookMessage()) return;
@@ -105,7 +104,7 @@ public class SocialCredit extends BaseCommand {
                     if (args.length == 2) {
                         event.getMessage().reply(checkSocialCredit(args[1], event.getGuild())).mentionRepliedUser(false).queue();
                     } else if (args.length == 3) {
-                        if (checkPermissions(event, adminPermissions)) {
+                        if (checkPermissions(event, moderateMembersPermission)) {
                             int socialCreditChange = 0;
                             try {
                                 socialCreditChange = Integer.parseInt(args[2]);
@@ -124,7 +123,7 @@ public class SocialCredit extends BaseCommand {
                     }
                 }
                 if (youFailed) {
-                    if (!checkPermissions(event, adminPermissions)) {
+                    if (!checkPermissions(event, moderateMembersPermission)) {
                         int amountLost = loseSocialCredit(event.getAuthor().getId(), Objects.requireNonNull(event.getGuild()).getId());
                         event.getMessage().reply("You lose " + amountLost + " social credit for misuse of the social credit system.").mentionRepliedUser(false).queue();
                     }
@@ -136,23 +135,26 @@ public class SocialCredit extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("socialcredit")) {
-            if (checkSlashCommandPermissions(event, socialCreditCommandPermissions)) {
-                String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
-                int amount = event.getOption("amount", 0, OptionMapping::getAsInt);
-                String reason = event.getOption("reason", "", OptionMapping::getAsString);
-                if (amount == 0) { // credit check
-                    event.reply(checkSocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()))).queue();
-                } else {
-                    if (checkSlashCommandPermissions(event, adminPermissions)) {
-                        MessageEmbed socialCreditEmbed = modifySocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()), amount, reason);
-                        event.replyEmbeds(socialCreditEmbed).queue();
-                    } else {
-                        int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
-                        event.reply("You lose " + amountLost + " social credit for misuse of the social credit system.").queue();
-                    }
-                }
+            String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
+            String reason = event.getOption("reason", "", OptionMapping::getAsString);
+            int amount;
+            try {
+                amount = event.getOption("amount", 0, OptionMapping::getAsInt);
+            } catch (ArithmeticException e) { // someone tried adding more than int allows lol
+                targetUserID = event.getUser().getId();
+                amount = -1;
+                reason = "Stop trying to break the bot by adding or removing more than INT_MAX or INT_MIN";
+            }
+            if (amount == 0) { // credit check
+                event.reply(checkSocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()))).queue();
             } else {
-                event.reply("It seems like Xi-sama doesn't want you in their country.").queue();
+                if (checkSlashCommandPermissions(event, moderateMembersPermission)) {
+                    MessageEmbed socialCreditEmbed = modifySocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()), amount, reason);
+                    event.replyEmbeds(socialCreditEmbed).queue();
+                } else {
+                    int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
+                    event.reply("You lose " + amountLost + " social credit for misuse of the social credit system.").queue();
+                }
             }
         }
     }

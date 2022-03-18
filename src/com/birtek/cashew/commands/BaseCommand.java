@@ -21,6 +21,10 @@ public class BaseCommand extends ListenerAdapter {
             Permission.ADMINISTRATOR
     };
 
+    public Permission[] moderateMembersPermission = {
+            Permission.MODERATE_MEMBERS
+    };
+
     public static boolean checkPermissions(MessageReceivedEvent event, Permission[] neededPermissions) {
         if (event.isWebhookMessage()) {
             return true;
