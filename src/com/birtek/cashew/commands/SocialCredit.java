@@ -43,18 +43,18 @@ public class SocialCredit extends BaseCommand {
     };
 
     String extractUserID(String maybeUserID) {
-        if(!maybeUserID.startsWith("<@!") || !maybeUserID.endsWith(">") || maybeUserID.length() != 22) {
+        if (!maybeUserID.startsWith("<@!") || !maybeUserID.endsWith(">") || maybeUserID.length() != 22) {
             return "";
         } else {
             return maybeUserID.substring(3, 21);
         }
     }
 
-    private MessageEmbed modifySocialCredit(String userID, Guild server, int socialCreditChange) {
+    private MessageEmbed modifySocialCredit(String userID, Guild server, int socialCreditChange, String reason) {
         Database database = Database.getInstance();
         database.addSocialCredit(userID, server.getId(), socialCreditChange);
         EmbedBuilder socialCreditEmbed = new EmbedBuilder();
-        String embedTitle = "**"+Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName()+"**";
+        String embedTitle = "**" + Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName() + "**";
         Random random = new Random();
         if (socialCreditChange < 0) {
             embedTitle += " loses " + abs(socialCreditChange) + " social credit! :(";
@@ -66,6 +66,9 @@ public class SocialCredit extends BaseCommand {
             socialCreditEmbed.setTitle(embedTitle);
             socialCreditEmbed.setImage(socialCreditGainURLs[random.nextInt(socialCreditGainURLs.length)]);
             socialCreditEmbed.setColor(Color.green);
+        }
+        if (!reason.isEmpty()) {
+            socialCreditEmbed.setDescription(reason);
         }
         return socialCreditEmbed.build();
     }
@@ -94,7 +97,7 @@ public class SocialCredit extends BaseCommand {
                     args = message.split("\\s+");
                 } else {
                     args[1] = extractUserID(args[1]);
-                    if(args[1].isEmpty()) {
+                    if (args[1].isEmpty()) {
                         youFailed = true;
                     }
                 }
@@ -110,7 +113,7 @@ public class SocialCredit extends BaseCommand {
                                 youFailed = true;
                             }
                             if (!youFailed) {
-                                MessageEmbed socialCreditEmbed = modifySocialCredit(args[1], event.getGuild(), socialCreditChange);
+                                MessageEmbed socialCreditEmbed = modifySocialCredit(args[1], event.getGuild(), socialCreditChange, "");
                                 event.getChannel().sendMessageEmbeds(socialCreditEmbed).queue();
                             }
                         } else {
@@ -136,11 +139,12 @@ public class SocialCredit extends BaseCommand {
             if (checkSlashCommandPermissions(event, socialCreditCommandPermissions)) {
                 String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
                 int amount = event.getOption("amount", 0, OptionMapping::getAsInt);
+                String reason = event.getOption("reason", "", OptionMapping::getAsString);
                 if (amount == 0) { // credit check
                     event.reply(checkSocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()))).queue();
                 } else {
                     if (checkSlashCommandPermissions(event, adminPermissions)) {
-                        MessageEmbed socialCreditEmbed = modifySocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()), amount);
+                        MessageEmbed socialCreditEmbed = modifySocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()), amount, reason);
                         event.replyEmbeds(socialCreditEmbed).queue();
                     } else {
                         int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());

@@ -91,7 +91,8 @@ public class Cashew {
                 Commands.slash("kromer", "Sends you a random kromer gif"),
                 Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
                         .addOption(USER,"user","User to check or modify social credit of (to check yours, leave blank)")
-                        .addOption(INTEGER, "amount", "Amount of social credit to add or subtract"),
+                        .addOption(INTEGER, "amount", "Amount of social credit to add or subtract")
+                        .addOption(STRING, "reason", "Reason for adding or removing social credit"),
                 Commands.slash("scheduler", "Message scheduler command")
                         .addSubcommands(new SubcommandData("add", "Schedule a new message")
                                 .addOption(CHANNEL, "channel", "Destination channel of the message", true, false)
