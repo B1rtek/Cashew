@@ -39,7 +39,7 @@ public class Counter extends BaseReaction {
             }
             if (result != current + 1) {
                 event.getMessage().addReaction("❌").queue();
-                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
+                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up by writing ` " + result + " `! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
                 database.setCount(new CountingInfo(true, " ", 0, " "), event.getChannel().getId());
             } else {
                 String reactionEmote = "✅";
