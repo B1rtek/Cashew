@@ -135,7 +135,7 @@ public class Gifts extends BaseCommand {
                         event.replyEmbeds(giftEmbed).setEphemeral(true).queue();
                     }
                 } else {
-                    event.reply("Something went wrong while executing this comand").setEphemeral(true).queue();
+                    event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
                 }
             } else if (event.getSubcommandName().equals("stats")) {
                 String targetUserID = event.getOption("user", "", OptionMapping::getAsString);
@@ -148,7 +148,7 @@ public class Gifts extends BaseCommand {
                         event.replyEmbeds(statsEmbed).setEphemeral(true).queue();
                     }
                 } else {
-                    event.reply("Something went wrong while executing this comand").setEphemeral(true).queue();
+                    event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
                 }
             }
         }
