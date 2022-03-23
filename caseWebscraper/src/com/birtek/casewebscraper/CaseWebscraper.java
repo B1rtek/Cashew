@@ -53,7 +53,7 @@ public class CaseWebscraper {
         return this.skins;
     }
 
-    public String getKnives() {
+    public String getKnivesUrl() {
         return knifeUrl;
     }
 
