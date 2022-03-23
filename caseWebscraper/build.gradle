@@ -1,0 +1,15 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'casewebscraper.Webscraper'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 17
+targetCompatibility = 17
+
+dependencies {
+    implementation 'org.jsoup:jsoup:1.14.1'
+}
