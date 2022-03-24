@@ -15,18 +15,34 @@ public class CaseWebscraper {
     String caseName, caseUrl, caseImageUrl, knifeUrl;
     String type;
 
+    public CaseWebscraper() {
+
+    }
+
     public CaseWebscraper(String url) {
-        System.out.println("Starting " + url);
         try {
-            doc = Jsoup.connect(url).get();
-            caseUrl = url;
-            scrapeInfo();
-            System.out.println(caseName);
-            scrapeItems();
-            findKnifeUrl();
+            analyze(url);
         } catch (IOException e) {
             System.err.println("Failed to connect to " + url);
         }
+    }
+
+    public void analyze(String url) throws IOException {
+        skins.clear();
+        System.out.println("Starting " + url);
+        doc = Jsoup.connect(url).get();
+        if (invalidPage()) {
+            System.err.println("Invalid URL");
+            return;
+        }
+        caseUrl = url;
+        scrapeInfo();
+        scrapeItems();
+        findKnifeUrl();
+    }
+
+    private boolean invalidPage() {
+        return doc.select(".alert.alert-dismissible.alert-danger.fade.in.text-center").size() > 0;
     }
 
     private void scrapeInfo() {
@@ -72,5 +88,11 @@ public class CaseWebscraper {
 
     public String getType() {
         return type;
+    }
+
+    public String getInfo() {
+        return "Target: " + caseName + "\n" +
+                "Url: " + caseUrl + "\n" +
+                "Image URL: " + caseImageUrl;
     }
 }
