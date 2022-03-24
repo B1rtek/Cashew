@@ -49,19 +49,23 @@ public class CaseWebscraper {
         ArrayList<Element> elements = doc.select(".inline-middle.collapsed-top-margin, h1");
         ArrayList<Element> subelements = elements.get(0).getElementsByTag("h1");
         caseName = subelements.get(0).text();
-        if (caseName.contains("Case")) {
-            type = "case";
-        } else if (caseName.contains("Collection")) {
-            type = "collection";
-        } else if (caseName.contains("Capsule")) {
-            type = "capsule";
+        if (caseUrl.contains("Gloves")) {
+            type = "gloves";
+        } else {
+            if (caseName.contains("Case")) {
+                type = "case";
+            } else if (caseName.contains("Collection")) {
+                type = "collection";
+            } else if (caseName.contains("Capsule")) {
+                type = "capsule";
+            }
         }
         elements = doc.select(".content-header-img-margin");
         caseImageUrl = elements.get(0).attributes().get("src");
     }
 
     private void scrapeItems() {
-        String containing = type.equals("capsule") ? "/sticker/" : "/skin/";
+        String containing = type.equals("capsule") ? "/sticker/" : (type.equals("gloves") ? "/glove/" : "/skin/");
         ArrayList<Element> elements = doc.select(".well.result-box.nomargin");
         for (int i = 1; i < elements.size(); i++) {
             ArrayList<Element> linkElements = elements.get(i).getElementsByAttributeValueContaining("href", containing);
