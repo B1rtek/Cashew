@@ -11,13 +11,15 @@ public class Webscraper {
             CaseWebscraper caseWebscraper = new CaseWebscraper(target);
             ArrayList<String> skins = caseWebscraper.getItems();
             String knifeUrl = caseWebscraper.getKnivesUrl();
-            System.out.println("Found skins:");
+            System.out.println("Found items:");
             for (String skin : skins) {
                 System.out.println(skin);
             }
-            System.out.println("Knives: " + knifeUrl);
+            if(caseWebscraper.getType().equals("case")) {
+                System.out.println("Knives: " + knifeUrl);
+            }
             System.out.println("Downloading skin data...");
-            SkinWebscraper skinWebscraper = new SkinWebscraper();
+            SkinWebscraper skinWebscraper = new SkinWebscraper(caseWebscraper.getType());
             for (String skin : skins) {
                 skinWebscraper.analyze(skin);
                 System.out.println(skinWebscraper.getInfo());

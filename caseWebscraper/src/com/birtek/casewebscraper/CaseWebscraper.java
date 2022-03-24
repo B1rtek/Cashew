@@ -13,6 +13,7 @@ public class CaseWebscraper {
     Document doc;
 
     String caseName, caseUrl, caseImageUrl, knifeUrl;
+    String type;
 
     public CaseWebscraper(String url) {
         System.out.println("Starting " + url);
@@ -20,7 +21,8 @@ public class CaseWebscraper {
             doc = Jsoup.connect(url).get();
             caseUrl = url;
             scrapeInfo();
-            scrapeSkins();
+            System.out.println(caseName);
+            scrapeItems();
             findKnifeUrl();
         } catch (IOException e) {
             System.err.println("Failed to connect to " + url);
@@ -28,28 +30,39 @@ public class CaseWebscraper {
     }
 
     private void scrapeInfo() {
-        ArrayList<Element> elements = doc.select(".margin-top-sm");
-        caseName = elements.get(0).tagName("h1").text();
+        ArrayList<Element> elements = doc.select(".inline-middle.collapsed-top-margin, h1");
+        ArrayList<Element> subelements = elements.get(0).getElementsByTag("h1");
+        caseName = subelements.get(0).text();
+        if (caseName.contains("Case")) {
+            type = "case";
+        } else if (caseName.contains("Collection")) {
+            type = "collection";
+        } else if (caseName.contains("Capsule")) {
+            type = "capsule";
+        }
         elements = doc.select(".content-header-img-margin");
         caseImageUrl = elements.get(0).attributes().get("src");
     }
 
-    private void scrapeSkins() {
+    private void scrapeItems() {
+        String containing = type.equals("capsule") ? "/sticker/" : "/skin/";
         ArrayList<Element> elements = doc.select(".well.result-box.nomargin");
-        for (int i=1; i<elements.size(); i++) {
-            ArrayList<Element> linkElements = elements.get(i).getElementsByAttributeValueContaining("href", "/skin/");
-            if(!linkElements.isEmpty()) {
+        for (int i = 1; i < elements.size(); i++) {
+            ArrayList<Element> linkElements = elements.get(i).getElementsByAttributeValueContaining("href", containing);
+            if (!linkElements.isEmpty()) {
                 skins.add(linkElements.get(0).attributes().get("href"));
             }
         }
     }
 
     private void findKnifeUrl() {
-        ArrayList<Element> elements = doc.select(".well.result-box.nomargin");
-        knifeUrl = elements.get(0).getElementsByTag("a").get(0).attributes().get("href");
+        if (type.equals("case")) {
+            ArrayList<Element> elements = doc.select(".well.result-box.nomargin");
+            knifeUrl = elements.get(0).getElementsByTag("a").get(0).attributes().get("href");
+        }
     }
 
-    public ArrayList<String> getSkins() {
+    public ArrayList<String> getItems() {
         return this.skins;
     }
 
@@ -57,4 +70,7 @@ public class CaseWebscraper {
         return knifeUrl;
     }
 
+    public String getType() {
+        return type;
+    }
 }

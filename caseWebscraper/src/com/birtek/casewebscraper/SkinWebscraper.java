@@ -5,31 +5,37 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Map;
+
+import static java.util.Map.entry;
 
 public class SkinWebscraper {
 
     private int caseID, rarity;
-    private String name, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS;
+    private String name, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS, url;
     private double minFloat, maxFloat;
     Document doc;
+    String type;
 
-    private static final ArrayList<String> rarityTranslator = new ArrayList<String>() {
-        {
-            add("Consumer");
-            add("Industrial");
-            add("Mil-Spec");
-            add("Restricted");
-            add("Classified");
-            add("Covert");
-        }
-    };
+    private static final Map<String, Integer> rarityTranslator = Map.ofEntries(
+            entry("Consumer", 0),
+            entry("Industrial", 1),
+            entry("Mil-Spec", 2),
+            entry("Restricted", 3),
+            entry("Classified", 4),
+            entry("Covert", 5),
+            entry("Remarkable", 3),
+            entry("High Grade", 2),
+            entry("Exotic", 4)
+            );
 
-    public SkinWebscraper() {
-
+    public SkinWebscraper(String type) {
+        this.type = type;
     }
 
-    void clear() {
+    private void clear() {
         caseID = 0;
         rarity = -1;
         name = null;
@@ -48,27 +54,30 @@ public class SkinWebscraper {
         maxFloat = -1;
     }
 
-    boolean analyze(String url) {
+    public void analyze(String url) {
         clear();
         try {
             doc = Jsoup.connect(url).get();
         } catch (IOException e) {
             System.err.println("Couldn't connect to " + url);
-            return false;
+            return;
         }
         findRarity();
         findName();
-        findSkinInfo();
+        if (!type.equals("capsule")) {
+            findSkinInfo();
+        }
         findImages();
-        return true;
+        this.url = url;
     }
 
     private void findRarity() {
         Element element = doc.select("a .nounderline, .quality, p .nomargin").get(0);
         String rarityString = element.text();
-        for (int i = 0; i < rarityTranslator.size(); i++) {
-            if (rarityString.contains(rarityTranslator.get(i))) {
-                rarity = i;
+        String[] keys = rarityTranslator.keySet().toArray(new String[0]);
+        for (String key : keys) {
+            if (rarityString.contains(key)) {
+                rarity = rarityTranslator.get(key);
                 break;
             }
         }
@@ -102,9 +111,15 @@ public class SkinWebscraper {
     private void findImages() {
         ArrayList<Element> inspectButtons = doc.select("div .btn-group-sm.btn-group-justified").get(0).children();
         for (Element button : inspectButtons) {
-            String quality = button.text().substring(9, 11);
+            String quality = "FN";
+            if (!type.equals("capsule")) {
+                quality = button.text().substring(9, 11);
+            }
             String inspectLink = button.attributes().get("href");
             String wearImg = button.attributes().get("data-hoverimg");
+            if (type.equals("capsule")) {
+                wearImg = findCapsuleImage();
+            }
             switch (quality) {
                 case "FN" -> {
                     wearImg1 = wearImg;
@@ -130,21 +145,35 @@ public class SkinWebscraper {
         }
     }
 
+    private String findCapsuleImage() {
+        Element element = doc.select(".img-responsive.center-block.item-details-img").get(0);
+        return element.attributes().get("src");
+    }
+
     String getInfo() {
-        return "--------------------------------------------------------------------------------\n" +
-                "Skin " + name + ": \n" +
-                "   Rarity: " + rarity + "\n" +
-                "   Float range: " + minFloat + " - " + maxFloat + "\n" +
-                "   Description: " + description + "\n" +
-                "   Flavor text: " + flavorText + "\n" +
-                "   Finish style: " + finishStyle + "\n" +
-                "   Image (FN, MW): " + wearImg1 + "\n" +
-                "   Image (FT, WW): " + wearImg2 + "\n" +
-                "   Image (BS): " + wearImg3 + "\n" +
-                "   Inspect (FN): " + inspectFN + "\n" +
-                "   Inspect (MW): " + inspectMW + "\n" +
-                "   Inspect (FT): " + inspectFT + "\n" +
-                "   Inspect (WW): " + inspectWW + "\n" +
-                "   Inspect (BS): " + inspectBS;
+        if (!type.equals("capsule")) {
+            return "--------------------------------------------------------------------------------\n" +
+                    "Skin " + name + ": \n" +
+                    "   Rarity: " + rarity + "\n" +
+                    "   Float range: " + minFloat + " - " + maxFloat + "\n" +
+                    "   Description: " + description + "\n" +
+                    "   Flavor text: " + flavorText + "\n" +
+                    "   Finish style: " + finishStyle + "\n" +
+                    "   Image (FN, MW): " + wearImg1 + "\n" +
+                    "   Image (FT, WW): " + wearImg2 + "\n" +
+                    "   Image (BS): " + wearImg3 + "\n" +
+                    "   Inspect (FN): " + inspectFN + "\n" +
+                    "   Inspect (MW): " + inspectMW + "\n" +
+                    "   Inspect (FT): " + inspectFT + "\n" +
+                    "   Inspect (WW): " + inspectWW + "\n" +
+                    "   Inspect (BS): " + inspectBS;
+        } else {
+            return "--------------------------------------------------------------------------------\n" +
+                    name + ": \n" +
+                    "   Rarity: " + rarity + "\n" +
+                    "   Image: " + wearImg1 + "\n" +
+                    "   Inspect: " + inspectFN;
+        }
+
     }
 }
