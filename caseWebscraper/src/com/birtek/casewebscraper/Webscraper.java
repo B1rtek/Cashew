@@ -9,7 +9,7 @@ public class Webscraper {
         ArrayList<String> targets = targetLoader.getTargets();
         for (String target : targets) {
             CaseWebscraper caseWebscraper = new CaseWebscraper(target);
-            ArrayList<String> skins = caseWebscraper.getSkins();
+            ArrayList<String> skins = caseWebscraper.getItems();
             String knifeUrl = caseWebscraper.getKnivesUrl();
             System.out.println("Found skins:");
             for (String skin : skins) {
