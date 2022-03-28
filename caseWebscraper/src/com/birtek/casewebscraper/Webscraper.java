@@ -32,6 +32,11 @@ public class Webscraper {
                 for (String knife : knives) {
                     System.out.println(knife);
                 }
+                System.out.println("Downloading knife data...");
+                for (String knife : knives) {
+                    skinWebscraper.analyze(knife);
+                    System.out.println(skinWebscraper.getInfo());
+                }
             }
         }
     }

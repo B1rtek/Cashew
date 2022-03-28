@@ -29,7 +29,7 @@ public class SkinWebscraper {
             entry("Remarkable", 3),
             entry("High Grade", 2),
             entry("Exotic", 4)
-            );
+    );
 
     public SkinWebscraper(String type) {
         this.type = type;
@@ -89,16 +89,20 @@ public class SkinWebscraper {
 
     private void findSkinInfo() {
         ArrayList<Element> elements = doc.select(".well.text-left.wear-well, .skin-misc-details");
-        findFloats(elements.get(0));
-        createDescription(elements.get(1).children().get(1).text());
-        flavorText = elements.get(1).children().get(2).getElementsByTag("em").get(0).text();
-        finishStyle = elements.get(1).children().get(3).getElementsByTag("span").get(0).text();
+        if (elements.size() > 2) {
+            findFloats(elements.get(0));
+            createDescription(elements.get(1).children().get(1).text());
+            flavorText = elements.get(1).children().get(2).getElementsByTag("em").get(0).text();
+            finishStyle = elements.get(1).children().get(3).getElementsByTag("span").get(0).text();
+        }
     }
 
     private void findFloats(Element element) {
         ArrayList<Element> markers = element.getElementsByTag("div").get(0).getElementsByClass("marker-wrapper");
-        minFloat = Double.parseDouble(markers.get(0).text());
-        maxFloat = Double.parseDouble(markers.get(1).text());
+        if (!markers.isEmpty()) {
+            minFloat = Double.parseDouble(markers.get(0).text());
+            maxFloat = Double.parseDouble(markers.get(1).text());
+        }
     }
 
     void createDescription(String candidate) {
@@ -119,6 +123,9 @@ public class SkinWebscraper {
             String wearImg = button.attributes().get("data-hoverimg");
             if (type.equals("capsule")) {
                 wearImg = findCapsuleImage();
+            } else if (name.contains("★ (Vanilla)")) {
+                wearImg = findVanillaKnifeImage();
+                quality = "FN";
             }
             switch (quality) {
                 case "FN" -> {
@@ -146,8 +153,11 @@ public class SkinWebscraper {
     }
 
     private String findCapsuleImage() {
-        Element element = doc.select(".img-responsive.center-block.item-details-img").get(0);
-        return element.attributes().get("src");
+        return doc.select(".img-responsive.center-block.item-details-img").get(0).attributes().get("src");
+    }
+
+    private String findVanillaKnifeImage() {
+        return doc.select(".img-responsive.center-block.main-skin-img.margin-top-sm.margin-bot-sm").get(0).attributes().get("src");
     }
 
     String getInfo() {
