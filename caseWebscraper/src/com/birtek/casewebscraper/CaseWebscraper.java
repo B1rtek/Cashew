@@ -16,6 +16,7 @@ public class CaseWebscraper {
 
     String caseName, caseUrl, caseImageUrl, knifeUrl;
     String type;
+    int caseId, knifeGroup;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CaseWebscraper.class);
 
@@ -99,8 +100,19 @@ public class CaseWebscraper {
     }
 
     public String getInfo() {
-        return "Target: " + caseName + "\n" +
-                "Url: " + caseUrl + "\n" +
-                "Image URL: " + caseImageUrl;
+        return "Target: " + caseName + ", " + caseUrl + ", CID: " + caseId + ", KG: " + knifeGroup;
+    }
+
+    public void setCaseId(int id) {
+        caseId = id;
+    }
+
+    public void setKnifeGroup(int group) {
+        knifeGroup = group;
+    }
+
+    public boolean saveToDatabase() {
+        Database database = Database.getInstance();
+        return database.saveCaseToDatabase(caseName, caseUrl, caseImageUrl, knifeGroup);
     }
 }

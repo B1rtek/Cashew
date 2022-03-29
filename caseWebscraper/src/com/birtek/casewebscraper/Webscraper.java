@@ -10,6 +10,7 @@ public class Webscraper {
     private static final Logger LOGGER = LoggerFactory.getLogger(Webscraper.class);
 
     public static void main(String[] args) {
+        Database database = Database.getInstance();
         TargetLoader targetLoader = new TargetLoader();
         targetLoader.load();
         ArrayList<String> targets = targetLoader.getTargets();
@@ -17,6 +18,18 @@ public class Webscraper {
             CaseWebscraper caseWebscraper = new CaseWebscraper(target);
             ArrayList<String> skins = caseWebscraper.getItems();
             String knifeUrl = caseWebscraper.getKnivesUrl();
+            int containerId = database.getContainerId(caseWebscraper.getType());
+            int knifeGroup = database.getKnifeGroup(knifeUrl);
+            if(containerId == 0 || knifeGroup == 0) {
+                LOGGER.warn("Case ID of knife group set to 0, skipping...");
+                continue;
+            }
+            caseWebscraper.setCaseId(containerId);
+            caseWebscraper.setKnifeGroup(knifeGroup);
+            if(!caseWebscraper.saveToDatabase()) {
+                LOGGER.error("Inserting case definition into the database failed!");
+                continue;
+            }
             LOGGER.info(caseWebscraper.getInfo());
             LOGGER.info("Found items:");
             for (String skin : skins) {
