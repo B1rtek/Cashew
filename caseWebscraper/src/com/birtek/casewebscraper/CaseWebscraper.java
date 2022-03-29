@@ -113,6 +113,6 @@ public class CaseWebscraper {
 
     public boolean saveToDatabase() {
         Database database = Database.getInstance();
-        return database.saveCaseToDatabase(caseName, caseUrl, caseImageUrl, knifeGroup);
+        return database.saveContainerToDatabase(type, caseName, caseUrl, caseImageUrl, knifeGroup);
     }
 }

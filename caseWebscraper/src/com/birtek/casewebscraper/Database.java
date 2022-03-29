@@ -80,12 +80,12 @@ public final class Database {
     public int getContainerId(String type) {
         try {
             PreparedStatement preparedStatement = null;
-            switch(type) {
+            switch (type) {
                 case "case" -> preparedStatement = casesConnection.prepareStatement("SELECT Count(*) FROM Cases");
                 case "collection" -> preparedStatement = collectionsConnection.prepareStatement("SELECT Count(*) FROM Collections ");
                 case "capsule" -> preparedStatement = capsulesConnection.prepareStatement("SELECT Count(*) FROM Capsules");
             }
-            if(preparedStatement == null) {
+            if (preparedStatement == null) {
                 LOGGER.error("Null prepared statement in getCaseId()!");
                 return 0;
             }
@@ -141,14 +141,74 @@ public final class Database {
         }
     }
 
-    public boolean saveCaseToDatabase(String caseName, String caseUrl, String caseImageUrl, int knifeGroup) {
+    public boolean saveContainerToDatabase(String type, String caseName, String caseUrl, String caseImageUrl, int knifeGroup) {
         try {
-            PreparedStatement preparedStatement = casesConnection.prepareStatement("INSERT INTO Cases(name, url, imageUrl, knifeGroup) VALUES(?, ?, ?, ?)");
+            PreparedStatement preparedStatement = null;
+            switch (type) {
+                case "case" -> {
+                    preparedStatement = casesConnection.prepareStatement("INSERT INTO Cases(name, url, imageUrl, knifeGroup) VALUES(?, ?, ?, ?)");
+                    preparedStatement.setInt(4, knifeGroup);
+                }
+                case "collection" -> {
+                    preparedStatement = collectionsConnection.prepareStatement("INSERT INTO Collections(name, url, imageUrl) VALUES(?, ?, ?)");
+                }
+                case "capsule" -> {
+                    preparedStatement = capsulesConnection.prepareStatement("INSERT INTO Capsules(name, url, imageUrl) VALUES(?, ?, ?)");
+                }
+            }
+            if (preparedStatement == null) {
+                LOGGER.error("Null prepared statement in saveContainerToDatabase()!");
+                return false;
+            }
             preparedStatement.setString(1, caseName);
             preparedStatement.setString(2, caseUrl);
             preparedStatement.setString(3, caseImageUrl);
-            preparedStatement.setInt(4, knifeGroup);
             return preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean saveItemToDatabase(SkinWebscraper skinWebscraper) {
+        try {
+            if(skinWebscraper.getCaseID() == 0) {
+                LOGGER.error("Container ID 0 in saveItemToDatabase()!");
+                return false;
+            }
+            PreparedStatement preparedStatement = null;
+            switch (skinWebscraper.getType()) {
+                case "case" -> preparedStatement = casesConnection.prepareStatement("INSERT INTO Skins(caseId, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                case "collection" -> preparedStatement = collectionsConnection.prepareStatement("INSERT INTO Skins(collectionId, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                case "capsule" -> preparedStatement = capsulesConnection.prepareStatement("INSERT INTO Stickers(capsuleId, name, rarity, imageUrl, inspectUrl) VALUES(?, ?, ?, ?, ?)");
+                case "gloves", "knife" -> preparedStatement = casesConnection.prepareStatement("INSERT INTO Knives(knifeGroup, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            }
+            if (preparedStatement == null) {
+                LOGGER.error("Null prepared statement in saveItemToDatabase()!");
+                return false;
+            }
+            preparedStatement.setInt(1, skinWebscraper.getCaseID());
+            preparedStatement.setString(2, skinWebscraper.getName());
+            preparedStatement.setInt(3, skinWebscraper.getRarity());
+            if(skinWebscraper.getType().equals("capsule")) {
+                preparedStatement.setString(4, skinWebscraper.getWearImg1());
+                preparedStatement.setString(5, skinWebscraper.getInspectFN());
+            } else {
+                preparedStatement.setDouble(4, skinWebscraper.getMinFloat());
+                preparedStatement.setDouble(5, skinWebscraper.getMaxFloat());
+                preparedStatement.setString(6, skinWebscraper.getDescription());
+                preparedStatement.setString(7, skinWebscraper.getFlavorText());
+                preparedStatement.setString(8, skinWebscraper.getFinishStyle());
+                preparedStatement.setString(9, skinWebscraper.getWearImg1());
+                preparedStatement.setString(10, skinWebscraper.getWearImg2());
+                preparedStatement.setString(11, skinWebscraper.getWearImg3());
+                preparedStatement.setString(12, skinWebscraper.getInspectFN());
+                preparedStatement.setString(13, skinWebscraper.getInspectMW());
+                preparedStatement.setString(14, skinWebscraper.getInspectFT());
+                preparedStatement.setString(15, skinWebscraper.getInspectWW());
+                preparedStatement.setString(16, skinWebscraper.getInspectBS());
+            }
+            return preparedStatement.executeUpdate() != 0;
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
             return false;

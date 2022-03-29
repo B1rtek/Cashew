@@ -163,6 +163,95 @@ public class SkinWebscraper {
         return doc.select(".img-responsive.center-block.main-skin-img.margin-top-sm.margin-bot-sm").get(0).attributes().get("src");
     }
 
+    public void setCaseID(int caseId) {
+        caseID = caseId;
+    }
+
+    public boolean saveToDatabase() {
+        Database database = Database.getInstance();
+        return database.saveItemToDatabase(this);
+    }
+
+    public int getCaseID() {
+        return caseID;
+    }
+
+    public int getRarity() {
+        return rarity;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getFlavorText() {
+        return flavorText;
+    }
+
+    public String getFinishStyle() {
+        return finishStyle;
+    }
+
+    public String getWearImg1() {
+        return wearImg1;
+    }
+
+    public String getWearImg2() {
+        return wearImg2;
+    }
+
+    public String getWearImg3() {
+        return wearImg3;
+    }
+
+    public String getInspectFN() {
+        return inspectFN;
+    }
+
+    public String getInspectMW() {
+        return inspectMW;
+    }
+
+    public String getInspectFT() {
+        return inspectFT;
+    }
+
+    public String getInspectWW() {
+        return inspectWW;
+    }
+
+    public String getInspectBS() {
+        return inspectBS;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public double getMinFloat() {
+        return minFloat;
+    }
+
+    public double getMaxFloat() {
+        return maxFloat;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setContainerId(int id) {
+        this.caseID = id;
+    }
+
     String getInfo() {
         if (!type.equals("capsule")) {
             return "Skin " + name + ": \n" +

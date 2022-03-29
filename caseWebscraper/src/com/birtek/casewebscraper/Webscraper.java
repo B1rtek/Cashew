@@ -39,6 +39,8 @@ public class Webscraper {
             SkinWebscraper skinWebscraper = new SkinWebscraper(caseWebscraper.getType());
             for (String skin : skins) {
                 skinWebscraper.analyze(skin);
+
+                if(!skinWebscraper.saveToDatabase())
                 LOGGER.info(skinWebscraper.getInfo());
             }
             if (caseWebscraper.getType().equals("case")) {
@@ -52,6 +54,7 @@ public class Webscraper {
                     LOGGER.info(knife);
                 }
                 LOGGER.info("Downloading knife data...");
+                skinWebscraper.setType("knife");
                 for (String knife : knives) {
                     skinWebscraper.analyze(knife);
                     LOGGER.info(skinWebscraper.getInfo());
