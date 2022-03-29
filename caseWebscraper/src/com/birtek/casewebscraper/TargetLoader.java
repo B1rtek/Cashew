@@ -1,5 +1,8 @@
 package com.birtek.casewebscraper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -7,6 +10,8 @@ import java.util.Scanner;
 
 public class TargetLoader {
     ArrayList<String> targets;
+    private static final Logger LOGGER = LoggerFactory.getLogger(TargetLoader.class);
+
 
     public TargetLoader() {
         targets = new ArrayList<>();
@@ -21,7 +26,7 @@ public class TargetLoader {
             }
             reader.close();
         } catch (FileNotFoundException e) {
-            System.err.println("Missing targets.txt");
+            LOGGER.error("Missing targets.txt");
         }
     }
 

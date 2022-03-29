@@ -3,6 +3,8 @@ package com.birtek.casewebscraper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +17,8 @@ public class CaseWebscraper {
     String caseName, caseUrl, caseImageUrl, knifeUrl;
     String type;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaseWebscraper.class);
+
     public CaseWebscraper() {
 
     }
@@ -23,16 +27,16 @@ public class CaseWebscraper {
         try {
             analyze(url);
         } catch (IOException e) {
-            System.err.println("Failed to connect to " + url);
+            LOGGER.error("Failed to connect to " + url);
         }
     }
 
     public void analyze(String url) throws IOException {
         skins.clear();
-        System.out.println("Starting " + url);
+        LOGGER.info("Starting " + url);
         doc = Jsoup.connect(url).get();
         if (invalidPage()) {
-            System.err.println("Invalid URL");
+            LOGGER.error("Invalid URL");
             return;
         }
         caseUrl = url;

@@ -1,8 +1,14 @@
 package com.birtek.casewebscraper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 
 public class Webscraper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Webscraper.class);
+
     public static void main(String[] args) {
         TargetLoader targetLoader = new TargetLoader();
         targetLoader.load();
@@ -11,31 +17,31 @@ public class Webscraper {
             CaseWebscraper caseWebscraper = new CaseWebscraper(target);
             ArrayList<String> skins = caseWebscraper.getItems();
             String knifeUrl = caseWebscraper.getKnivesUrl();
-            System.out.println(caseWebscraper.getInfo());
-            System.out.println("Found items:");
+            LOGGER.info(caseWebscraper.getInfo());
+            LOGGER.info("Found items:");
             for (String skin : skins) {
-                System.out.println(skin);
+                LOGGER.info(skin);
             }
-            System.out.println("Downloading skin data...");
+            LOGGER.info("Downloading skin data...");
             SkinWebscraper skinWebscraper = new SkinWebscraper(caseWebscraper.getType());
             for (String skin : skins) {
                 skinWebscraper.analyze(skin);
-                System.out.println(skinWebscraper.getInfo());
+                LOGGER.info(skinWebscraper.getInfo());
             }
             if (caseWebscraper.getType().equals("case")) {
-                System.out.println("Knives @: " + knifeUrl);
-                System.out.println("Scraping knife list...");
+                LOGGER.info("Knives @: " + knifeUrl);
+                LOGGER.info("Scraping knife list...");
                 KnivesWebscraper knivesWebscraper = new KnivesWebscraper(knifeUrl);
                 ArrayList<String> knives = knivesWebscraper.getItems();
-                System.out.println(knivesWebscraper.getInfo());
-                System.out.println("Found knives:");
+                LOGGER.info(knivesWebscraper.getInfo());
+                LOGGER.info("Found knives:");
                 for (String knife : knives) {
-                    System.out.println(knife);
+                    LOGGER.info(knife);
                 }
-                System.out.println("Downloading knife data...");
+                LOGGER.info("Downloading knife data...");
                 for (String knife : knives) {
                     skinWebscraper.analyze(knife);
-                    System.out.println(skinWebscraper.getInfo());
+                    LOGGER.info(skinWebscraper.getInfo());
                 }
             }
         }

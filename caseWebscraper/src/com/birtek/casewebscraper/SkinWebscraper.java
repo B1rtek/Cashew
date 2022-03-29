@@ -3,9 +3,10 @@ package com.birtek.casewebscraper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -18,6 +19,8 @@ public class SkinWebscraper {
     private double minFloat, maxFloat;
     Document doc;
     String type;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SkinWebscraper.class);
 
     private static final Map<String, Integer> rarityTranslator = Map.ofEntries(
             entry("Consumer", 0),
@@ -59,7 +62,7 @@ public class SkinWebscraper {
         try {
             doc = Jsoup.connect(url).get();
         } catch (IOException e) {
-            System.err.println("Couldn't connect to " + url);
+            LOGGER.error("Couldn't connect to " + url);
             return;
         }
         findRarity();
@@ -162,8 +165,7 @@ public class SkinWebscraper {
 
     String getInfo() {
         if (!type.equals("capsule")) {
-            return "--------------------------------------------------------------------------------\n" +
-                    "Skin " + name + ": \n" +
+            return "Skin " + name + ": \n" +
                     "   Rarity: " + rarity + "\n" +
                     "   Float range: " + minFloat + " - " + maxFloat + "\n" +
                     "   Description: " + description + "\n" +
@@ -178,8 +180,7 @@ public class SkinWebscraper {
                     "   Inspect (WW): " + inspectWW + "\n" +
                     "   Inspect (BS): " + inspectBS;
         } else {
-            return "--------------------------------------------------------------------------------\n" +
-                    name + ": \n" +
+            return name + ": \n" +
                     "   Rarity: " + rarity + "\n" +
                     "   Image: " + wearImg1 + "\n" +
                     "   Inspect: " + inspectFN;
