@@ -19,13 +19,11 @@ public class Webscraper {
             ArrayList<String> skins = caseWebscraper.getItems();
             String knifeUrl = caseWebscraper.getKnivesUrl();
             int containerId = database.getContainerId(caseWebscraper.getType());
-            int knifeGroup = database.getKnifeGroup(knifeUrl);
-            if(containerId == 0 || knifeGroup == 0) {
-                LOGGER.warn("Case ID of knife group set to 0, skipping...");
+            if(containerId == 0) {
+                LOGGER.warn("Case ID set to 0, skipping...");
                 continue;
             }
             caseWebscraper.setCaseId(containerId);
-            caseWebscraper.setKnifeGroup(knifeGroup);
             if(!caseWebscraper.saveToDatabase()) {
                 LOGGER.error("Inserting case definition into the database failed!");
                 continue;
@@ -39,9 +37,11 @@ public class Webscraper {
             SkinWebscraper skinWebscraper = new SkinWebscraper(caseWebscraper.getType());
             for (String skin : skins) {
                 skinWebscraper.analyze(skin);
-
-                if(!skinWebscraper.saveToDatabase())
+                skinWebscraper.setCaseID(containerId);
                 LOGGER.info(skinWebscraper.getInfo());
+                if(!skinWebscraper.saveToDatabase()) {
+                    LOGGER.warn("Failed to save this item to the database!");
+                }
             }
             if (caseWebscraper.getType().equals("case")) {
                 LOGGER.info("Knives @: " + knifeUrl);
@@ -53,11 +53,25 @@ public class Webscraper {
                 for (String knife : knives) {
                     LOGGER.info(knife);
                 }
+                if(knives.isEmpty()) {
+                    LOGGER.error("No knives found, skipping");
+                    continue;
+                }
                 LOGGER.info("Downloading knife data...");
                 skinWebscraper.setType("knife");
+                int knifeGroup = database.getKnifeGroup(knives.get(0));
+                if(knifeGroup == 0) {
+                    LOGGER.error("KnifeGroup set to 0, skipping");
+                    continue;
+                }
+                caseWebscraper.setKnifeGroup(knifeGroup);
                 for (String knife : knives) {
                     skinWebscraper.analyze(knife);
+                    skinWebscraper.setCaseID(knifeGroup);
                     LOGGER.info(skinWebscraper.getInfo());
+                    if(!skinWebscraper.saveToDatabase()) {
+                        LOGGER.warn("Failed to save this rare special item to the database!");
+                    }
                 }
             }
         }
