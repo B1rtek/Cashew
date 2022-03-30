@@ -147,7 +147,7 @@ public final class Database {
 
     private int getNewKnifeGroup() {
         try {
-            PreparedStatement preparedStatement = casesConnection.prepareStatement("SELECT DISTINCT _id FROM Knives");
+            PreparedStatement preparedStatement = casesConnection.prepareStatement("SELECT DISTINCT knifeGroup FROM Knives");
             ResultSet results = preparedStatement.executeQuery();
             return getNewIdFromResults(results);
         } catch (SQLException e) {

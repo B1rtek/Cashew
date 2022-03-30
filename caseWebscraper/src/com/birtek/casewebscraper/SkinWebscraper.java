@@ -31,7 +31,8 @@ public class SkinWebscraper {
             entry("Covert", 5),
             entry("Remarkable", 3),
             entry("High Grade", 2),
-            entry("Exotic", 4)
+            entry("Exotic", 4),
+            entry("Extraordinary", 5)
     );
 
     public SkinWebscraper(String type) {
