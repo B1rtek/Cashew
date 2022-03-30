@@ -65,6 +65,9 @@ public class CaseWebscraper {
                 type = "capsule";
             }
         }
+        if(caseUrl.contains("/stickers/") && type == null) {
+            type = "capsule";
+        }
         elements = doc.select(".content-header-img-margin");
         caseImageUrl = elements.get(0).attributes().get("src");
     }
