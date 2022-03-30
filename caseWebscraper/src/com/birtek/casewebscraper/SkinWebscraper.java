@@ -92,11 +92,14 @@ public class SkinWebscraper {
 
     private void findSkinInfo() {
         ArrayList<Element> elements = doc.select(".well.text-left.wear-well, .skin-misc-details");
-        if (elements.size() > 2) {
+        if (elements.size() >= 2) {
             findFloats(elements.get(0));
-            createDescription(elements.get(1).children().get(1).text());
-            flavorText = elements.get(1).children().get(2).getElementsByTag("em").get(0).text();
-            finishStyle = elements.get(1).children().get(3).getElementsByTag("span").get(0).text();
+            ArrayList<Element> children = elements.get(1).children();
+            for (Element element : children) {
+                if (description == null) description = getSkinDetail(element.text(), "Description: ");
+                if(flavorText == null ) flavorText = getSkinDetail(element.text(), "Flavor Text: ");
+                if(finishStyle == null) finishStyle = getSkinDetail(element.text(), "Finish Style: ");
+            }
         }
     }
 
@@ -108,11 +111,11 @@ public class SkinWebscraper {
         }
     }
 
-    void createDescription(String candidate) {
-        String bad = "Description: ";
-        if (candidate.startsWith(bad)) {
-            description = candidate.substring(bad.length());
+    private String getSkinDetail(String candidate, String toGet) {
+        if (candidate.startsWith(toGet)) {
+            return candidate.substring(toGet.length());
         }
+        return null;
     }
 
     private void findImages() {

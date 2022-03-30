@@ -56,17 +56,17 @@ public final class Database {
     private void createTables() {
         try {
             PreparedStatement casesCreate = casesConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Cases(_id INTEGER PRIMARY KEY, name TEXT, url TEXT, imageUrl TEXT, knifeGroup INTEGER)");
-            PreparedStatement skinsCreate = casesConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Skins(_id INTEGER PRIMARY KEY AUTOINCREMENT, caseId INTEGER, name TEXT, rarity INTEGER, minFloat REAL, maxFloat REAL, description TEXT, flavorText TEXT, finishStyle TEXT, wearImg1 TEXT, wearImg2 TEXT, wearImg3 TEXT, inspectFN TEXT, inspectMW TEXT, inspectFT TEXT, inspectWW TEXT, inspectBS TEXT)");
-            PreparedStatement knivesCreate = casesConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Knives(_id INTEGER PRIMARY KEY AUTOINCREMENT, knifeGroup INTEGER, name TEXT, rarity INTEGER, minFloat REAL, maxFloat REAL, description TEXT, flavorText TEXT, finishStyle TEXT, wearImg1 TEXT, wearImg2 TEXT, wearImg3 TEXT, inspectFN TEXT, inspectMW TEXT, inspectFT TEXT, inspectWW TEXT, inspectBS TEXT)");
+            PreparedStatement skinsCreate = casesConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Skins(_id INTEGER PRIMARY KEY AUTOINCREMENT, caseId INTEGER, name TEXT, rarity INTEGER, minFloat REAL, maxFloat REAL, description TEXT, flavorText TEXT, finishStyle TEXT, wearImg1 TEXT, wearImg2 TEXT, wearImg3 TEXT, inspectFN TEXT, inspectMW TEXT, inspectFT TEXT, inspectWW TEXT, inspectBS TEXT, stashUrl TEXT)");
+            PreparedStatement knivesCreate = casesConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Knives(_id INTEGER PRIMARY KEY AUTOINCREMENT, knifeGroup INTEGER, name TEXT, rarity INTEGER, minFloat REAL, maxFloat REAL, description TEXT, flavorText TEXT, finishStyle TEXT, wearImg1 TEXT, wearImg2 TEXT, wearImg3 TEXT, inspectFN TEXT, inspectMW TEXT, inspectFT TEXT, inspectWW TEXT, inspectBS TEXT, stashUrl TEXT)");
             casesCreate.execute();
             skinsCreate.execute();
             knivesCreate.execute();
             PreparedStatement collectionsCreate = collectionsConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Collections(_id INTEGER PRIMARY KEY, name TEXT, url TEXT, imageUrl TEXT)");
-            PreparedStatement colSkinsCreate = collectionsConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Skins(_id INTEGER PRIMARY KEY AUTOINCREMENT, collectionId INTEGER, name TEXT, rarity INTEGER, minFloat REAL, maxFloat REAL, description TEXT, flavorText TEXT, finishStyle TEXT, wearImg1 TEXT, wearImg2 TEXT, wearImg3 TEXT, inspectFN TEXT, inspectMW TEXT, inspectFT TEXT, inspectWW TEXT, inspectBS TEXT)");
+            PreparedStatement colSkinsCreate = collectionsConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Skins(_id INTEGER PRIMARY KEY AUTOINCREMENT, collectionId INTEGER, name TEXT, rarity INTEGER, minFloat REAL, maxFloat REAL, description TEXT, flavorText TEXT, finishStyle TEXT, wearImg1 TEXT, wearImg2 TEXT, wearImg3 TEXT, inspectFN TEXT, inspectMW TEXT, inspectFT TEXT, inspectWW TEXT, inspectBS TEXT, stashUrl TEXT)");
             collectionsCreate.execute();
             colSkinsCreate.execute();
             PreparedStatement capsulesCreate = capsulesConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Capsules(_id INTEGER PRIMARY KEY, name TEXT, url TEXT, imageUrl TEXT)");
-            PreparedStatement stickersCreate = capsulesConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Stickers(_od INTEGER PRIMARY KEY AUTOINCREMENT, capsuleId INTEGER, name TEXT, rarity INTEGER, imageUrl TEXT, inspectUrl TEXT)");
+            PreparedStatement stickersCreate = capsulesConnection.prepareStatement("CREATE TABLE IF NOT EXISTS Stickers(_id INTEGER PRIMARY KEY AUTOINCREMENT, capsuleId INTEGER, name TEXT, rarity INTEGER, imageUrl TEXT, inspectUrl TEXT, stashUrl TEXT)");
             capsulesCreate.execute();
             stickersCreate.execute();
         } catch (SQLException e) {
@@ -110,38 +110,38 @@ public final class Database {
         return newId;
     }
 
+    public boolean knifesAlreadyDone(String knifeUrl) {
+        try {
+            PreparedStatement preparedStatement = casesConnection.prepareStatement("SELECT _id FROM Knives WHERE stashUrl = ?");
+            preparedStatement.setString(1, knifeUrl);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results == null) {
+                LOGGER.warn("Couldn't check if knife already exist, defaulting to NO");
+                return false;
+            }
+            return results.next();
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage());
+            return false;
+        }
+    }
+
     public int getKnifeGroup(String knifeUrl) {
         try {
-            PreparedStatement preparedStatement = casesConnection.prepareStatement("SELECT _id FROM Knives WHERE url = ?");
+            PreparedStatement preparedStatement = casesConnection.prepareStatement("SELECT knifeGroup FROM Knives WHERE stashUrl = ?");
             preparedStatement.setString(1, knifeUrl);
             ResultSet results = preparedStatement.executeQuery();
             if (results == null) {
                 return 0;
             }
             if (results.next()) {
-                if(removeKnivesById(results.getInt(1))) {
-                    return results.getInt(1);
-                } else {
-                    LOGGER.error("There was an error while removing old knife entries");
-                    return 0;
-                }
+                return results.getInt(1);
             } else {
                 return getNewKnifeGroup();
             }
         } catch (SQLException e) {
             LOGGER.error(e.getMessage());
             return 0;
-        }
-    }
-
-    private boolean removeKnivesById(int id) {
-        try {
-            PreparedStatement preparedStatement = casesConnection.prepareStatement("DELETE FROM Knives WHERE _id = ?");
-            preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() != 0;
-        } catch (SQLException e) {
-            LOGGER.error(e.getMessage());
-            return false;
         }
     }
 
@@ -189,10 +189,10 @@ public final class Database {
             }
             PreparedStatement preparedStatement = null;
             switch (skinWebscraper.getType()) {
-                case "case" -> preparedStatement = casesConnection.prepareStatement("INSERT INTO Skins(caseId, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                case "collection" -> preparedStatement = collectionsConnection.prepareStatement("INSERT INTO Skins(collectionId, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                case "capsule" -> preparedStatement = capsulesConnection.prepareStatement("INSERT INTO Stickers(capsuleId, name, rarity, imageUrl, inspectUrl) VALUES(?, ?, ?, ?, ?)");
-                case "gloves", "knife" -> preparedStatement = casesConnection.prepareStatement("INSERT INTO Knives(knifeGroup, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                case "case" -> preparedStatement = casesConnection.prepareStatement("INSERT INTO Skins(caseId, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS, stashUrl) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                case "collection" -> preparedStatement = collectionsConnection.prepareStatement("INSERT INTO Skins(collectionId, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS, stashUrl) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                case "capsule" -> preparedStatement = capsulesConnection.prepareStatement("INSERT INTO Stickers(capsuleId, name, rarity, imageUrl, inspectUrl, stashUrl) VALUES(?, ?, ?, ?, ?, ?)");
+                case "gloves", "knife" -> preparedStatement = casesConnection.prepareStatement("INSERT INTO Knives(knifeGroup, name, rarity, minFloat, MaxFloat, description, flavorText, finishStyle, wearImg1, wearImg2, wearImg3, inspectFN, inspectMW, inspectFT, inspectWW, inspectBS, stashUrl) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             }
             if (preparedStatement == null) {
                 LOGGER.error("Null prepared statement in saveItemToDatabase()!");
@@ -204,6 +204,7 @@ public final class Database {
             if(skinWebscraper.getType().equals("capsule")) {
                 preparedStatement.setString(4, skinWebscraper.getWearImg1());
                 preparedStatement.setString(5, skinWebscraper.getInspectFN());
+                preparedStatement.setString(6, skinWebscraper.getUrl());
             } else {
                 preparedStatement.setDouble(4, skinWebscraper.getMinFloat());
                 preparedStatement.setDouble(5, skinWebscraper.getMaxFloat());
@@ -218,6 +219,7 @@ public final class Database {
                 preparedStatement.setString(14, skinWebscraper.getInspectFT());
                 preparedStatement.setString(15, skinWebscraper.getInspectWW());
                 preparedStatement.setString(16, skinWebscraper.getInspectBS());
+                preparedStatement.setString(17, skinWebscraper.getUrl());
             }
             return preparedStatement.executeUpdate() != 0;
         } catch (SQLException e) {
