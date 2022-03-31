@@ -24,6 +24,9 @@ public final class Database {
     public static final String SOCIALCREDIT_DB = "jdbc:sqlite:databases/socialCredit.db";
     public static final String COUNTING_DB = "jdbc:sqlite:databases/counting.db";
     public static final String GIFTS_DB = "jdbc:sqlite:databases/gifts.db";
+    public static final String CASESIM_CASES_DB = "jdbc:sqlite:databases/casesimCases.db";
+    public static final String CASESIM_COLLECTIONS_DB = "jdbc:sqlite:databases/casesimCollections.db";
+    public static final String CASESIM_CAPSULES_DB = "jdbc:sqlite:databases/casesimCapsules.db";
 
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
@@ -34,6 +37,9 @@ public final class Database {
     private Connection socialCreditConnection;
     private Connection countingConnection;
     private Connection giftsConnection;
+    private Connection casesimCasesConnection;
+    private Connection casesimCollectionsConnection;
+    private Connection casesimCapsulesConnection;
 
     private Database() {
 
@@ -54,6 +60,9 @@ public final class Database {
             socialCreditConnection = DriverManager.getConnection(SOCIALCREDIT_DB);
             countingConnection = DriverManager.getConnection(COUNTING_DB);
             giftsConnection = DriverManager.getConnection(GIFTS_DB);
+            casesimCasesConnection = DriverManager.getConnection(CASESIM_CASES_DB);
+            casesimCollectionsConnection = DriverManager.getConnection(CASESIM_COLLECTIONS_DB);
+            casesimCapsulesConnection = DriverManager.getConnection(CASESIM_CAPSULES_DB);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the databases");
             e.printStackTrace();
@@ -605,6 +614,47 @@ public final class Database {
             prepStmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    private ArrayList<String> createArrayListFromResultSet(ResultSet results) throws SQLException {
+        ArrayList<String> list = new ArrayList<>();
+        if(results == null) {
+            return list;
+        }
+        while(results.next()) {
+            list.add(results.getString(1));
+        }
+        return list;
+    }
+
+    public ArrayList<String> getCasesimCases() {
+        try {
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT name FROM Cases");
+            return createArrayListFromResultSet(preparedStatement.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public ArrayList<String> getCasesimCollections() {
+        try {
+            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT name FROM Collections");
+            return createArrayListFromResultSet(preparedStatement.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public ArrayList<String> getCasesimCapsules() {
+        try {
+            PreparedStatement preparedStatement = casesimCapsulesConnection.prepareStatement("SELECT name FROM Capsules");
+            return createArrayListFromResultSet(preparedStatement.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 }

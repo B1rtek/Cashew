@@ -12,7 +12,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Objects;
 
 public class BaseCommand extends ListenerAdapter {
@@ -96,5 +98,15 @@ public class BaseCommand extends ListenerAdapter {
         while ((inputLine = in.readLine()) != null) response.append(inputLine);
         in.close();
         return response.toString();
+    }
+
+    public static ArrayList<String> autocompleteFromList(ArrayList<String> options, String typed) {
+        ArrayList<String> matching = new ArrayList<>();
+        for (String option : options) {
+            if(option.toLowerCase().contains(typed.toLowerCase(Locale.ROOT))) {
+                matching.add(option);
+            }
+        }
+        return matching;
     }
 }
