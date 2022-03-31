@@ -90,7 +90,7 @@ public class Cashew {
                         .addOption(STRING, "tokiss", "A person (or a group of people) to kiss"),
                 Commands.slash("kromer", "Sends you a random kromer gif"),
                 Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
-                        .addOption(USER,"user","User to check or modify social credit of (to check yours, leave blank)")
+                        .addOption(USER, "user", "User to check or modify social credit of (to check yours, leave blank)")
                         .addOption(INTEGER, "amount", "Amount of social credit to add or subtract")
                         .addOption(STRING, "reason", "Reason for adding or removing social credit"),
                 Commands.slash("scheduler", "Message scheduler command")
@@ -114,7 +114,16 @@ public class Cashew {
                                 .addOption(STRING, "gift", "Name of the gift to gift", true, true))
                         .addSubcommands(new SubcommandData("stats", "Show your gifting stats")
                                 .addOption(STRING, "gift", "Gift to show stats of", false, true)
-                                .addOption(USER, "user", "User to show stats of"))
+                                .addOption(USER, "user", "User to show stats of")),
+                Commands.slash("casesim", "CS:GO opening simulator")
+                        .addSubcommands(
+                                new SubcommandData("opencase", "Opens a CS:GO Case")
+                                        .addOption(STRING, "case", "Name of the case to open", true, true),
+                                new SubcommandData("opencollection", "Opens a CS:GO Collection")
+                                        .addOption(STRING, "collection", "Name of the collection to open", true, true),
+                                new SubcommandData("opencapsule", "Opens a CS:GO Capsule")
+                                        .addOption(STRING, "capsule", "Name of the capsule to open", true, true),
+                                new SubcommandData("inventory", "Manage your CaseSim 4.0 inventory"))
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
     }
