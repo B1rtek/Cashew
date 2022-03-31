@@ -70,11 +70,7 @@ public class CaseSim extends BaseCommand {
                 case "capsule" -> autocompletions = autocompleteFromList(capsulesChoices, typed);
             }
             if(!autocompletions.isEmpty()) {
-                if(autocompletions.size() > 25) {
-                    event.replyChoiceStrings("There's more than 25 matching options").queue();
-                } else {
-                    event.replyChoiceStrings(autocompletions).queue();
-                }
+                event.replyChoiceStrings(autocompletions).queue();
             }
         }
     }

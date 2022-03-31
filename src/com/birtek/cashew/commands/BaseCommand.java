@@ -107,6 +107,13 @@ public class BaseCommand extends ListenerAdapter {
                 matching.add(option);
             }
         }
+        if(matching.size() > 25) {
+            matching = new ArrayList<>() {
+                {
+                    add("There's more than 25 matching options");
+                }
+            };
+        }
         return matching;
     }
 }
