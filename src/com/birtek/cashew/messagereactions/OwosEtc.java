@@ -31,7 +31,7 @@ public class OwosEtc extends BaseReaction {
                 reactionMessage += "nice ";
                 //event.getMessage().reply("nice").mentionRepliedUser(false).queue();
             }
-            if ((message.contains("amogus") && rawMessage.contains("amogus")) || (message.contains("a m o g u s") && rawMessage.contains("a m o g u s")) && checkActivitySettings(event, 1)) {
+            if (((message.contains("amogus") && rawMessage.contains("amogus")) && checkActivitySettings(event, 1)) || (message.contains("a m o g u s") && rawMessage.contains("a m o g u s")) && checkActivitySettings(event, 1)) {
                 reactionMessage += "ඞ sus ඞ ";
                 //event.getMessage().reply("ඞ sus ඞ").mentionRepliedUser(false).queue();
             }
