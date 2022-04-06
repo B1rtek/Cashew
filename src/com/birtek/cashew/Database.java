@@ -541,14 +541,14 @@ public final class Database {
 
     public ArrayList<GiftInfo> getAvailableGifts() {
         try {
-            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT giftID, giftName, giftImageURL, reactionLine1, reactionLine2 FROM Gifts");
+            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT giftID, giftName, giftImageURL, reactionLine1, reactionLine2, displayName FROM Gifts");
             ResultSet results = prepStmt.executeQuery();
             ArrayList<GiftInfo> availableGifts = new ArrayList<>();
             if(results == null) {
                 return availableGifts;
             }
             while(results.next()) {
-                availableGifts.add(new GiftInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5)));
+                availableGifts.add(new GiftInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6)));
             }
             return availableGifts;
         } catch (SQLException e) {

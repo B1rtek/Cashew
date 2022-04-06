@@ -68,7 +68,19 @@ public class Gifts extends BaseCommand {
             return new GiftInfo(0, "all", "", "", "", "");
         }
         for (GiftInfo availableGift : availableGifts) {
-            if (availableGift.displayName().toLowerCase(Locale.ROOT).contains(giftName.toLowerCase(Locale.ROOT))) {
+            if (availableGift.getName().toLowerCase(Locale.ROOT).contains(giftName.toLowerCase(Locale.ROOT))) {
+                return availableGift;
+            }
+        }
+        return null;
+    }
+
+    GiftInfo findGiftByDescription(String giftDescription) {
+        if (giftDescription.isEmpty()) {
+            return new GiftInfo(0, "all", "", "", "", "");
+        }
+        for (GiftInfo availableGift : availableGifts) {
+            if (availableGift.displayName().toLowerCase(Locale.ROOT).contains(giftDescription.toLowerCase(Locale.ROOT))) {
                 return availableGift;
             }
         }
@@ -170,7 +182,7 @@ public class Gifts extends BaseCommand {
             return;
         }
         String giftName = buttonID[2];
-        GiftInfo giftInfo = findGiftByName(giftName);
+        GiftInfo giftInfo = findGiftByDescription(giftName);
         if (giftInfo == null) {
             event.reply("This gift doesn't exist").setEphemeral(true).queue();
             return;
