@@ -1,6 +1,6 @@
 package com.birtek.cashew.commands;
 
-public record GiftInfo(int id, String name, String imageURL, String reactionLine1, String reactionLine2) {
+public record GiftInfo(int id, String name, String imageURL, String reactionLine1, String reactionLine2, String displayName) {
 
     public int getId() {
         return id;
