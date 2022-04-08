@@ -24,6 +24,20 @@ public class Counter extends BaseReaction {
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
         if (countingData.getActive() && !Objects.equals(countingData.getUserID(), event.getAuthor().getId())) {
             message = message.replace(',', '.');
+            // C++ patch lmao
+            if(message.length() > 2) {
+                if(message.startsWith("++")) {
+                    message = "1+" + message.substring(2);
+                } else if (message.startsWith("--")) {
+                    message = "-1+" + message.substring(2);
+                }
+                String substring = message.substring(0, message.length() - 2);
+                if(message.endsWith("++")) {
+                    message = substring + "+1";
+                } else if (message.endsWith("--")) {
+                    message = substring + "-1";
+                }
+            }
             ExpressionBuilder test = new ExpressionBuilder(message);
             int result, current = countingData.getValue();
             try {
