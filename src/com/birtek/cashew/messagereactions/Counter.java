@@ -25,23 +25,23 @@ public class Counter extends BaseReaction {
         if (countingData.getActive() && !Objects.equals(countingData.getUserID(), event.getAuthor().getId())) {
             message = message.replace(',', '.');
             // C++ patch lmao
-            if(message.length() > 2) {
-                if(message.startsWith("++")) {
+            if (message.length() > 2) {
+                if (message.startsWith("++")) {
                     message = "1+" + message.substring(2);
                 } else if (message.startsWith("--")) {
                     message = "-1+" + message.substring(2);
                 }
                 String substring = message.substring(0, message.length() - 2);
-                if(message.endsWith("++")) {
+                if (message.endsWith("++")) {
                     message = substring + "+1";
                 } else if (message.endsWith("--")) {
                     message = substring + "-1";
                 }
             }
             ExpressionBuilder test = new ExpressionBuilder(message);
-            int result, current = countingData.getValue();
+            double result, current = countingData.getValue();
             try {
-                result = (int) Math.round(test.build().evaluate());
+                result = test.build().evaluate();
             } catch (IllegalArgumentException | EmptyStackException e) {
                 return;
             } catch (ArithmeticException e) {
@@ -53,7 +53,7 @@ public class Counter extends BaseReaction {
             }
             if (result != current + 1) {
                 event.getMessage().addReaction("❌").queue();
-                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up by writing ` " + result + " `! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
+                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up by writing ` " + result + " `! The next number should have been ` " + (int) (current + 1) + " `! Counter has been reset!").queue();
                 database.setCount(new CountingInfo(true, " ", 0, " "), event.getChannel().getId());
             } else {
                 String reactionEmote = "✅";
@@ -67,7 +67,7 @@ public class Counter extends BaseReaction {
                     reactionEmote = "\uD83D\uDE0E";
                 }
                 event.getMessage().addReaction(reactionEmote).queue();
-                database.setCount(new CountingInfo(true, event.getAuthor().getId(), result, event.getMessageId()), event.getChannel().getId());
+                database.setCount(new CountingInfo(true, event.getAuthor().getId(), (int) result, event.getMessageId()), event.getChannel().getId());
             }
         }
     }
