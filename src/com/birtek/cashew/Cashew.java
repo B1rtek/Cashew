@@ -85,7 +85,8 @@ public class Cashew {
                 Commands.slash("hug", "Hug someone!")
                         .addOption(STRING, "tohug", "A person (or a group of people) to hug"),
                 Commands.slash("pat", "Pat someone!")
-                        .addOption(STRING, "topat", "A person (or a group of people) to pat"),
+                        .addOption(STRING, "topat", "A person (or a group of people) to pat")
+                        .addOption(STRING, "patdevice", "Set to \"hand\" if you want the ruler pat gif", false, true),
                 Commands.slash("kiss", "Kiss someone!")
                         .addOption(STRING, "tokiss", "A person (or a group of people) to kiss"),
                 Commands.slash("kromer", "Sends you a random kromer gif"),
