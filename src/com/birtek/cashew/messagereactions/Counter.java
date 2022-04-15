@@ -52,8 +52,13 @@ public class Counter extends BaseReaction {
                 return;
             }
             if (result != current + 1) {
+                double rounded = Math.round(result);
+                String toOutput = String.valueOf(result);
+                if (rounded == result) {
+                    toOutput = String.valueOf((int) result);
+                }
                 event.getMessage().addReaction("❌").queue();
-                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up by writing ` " + result + " `! The next number should have been ` " + (int) (current + 1) + " `! Counter has been reset!").queue();
+                event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up by writing ` " + toOutput + " `! The next number should have been ` " + (int) (current + 1) + " `! Counter has been reset!").queue();
                 database.setCount(new CountingInfo(true, " ", 0, " "), event.getChannel().getId());
             } else {
                 String reactionEmote = "✅";
