@@ -64,9 +64,9 @@ public class GuildMemberJoinAndLeave extends ListenerAdapter {
             }
         } else if(event.getGuild().getId().equals(Cashew.PI_SERVER_ID)) {
             Objects.requireNonNull(event.getGuild().getSystemChannel()).sendMessage("Welcome to the cum zone, " + event.getMember().getAsMention()).queue();
-        } else {
+        } /*else {
             Objects.requireNonNull(event.getGuild().getSystemChannel()).sendMessage(joinMessages[number].replace("[member]", event.getMember().getAsMention())).queue();
-        }
+        }*/
     }
 
     @Override
@@ -77,8 +77,8 @@ public class GuildMemberJoinAndLeave extends ListenerAdapter {
             Objects.requireNonNull(event.getGuild().getSystemChannel()).sendMessage("See you soon, " + event.getUser().getAsMention()).queue();
         } else if(event.getGuild().getId().equals(Cashew.PI_SERVER_ID)) {
             Objects.requireNonNull(event.getGuild().getSystemChannel()).sendMessage("n00b " + event.getUser().getAsMention() + " właśnie wyszedł. lol :joy:").queue();
-        } else {
+        } /*else {
             Objects.requireNonNull(event.getGuild().getSystemChannel()).sendMessage(leaveMessages[number].replace("[member]", event.getUser().getAsMention())).queue();
-        }
+        }*/
     }
 }
