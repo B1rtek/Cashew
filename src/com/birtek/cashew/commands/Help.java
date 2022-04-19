@@ -86,8 +86,8 @@ public class Help extends BaseCommand {
         helpEmbed.setAuthor("🥜 Cashew's commands 🥜", cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("🔫 CS:GO", "`opencase`, `opencollection`", false);
-        helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`, `inspirobot`, `dadjoke` , `ping`, `choccymilk`", false);
-        helpEmbed.addField("❓ Help", "To learn more about a specific command, type " + Cashew.COMMAND_PREFIX + "help <command>.", false);
+        helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`, `inspirobot`, `dadjoke` , `ping`, `/choccymilk`, `/gifts`", false);
+        helpEmbed.addField("❓ Help", "To learn more about a specific command, type " + Cashew.COMMAND_PREFIX + "help <command>. Note that some of the commands only work as slash commands.", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
     }
