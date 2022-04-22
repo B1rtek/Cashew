@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.crypto.Data;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -30,7 +32,38 @@ public class CaseSim extends BaseCommand {
         if (capsulesChoices.isEmpty()) LOGGER.warn("Failed to cache capsule choices!");
     }
 
+    private ArrayList<Integer> findPosibleRarities(ArrayList<SkinInfo> skins) {
+        ArrayList<Integer> rarities = new ArrayList<>();
+        for(SkinInfo skin : skins) {
+            if(!rarities.contains(skin.rarity())) {
+                rarities.add(skin.rarity());
+            }
+        }
+        return rarities;
+    }
+
     private void openCase(SlashCommandInteractionEvent event) {
+        // Find the selected case name
+        String typed = event.getOption("case", "", OptionMapping::getAsString);
+        ArrayList<String> matchingCases = autocompleteFromList(casesChoices, typed);
+        if(matchingCases.isEmpty()) {
+            event.reply("No case matching the entered name found.").setEphemeral(true).queue();
+            return;
+        }
+        String selectedName = autocompleteFromList(casesChoices, typed).get(0);
+
+        // Get all skins from the case
+        Database database = Database.getInstance();
+        ArrayList<SkinInfo> caseSkins = database.getCaseSkins(selectedName);
+        if(caseSkins == null) {
+            LOGGER.error("Query for " + selectedName + " in casesimCases.Skins returned null");
+            event.reply("Something went wrong while executing the command").setEphemeral(true).queue();
+            return;
+        }
+
+        // Find all possible rarities
+
+
         event.reply("This doesn't work yet").setEphemeral(true).queue();
     }
 

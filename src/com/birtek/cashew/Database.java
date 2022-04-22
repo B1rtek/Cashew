@@ -2,6 +2,7 @@ package com.birtek.cashew;
 
 import com.birtek.cashew.commands.GiftInfo;
 import com.birtek.cashew.commands.GiftStats;
+import com.birtek.cashew.commands.SkinInfo;
 import com.birtek.cashew.commands.TwoStringsPair;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.TimedMessage;
@@ -10,6 +11,7 @@ import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public final class Database {
 
@@ -514,7 +516,7 @@ public final class Database {
             PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userID, current, messageID FROM Counting WHERE channelID = ?");
             prepStmt.setString(1, channelID);
             ResultSet result = prepStmt.executeQuery();
-            if(result.next()) {
+            if (result.next()) {
                 return new CountingInfo(result.getBoolean(1), result.getString(2), result.getInt(3), result.getString(4));
             }
             return new CountingInfo(false, " ", 0, " ");
@@ -544,10 +546,10 @@ public final class Database {
             PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT giftID, giftName, giftImageURL, reactionLine1, reactionLine2, displayName FROM Gifts");
             ResultSet results = prepStmt.executeQuery();
             ArrayList<GiftInfo> availableGifts = new ArrayList<>();
-            if(results == null) {
+            if (results == null) {
                 return availableGifts;
             }
-            while(results.next()) {
+            while (results.next()) {
                 availableGifts.add(new GiftInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6)));
             }
             return availableGifts;
@@ -575,7 +577,7 @@ public final class Database {
     public GiftStats getUserGiftStats(int giftID, String userID, String serverID) {
         try {
             PreparedStatement prepStmt;
-            if(giftID != 0) {
+            if (giftID != 0) {
                 prepStmt = giftsConnection.prepareStatement("SELECT amountGifted, amountReceived, lastGifted FROM GiftHistory WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
                 prepStmt.setString(1, serverID);
                 prepStmt.setString(2, userID);
@@ -586,10 +588,10 @@ public final class Database {
                 prepStmt.setString(2, userID);
             }
             ResultSet results = prepStmt.executeQuery();
-            if(results == null) {
+            if (results == null) {
                 return null;
             }
-            if(results.next()) {
+            if (results.next()) {
                 return new GiftStats(results.getInt(1), results.getInt(2), results.getLong(3));
             } else {
                 GiftStats newGiftStats = new GiftStats(0, 0, 0);
@@ -619,10 +621,10 @@ public final class Database {
 
     private ArrayList<String> createArrayListFromResultSet(ResultSet results) throws SQLException {
         ArrayList<String> list = new ArrayList<>();
-        if(results == null) {
+        if (results == null) {
             return list;
         }
-        while(results.next()) {
+        while (results.next()) {
             list.add(results.getString(1));
         }
         return list;
@@ -655,6 +657,35 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             return new ArrayList<>();
+        }
+    }
+
+    public ArrayList<SkinInfo> getCaseSkins(String caseName) {
+        try {
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT _id FROM Cases WHERE name = ?");
+            preparedStatement.setString(1, caseName);
+            ResultSet results = preparedStatement.executeQuery();
+            int caseId = -1;
+            if (results.next()) {
+                caseId = results.getInt(1);
+            }
+            if (caseId == -1) {
+                return null;
+            }
+            preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Skins WHERE caseId = ?");
+            preparedStatement.setInt(1, caseId);
+            results = preparedStatement.executeQuery();
+            ArrayList<SkinInfo> skins = new ArrayList<>();
+            while (results.next()) {
+                skins.add(new SkinInfo(results.getInt(2), results.getString(3), results.getInt(4), results.getFloat(5), results.getFloat(6), results.getString(7), results.getString(8), results.getString(9), results.getString(10), results.getString(11), results.getString(12), results.getString(13), results.getString(14), results.getString(15), results.getString(16), results.getString(17), results.getString(18)));
+            }
+            if(skins.isEmpty()) {
+                return null;
+            }
+            return skins;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
