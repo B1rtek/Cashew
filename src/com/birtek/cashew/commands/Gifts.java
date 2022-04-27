@@ -133,8 +133,13 @@ public class Gifts extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("gifts")) {
+            if(!event.getChannel().canTalk()) {
+                event.reply("This command won't work in here, Cashew can't see or/and write in this channel!").setEphemeral(true).queue();
+                return;
+            }
             if (event.getSubcommandName() == null) {
                 event.reply("Bad command specified (how???)").setEphemeral(true).queue();
+                return;
             }
             String giftName = event.getOption("gift", "", OptionMapping::getAsString);
             if (event.getSubcommandName().equals("gift")) {
