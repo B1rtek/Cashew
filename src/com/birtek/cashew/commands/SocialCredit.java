@@ -33,7 +33,17 @@ public class SocialCredit extends BaseCommand {
             "https://cdn.discordapp.com/attachments/852811110158827533/897523745101586482/1136_000_1f33d3.png",
             "https://cdn.discordapp.com/attachments/519234942526292002/897529296443310120/Screenshot_20211012-185915_Chrome.jpg",
             "https://cdn.discordapp.com/attachments/519234942526292002/897572550501077022/120488765_gettyimages-453444611.png",
-            "https://cdn.discordapp.com/attachments/519234942526292002/897572784417419405/00085OAGOGA06VVS-C324-F4.png"
+            "https://cdn.discordapp.com/attachments/519234942526292002/897572784417419405/00085OAGOGA06VVS-C324-F4.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968969310603206656/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968969671384649808/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968969826305441862/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968969975949844530/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968970057151569950/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968970127737487360/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968970191100837934/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968970268385103882/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968970684208402442/unknown.png",
+            "https://cdn.discordapp.com/attachments/857711843282649158/968970864185995274/unknown.png"
     };
 
     String[] socialCreditLossURLs = {
@@ -104,7 +114,7 @@ public class SocialCredit extends BaseCommand {
                     if (args.length == 2) {
                         event.getMessage().reply(checkSocialCredit(args[1], event.getGuild())).mentionRepliedUser(false).queue();
                     } else if (args.length == 3) {
-                        if (checkPermissions(event, moderateMembersPermission)) {
+                        if (checkPermissions(event, manageServerPermission)) {
                             int socialCreditChange = 0;
                             try {
                                 socialCreditChange = Integer.parseInt(args[2]);
@@ -123,7 +133,7 @@ public class SocialCredit extends BaseCommand {
                     }
                 }
                 if (youFailed) {
-                    if (!checkPermissions(event, moderateMembersPermission)) {
+                    if (!checkPermissions(event, manageServerPermission)) {
                         int amountLost = loseSocialCredit(event.getAuthor().getId(), Objects.requireNonNull(event.getGuild()).getId());
                         event.getMessage().reply("You lose " + amountLost + " social credit for misuse of the social credit system.").mentionRepliedUser(false).queue();
                     }
@@ -148,7 +158,7 @@ public class SocialCredit extends BaseCommand {
             if (amount == 0) { // credit check
                 event.reply(checkSocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()))).queue();
             } else {
-                if (checkSlashCommandPermissions(event, moderateMembersPermission)) {
+                if (checkSlashCommandPermissions(event, manageServerPermission)) {
                     MessageEmbed socialCreditEmbed = modifySocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()), amount, reason);
                     event.replyEmbeds(socialCreditEmbed).queue();
                 } else {
