@@ -205,9 +205,10 @@ public class Gifts extends BaseCommand {
         try {
             event.getMessage().delete().queue();
         } catch (Exception e) {
-            LOGGER.error("Exception thrown in Gifts.java - unknown interaction");
-            LOGGER.error("In channel " + event.getChannel().getId());
-            LOGGER.error("While trying to accept gift: " + giftInfo.getName());
+            LOGGER.error("Exception thrown in Gifts.java:");
+            System.err.println("Unknown Message");
+            System.err.println("In channel " + event.getChannel().getId());
+            System.err.println("While trying to accept gift: " + giftInfo.getName());
             return;
         }
         Database database = Database.getInstance();
