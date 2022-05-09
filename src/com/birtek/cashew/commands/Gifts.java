@@ -11,6 +11,8 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -18,6 +20,8 @@ import java.util.Locale;
 import java.util.Objects;
 
 public class Gifts extends BaseCommand {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Gifts.class);
 
     ArrayList<GiftInfo> availableGifts;
 
@@ -198,7 +202,14 @@ public class Gifts extends BaseCommand {
         line2 = line2.replace("<@!mention>", event.getUser().getAsMention());
         String finalLine = line2;
         event.getChannel().sendMessage(line1).queue(message -> message.reply(finalLine).queue());
-        event.getMessage().delete().queue();
+        try {
+            event.getMessage().delete().queue();
+        } catch (Exception e) {
+            LOGGER.error("Exception thrown in Gifts.java - unknown interaction");
+            LOGGER.error("In channel " + event.getChannel().getId());
+            LOGGER.error("While trying to accept gift: " + giftInfo.getName());
+            return;
+        }
         Database database = Database.getInstance();
         GiftStats oldGiftStats = database.getUserGiftStats(giftInfo.getId(), event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
         if (oldGiftStats != null) {
