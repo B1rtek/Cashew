@@ -207,7 +207,8 @@ public class Gifts extends BaseCommand {
         } catch (Exception e) {
             LOGGER.error("Exception thrown in Gifts.java:");
             System.err.println("Unknown Message");
-            System.err.println("In channel " + event.getChannel().getId());
+            System.err.println("In server " + Objects.requireNonNull(event.getGuild()).getName());
+            System.err.println("In channel " + event.getChannel().getName());
             System.err.println("While trying to accept gift: " + giftInfo.getName());
             return;
         }
