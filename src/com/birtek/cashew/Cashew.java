@@ -81,14 +81,14 @@ public class Cashew {
                         .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one"),
                 Commands.slash("choccymilk", "Gift someone some Choccy Milk!"),
                 Commands.slash("cuddle", "Cuddle someone!")
-                        .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle"),
+                        .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true),
                 Commands.slash("hug", "Hug someone!")
-                        .addOption(STRING, "tohug", "A person (or a group of people) to hug"),
+                        .addOption(STRING, "tohug", "A person (or a group of people) to hug", true),
                 Commands.slash("pat", "Pat someone!")
                         .addOption(STRING, "topat", "A person (or a group of people) to pat", true),
 //                        .addOption(STRING, "patdevice", "Set to \"hand\" if you want the ruler pat gif", false, true),
                 Commands.slash("kiss", "Kiss someone!")
-                        .addOption(STRING, "tokiss", "A person (or a group of people) to kiss"),
+                        .addOption(STRING, "tokiss", "A person (or a group of people) to kiss", true),
                 Commands.slash("kromer", "Sends you a random kromer gif"),
                 Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
                         .addOption(USER, "user", "User to check or modify social credit of (to check yours, leave blank)")
