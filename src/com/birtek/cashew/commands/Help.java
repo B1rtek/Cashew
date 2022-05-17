@@ -74,7 +74,16 @@ public class Help extends BaseCommand {
         } else if (command.equalsIgnoreCase("help")) {
             specificHelpEmbed.setTitle("Help");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "help`", "bruh.", false);
-        } else {
+        } else if (command.equalsIgnoreCase("gifts")) {
+            specificHelpEmbed.setTitle("Gifts");
+            specificHelpEmbed.setDescription("Gift system command");
+            specificHelpEmbed.addField("`/gifts gift <gift name>`", "Generates a gift for anyone in chat to claim", false);
+            specificHelpEmbed.addField("`/gifts stats <@user> [gift]", "Retrieves user's gifting stats for all or the specified gift", false);
+        } else if (command.equalsIgnoreCase("info")) {
+            specificHelpEmbed.setTitle("Info");
+            specificHelpEmbed.addField("`/info`", "Displays info about Cashew", false);
+        }
+        else {
             specificHelpEmbed.setTitle("Unknown");
             specificHelpEmbed.addField("There is no such command", "Try again :(", false);
         }
@@ -87,7 +96,7 @@ public class Help extends BaseCommand {
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("🔫 CS:GO", "`opencase`, `opencollection`", false);
         helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`, `inspirobot`, `dadjoke` , `ping`, `/choccymilk`, `/gifts`", false);
-        helpEmbed.addField("❓ Help", "To learn more about a specific command, type " + Cashew.COMMAND_PREFIX + "help <command>. Note that some of the commands only work as slash commands.", false);
+        helpEmbed.addField("❓ Help", "To learn more about a specific command, type " + Cashew.COMMAND_PREFIX + "help <command>. Note that some of the commands only work as slash commands. To get more information about the bot use /info", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
     }
@@ -103,15 +112,11 @@ public class Help extends BaseCommand {
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "reactions <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions to messages containing \"69\", \"amogus\", etc in a text channel. Setting it to \"all\" enables the reactions with pings.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "reactions <#channel> <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions in the specified channel.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "socialcredit <@User> <amount(int)>`", "Adds or removes someone's social credit on the server.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "timedmessage <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "timedmessage show <id(int)|\"all\">`", "Shows the timed message with the spcified id/all scheduled messages on this server.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "timedmessage delete <id(int)|\"all\">`", "Removes the timed message with the specified id/all of them.", false);
+        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
+        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler show <id(int)|\"all\">`", "Shows the timed message with the spcified id/all scheduled messages on this server.", false);
+        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler delete <id(int)|\"all\">`", "Removes the timed message with the specified id/all of them.", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed.build();
-    }
-
-    private String getCashewAvatarFromMessageCommand(MessageReceivedEvent event) {
-        return Objects.requireNonNull(event.getGuild().getMemberById(Cashew.CASHEW_USER_ID)).getUser().getAvatarUrl();
     }
 
     private String getCashewAvatarFromSlashCommand(SlashCommandInteractionEvent event) {
@@ -126,7 +131,7 @@ public class Help extends BaseCommand {
                 MessageEmbed helpEmbed = createSpecificHelpEmbed(args[1]);
                 event.getChannel().sendMessageEmbeds(helpEmbed).queue();
             } else {
-                String cashewAvatarUrl = getCashewAvatarFromMessageCommand(event);
+                String cashewAvatarUrl = event.getJDA().getSelfUser().getAvatarUrl();
                 EmbedBuilder helpEmbed = createGeneralHelpEmbed(cashewAvatarUrl);
                 helpEmbed.setFooter("Called by " + Objects.requireNonNull(event.getMember()).getUser().getName(), event.getMember().getUser().getAvatarUrl());
                 event.getChannel().sendMessageEmbeds(helpEmbed.build()).queue();
@@ -162,7 +167,7 @@ public class Help extends BaseCommand {
         if (event.getName().equals("help")) {
             if (event.getFocusedOption().getName().equals("command")) {
                 String typed = event.getOption("command", "", OptionMapping::getAsString);
-                String[] options = {"bestneko", "boburnham", "choccymilk", "cuddle", "dadjoke", "help", "hug", "inspirobot", "kiss", "korwin", "kromer", "nekoichi", "opencase", "opencollection", "pat", "ping", "socialcredit"};
+                String[] options = {"bestneko", "boburnham", "choccymilk", "cuddle", "dadjoke", "gifts", "help", "hug", "inspirobot", "kiss", "korwin", "kromer", "nekoichi", "opencase", "opencollection", "pat", "ping", "socialcredit"};
                 List<String> matching = new ArrayList<>();
                 for (String option : options) {
                     if (option.contains(typed)) {
