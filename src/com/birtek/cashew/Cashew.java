@@ -48,7 +48,8 @@ public class Cashew {
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new OpenCase(), new OpenCollection(), new TimedMessageCommand(),
-                        new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(), new ChoccyMilk(), new Kromer(), new Gifts(), new CaseSim(), //commands
+                        new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(), new ChoccyMilk(),
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
                         new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
@@ -59,8 +60,7 @@ public class Cashew {
                 Commands.slash("ping", "Measures bot's ping"),
                 Commands.slash("help", "Shows the help embed containing information about commands")
                         .addOption(STRING, "command", "Command to show help of", false, true),
-                Commands.slash("info", "Shows the help embed containing information about commands")
-                        .addOption(STRING, "command", "Command to show help of"),
+                Commands.slash("info", "Shows info about the bot"),
                 Commands.slash("bestneko", "Sends you a gif of the best neko <3"),
                 Commands.slash("boburnham", "Sends you a random quote from Bo Burnham's songs")
                         .addOption(STRING, "nsfw", "Decide whether you want an nsfw quote or not", false, true),

@@ -141,7 +141,7 @@ public class Help extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if (event.getName().equals("help") || event.getName().equals("info")) {
+        if (event.getName().equals("help")) {
             String fallbackString = "gaukuvcgdhnvukcgbhkbvxdbkgvcnhjmdbdh(hopefullynoooneevertypesthis)";
             String command = event.getOption("command", fallbackString, OptionMapping::getAsString);
             if (command.equals(fallbackString)) {
