@@ -92,7 +92,8 @@ public class Help extends BaseCommand {
 
     private EmbedBuilder createGeneralHelpEmbed(String cashewAvatarUrl) {
         EmbedBuilder helpEmbed = new EmbedBuilder();
-        helpEmbed.setAuthor("🥜 Cashew's commands 🥜", cashewAvatarUrl);
+        helpEmbed.setAuthor("🥜 Cashew's commands 🥜");
+        helpEmbed.setThumbnail(cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("🔫 CS:GO", "`opencase`, `opencollection`", false);
         helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`, `inspirobot`, `dadjoke` , `ping`, `/choccymilk`, `/gifts`", false);
@@ -150,7 +151,7 @@ public class Help extends BaseCommand {
             String fallbackString = "gaukuvcgdhnvukcgbhkbvxdbkgvcnhjmdbdh(hopefullynoooneevertypesthis)";
             String command = event.getOption("command", fallbackString, OptionMapping::getAsString);
             if (command.equals(fallbackString)) {
-                String cashewAvatarUrl = getCashewAvatarFromSlashCommand(event);
+                String cashewAvatarUrl = event.getJDA().getSelfUser().getAvatarUrl();
                 event.replyEmbeds(createGeneralHelpEmbed(cashewAvatarUrl).build()).queue();
                 if (checkSlashCommandPermissions(event, adminPermissions)) {
                     event.getUser().openPrivateChannel().complete().sendMessageEmbeds(createAdminHelpEmbed(cashewAvatarUrl)).queue();
@@ -167,7 +168,7 @@ public class Help extends BaseCommand {
         if (event.getName().equals("help")) {
             if (event.getFocusedOption().getName().equals("command")) {
                 String typed = event.getOption("command", "", OptionMapping::getAsString);
-                String[] options = {"bestneko", "boburnham", "choccymilk", "cuddle", "dadjoke", "gifts", "help", "hug", "inspirobot", "kiss", "korwin", "kromer", "nekoichi", "opencase", "opencollection", "pat", "ping", "socialcredit"};
+                String[] options = {"bestneko", "boburnham", "choccymilk", "cuddle", "dadjoke", "gifts", "help", "hug", "info", "inspirobot", "kiss", "korwin", "kromer", "nekoichi", "opencase", "opencollection", "pat", "ping", "socialcredit"};
                 List<String> matching = new ArrayList<>();
                 for (String option : options) {
                     if (option.contains(typed)) {
