@@ -61,7 +61,7 @@ public class Pat extends BaseCuddlyCommand {
             String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
             if (!cuddlyString.isEmpty()) {
                 EmbedGif[] matchingGifs = selectGifsByDevice(patDevice);
-                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, matchingGifs, action, reactions)).queue();
+                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getMember(), author, matchingGifs, action, reactions)).queue();
             } else {
                 event.reply("You can't pat no one!").setEphemeral(true).queue();
             }

@@ -2,6 +2,7 @@ package com.birtek.cashew.commands;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -35,14 +36,14 @@ public class BaseCuddlyCommand extends BaseCommand {
         return result.toString();
     }
 
-    protected MessageEmbed createCuddlyEmbed(String cuddlyString, User author, String authorName, EmbedGif[] cuddlyGifs, String action, String[] reactions) {
+    protected MessageEmbed createCuddlyEmbed(String cuddlyString, Member author, String authorName, EmbedGif[] cuddlyGifs, String action, String[] reactions) {
         Random random = new Random();
         int gifNumber = random.nextInt(cuddlyGifs.length);
         EmbedBuilder cuddleEmbed = new EmbedBuilder();
         cuddlyString = authorName + " " + action + " " + cuddlyString + "! " + reactions[random.nextInt(reactions.length)];
         cuddleEmbed.setColor(cuddlyGifs[gifNumber].getColor());
         cuddleEmbed.setImage(cuddlyGifs[gifNumber].getGifURL());
-        cuddleEmbed.setAuthor(cuddlyString, null, author.getAvatarUrl());
+        cuddleEmbed.setAuthor(cuddlyString, null, author.getEffectiveAvatarUrl());
         return cuddleEmbed.build();
     }
 
@@ -51,10 +52,10 @@ public class BaseCuddlyCommand extends BaseCommand {
         MessageEmbed cuddlyEmbed;
         if (event.isWebhookMessage()) {
             author = event.getAuthor().getName();
-            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getAuthor(), author, gifs, action, reactions);
+            cuddlyEmbed = createCuddlyEmbed(cuddlyString, Objects.requireNonNull(event.getMember()), author, gifs, action, reactions);
         } else {
             author = Objects.requireNonNull(event.getMember()).getEffectiveName();
-            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getMember().getUser(), author, gifs, action, reactions);
+            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getMember(), author, gifs, action, reactions);
         }
         event.getMessage().replyEmbeds(cuddlyEmbed).queue();
     }

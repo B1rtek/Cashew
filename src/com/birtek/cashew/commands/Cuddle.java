@@ -49,7 +49,7 @@ public class Cuddle extends BaseCuddlyCommand {
             String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
             String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
             if (!cuddlyString.isEmpty()) {
-                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getUser(), author, cuddleGifs, action, reactions)).queue();
+                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getMember(), author, cuddleGifs, action, reactions)).queue();
             } else {
                 event.reply("You can't cuddle no one!").setEphemeral(true).queue();
             }
