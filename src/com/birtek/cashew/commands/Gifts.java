@@ -115,7 +115,7 @@ public class Gifts extends BaseCommand {
     MessageEmbed generateGiftStatsEmbed(GiftStats userGiftStats, GiftInfo giftInfo, User user, Guild server) {
         EmbedBuilder giftStatsEmbed = new EmbedBuilder();
         giftStatsEmbed.setTitle("\uD83D\uDCCA " + Objects.requireNonNull(server.getMemberById(user.getId())).getEffectiveName() + "'s " + giftInfo.getName() + " gift stats");
-        giftStatsEmbed.setThumbnail(giftInfo.getId() != 0 ? giftInfo.getImageURL() : user.getAvatarUrl());
+        giftStatsEmbed.setThumbnail(giftInfo.getId() != 0 ? giftInfo.getImageURL() : Objects.requireNonNull(server.getMemberById(user.getId())).getEffectiveAvatarUrl());
         giftStatsEmbed.addField("Amount gifted", String.valueOf(userGiftStats.getAmountGifted()), true);
         giftStatsEmbed.addField("Amount received", String.valueOf(userGiftStats.getAmountReceived()), true);
         return giftStatsEmbed.build();
