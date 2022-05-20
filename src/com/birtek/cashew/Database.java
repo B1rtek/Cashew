@@ -11,7 +11,6 @@ import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public final class Database {
 
@@ -429,7 +428,7 @@ public final class Database {
         }
     }
 
-    public int getSocialCredit(String userID, String serverID) {
+    public long getSocialCredit(String userID, String serverID) {
         try {
             PreparedStatement prepStmt = socialCreditConnection.prepareStatement("SELECT credit FROM SocialCredit WHERE serverID = ? AND userID = ?");
             prepStmt.setString(1, serverID);
@@ -437,7 +436,7 @@ public final class Database {
             ResultSet socialCredit = prepStmt.executeQuery();
             if (socialCredit != null) {
                 if (socialCredit.next()) {
-                    return socialCredit.getInt(1);
+                    return socialCredit.getLong(1);
                 }
                 return 648294745;
             }
@@ -449,14 +448,14 @@ public final class Database {
         return 0;
     }
 
-    public void addSocialCredit(String userID, String serverID, int credit) {
+    public void addSocialCredit(String userID, String serverID, long credit) {
         try {
-            int socialCredit = getSocialCredit(userID, serverID);
+            long socialCredit = getSocialCredit(userID, serverID);
             if (socialCredit == 648294745) {
                 newSocialCredit(userID, serverID, credit);
             } else {
                 PreparedStatement prepStmt = socialCreditConnection.prepareStatement("UPDATE SocialCredit SET credit = ? WHERE serverID = ? AND userID = ?");
-                prepStmt.setInt(1, credit + socialCredit);
+                prepStmt.setLong(1, credit + socialCredit);
                 prepStmt.setString(2, serverID);
                 prepStmt.setString(3, userID);
                 prepStmt.executeUpdate();
@@ -467,12 +466,12 @@ public final class Database {
         }
     }
 
-    public void newSocialCredit(String userID, String serverID, int credit) {
+    public void newSocialCredit(String userID, String serverID, long credit) {
         try {
             PreparedStatement prepStmt = socialCreditConnection.prepareStatement("INSERT INTO SocialCredit(serverID, userID, credit) VALUES(?, ?, ?);");
             prepStmt.setString(1, serverID);
             prepStmt.setString(2, userID);
-            prepStmt.setInt(3, credit);
+            prepStmt.setLong(3, credit);
             prepStmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();

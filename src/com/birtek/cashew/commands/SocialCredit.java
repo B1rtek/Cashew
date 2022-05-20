@@ -60,7 +60,7 @@ public class SocialCredit extends BaseCommand {
         }
     }
 
-    private MessageEmbed modifySocialCredit(String userID, Guild server, int socialCreditChange, String reason) {
+    private MessageEmbed modifySocialCredit(String userID, Guild server, long socialCreditChange, String reason) {
         Database database = Database.getInstance();
         database.addSocialCredit(userID, server.getId(), socialCreditChange);
         EmbedBuilder socialCreditEmbed = new EmbedBuilder();
@@ -85,7 +85,7 @@ public class SocialCredit extends BaseCommand {
 
     private String checkSocialCredit(String userID, Guild server) {
         Database database = Database.getInstance();
-        int socialCredit = database.getSocialCredit(userID, server.getId());
+        long socialCredit = database.getSocialCredit(userID, server.getId());
         if (socialCredit == 648294745) {
             database.addSocialCredit(userID, server.getId(), 0);
             socialCredit = 0;
@@ -115,9 +115,9 @@ public class SocialCredit extends BaseCommand {
                         event.getMessage().reply(checkSocialCredit(args[1], event.getGuild())).mentionRepliedUser(false).queue();
                     } else if (args.length == 3) {
                         if (checkPermissions(event, manageServerPermission)) {
-                            int socialCreditChange = 0;
+                            long socialCreditChange = 0;
                             try {
-                                socialCreditChange = Integer.parseInt(args[2]);
+                                socialCreditChange = Long.parseLong(args[2]);
                             } catch (NumberFormatException e) {
                                 youFailed = true;
                             }
@@ -147,9 +147,9 @@ public class SocialCredit extends BaseCommand {
         if (event.getName().equals("socialcredit")) {
             String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
             String reason = event.getOption("reason", "", OptionMapping::getAsString);
-            int amount;
+            long amount;
             try {
-                amount = event.getOption("amount", 0, OptionMapping::getAsInt);
+                amount = event.getOption("amount", 0L, OptionMapping::getAsLong);
             } catch (ArithmeticException e) { // someone tried adding more than int allows lol
                 targetUserID = event.getUser().getId();
                 amount = -1;
