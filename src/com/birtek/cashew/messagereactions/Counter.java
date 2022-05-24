@@ -23,6 +23,8 @@ public class Counter extends BaseReaction {
                     typos.add(newTypo.toString());
                     newTypo.setCharAt(i, '2');
                     typos.add(newTypo.toString());
+                    newTypo.setCharAt(i, '1');
+                    typos.add(newTypo.toString());
                 }
                 case '1' -> {
                     newTypo.setCharAt(i, '0');
