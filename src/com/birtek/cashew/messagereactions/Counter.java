@@ -166,7 +166,7 @@ public class Counter extends BaseReaction {
                     int typosLeft = countingData.typosLeft() - 1;
                     event.getMessage().addReaction("⚠️").queue();
                     String plural = typosLeft == 1 ? "" : "s";
-                    event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (current + 1) + " `, ` " + typosLeft + " ` typo" + plural + " left!").queue();
+                    event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (current + 1) + " `, **" + typosLeft + "** typo" + plural + " left!").queue();
                     database.setCount(new CountingInfo(true, event.getAuthor().getId(), (int) current + 1, event.getMessageId(), typosLeft), event.getChannel().getId());
                 } else {
                     double rounded = Math.round(result);
