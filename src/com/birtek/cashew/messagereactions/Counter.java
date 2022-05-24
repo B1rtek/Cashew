@@ -22,7 +22,7 @@ public class Counter extends BaseReaction {
         }
         Database database = Database.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
-        if (countingData.getActive() && !Objects.equals(countingData.getUserID(), event.getAuthor().getId())) {
+        if (countingData.active() && !Objects.equals(countingData.userID(), event.getAuthor().getId())) {
             message = message.replace(',', '.');
             // C++ patch lmao
             if (message.length() > 2) {
@@ -39,7 +39,7 @@ public class Counter extends BaseReaction {
                 }
             }
             ExpressionBuilder test = new ExpressionBuilder(message);
-            double result, current = countingData.getValue();
+            double result, current = countingData.value();
             try {
                 result = test.build().evaluate();
             } catch (IllegalArgumentException | EmptyStackException e) {
@@ -59,7 +59,7 @@ public class Counter extends BaseReaction {
                 }
                 event.getMessage().addReaction("❌").queue();
                 event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up by writing ` " + toOutput + " `! The next number should have been ` " + (int) (current + 1) + " `! Counter has been reset!").queue();
-                database.setCount(new CountingInfo(true, " ", 0, " "), event.getChannel().getId());
+                database.setCount(new CountingInfo(true, " ", 0, " ", 3), event.getChannel().getId());
             } else {
                 String reactionEmote = "✅";
                 if (result == 69) {
@@ -72,7 +72,7 @@ public class Counter extends BaseReaction {
                     reactionEmote = "\uD83D\uDE0E";
                 }
                 event.getMessage().addReaction(reactionEmote).queue();
-                database.setCount(new CountingInfo(true, event.getAuthor().getId(), (int) result, event.getMessageId()), event.getChannel().getId());
+                database.setCount(new CountingInfo(true, event.getAuthor().getId(), (int) result, event.getMessageId(), countingData.typosLeft()), event.getChannel().getId());
             }
         }
     }

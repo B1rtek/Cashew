@@ -27,12 +27,13 @@ public class Counting extends BaseCommand {
                 if (argument.equalsIgnoreCase("reset")) {
                     Database database = Database.getInstance();
                     CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-                    database.setCount(new CountingInfo(true, countingInfo.getUserID(), 0, " "), event.getChannel().getId());
+                    database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId());
                     event.getMessage().reply("Counter has been reset.").mentionRepliedUser(false).queue();
                 } else if (argument.equalsIgnoreCase("setcount")) {
                     int newCount = parseSecondArgument(args);
                     Database database = Database.getInstance();
-                    database.setCount(new CountingInfo(true, " ", newCount, " "), event.getChannel().getId());
+                    CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
+                    database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId());
                     event.getMessage().reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").mentionRepliedUser(false).queue();
                 } else {
                     if (saveToDatabase(argument.toLowerCase(Locale.ROOT), event.getChannel().getId())) {
@@ -56,12 +57,13 @@ public class Counting extends BaseCommand {
                     }
                 } else if (newCount != -2147483647) {
                     Database database = Database.getInstance();
-                    database.setCount(new CountingInfo(true, " ", newCount, " "), event.getChannel().getId());
+                    CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
+                    database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId());
                     event.reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").queue();
                 } else if (reset.equals("definitely")) {
                     Database database = Database.getInstance();
                     CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-                    database.setCount(new CountingInfo(true, countingInfo.getUserID(), 0, " "), event.getChannel().getId());
+                    database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId());
                     event.reply("Counter has been reset.").queue();
                 } else {
                     event.reply("No actions were performed").setEphemeral(true).queue();

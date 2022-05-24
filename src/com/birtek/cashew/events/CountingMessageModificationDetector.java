@@ -14,9 +14,9 @@ public class CountingMessageModificationDetector extends ListenerAdapter {
         Database database = Database.getInstance();
         String channelID = event.getChannel().getId();
         CountingInfo info = database.getCountingData(channelID);
-        if (info.getActive() && info.getMessageID().equals(event.getMessageId())) {
-            String userName = "<@!" + info.getUserID() + ">";
-            Objects.requireNonNull(event.getJDA().getTextChannelById(channelID)).sendMessage(userName + " edited their message with a count of ` " + info.getValue() + " `! The next number is ` "+(info.getValue()+1)+" `!").queue();
+        if (info.active() && info.messageID().equals(event.getMessageId())) {
+            String userName = "<@!" + info.userID() + ">";
+            Objects.requireNonNull(event.getJDA().getTextChannelById(channelID)).sendMessage(userName + " edited their message with a count of ` " + info.value() + " `! The next number is ` "+(info.value()+1)+" `!").queue();
         }
     }
 }

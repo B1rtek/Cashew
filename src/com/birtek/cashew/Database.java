@@ -492,10 +492,11 @@ public final class Database {
                 }
             }
             if (createNewRecord) {
-                prepStmt = countingConnection.prepareStatement("INSERT INTO Counting(channelID, activity, current) VALUES(? ,?, ?)");
+                prepStmt = countingConnection.prepareStatement("INSERT INTO Counting(channelID, activity, current, typosLeft) VALUES(? ,?, ?, ?)");
                 prepStmt.setString(1, channelID);
                 prepStmt.setBoolean(2, newState);
                 prepStmt.setInt(3, 0);
+                prepStmt.setInt(4, 3);
             } else {
                 prepStmt = countingConnection.prepareStatement("UPDATE Counting SET activity = ? WHERE channelID = ?");
                 prepStmt.setBoolean(1, newState);
@@ -512,27 +513,28 @@ public final class Database {
 
     public CountingInfo getCountingData(String channelID) {
         try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userID, current, messageID FROM Counting WHERE channelID = ?");
+            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userID, current, messageID, typosLeft FROM Counting WHERE channelID = ?");
             prepStmt.setString(1, channelID);
             ResultSet result = prepStmt.executeQuery();
             if (result.next()) {
-                return new CountingInfo(result.getBoolean(1), result.getString(2), result.getInt(3), result.getString(4));
+                return new CountingInfo(result.getBoolean(1), result.getString(2), result.getInt(3), result.getString(4), result.getInt(5));
             }
-            return new CountingInfo(false, " ", 0, " ");
+            return new CountingInfo(false, " ", 0, " ", 3);
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while querying into the Counting table.");
-            return new CountingInfo(false, " ", 0, " ");
+            return new CountingInfo(false, " ", 0, " ", 3);
         }
     }
 
     public void setCount(CountingInfo countingInfo, String channelID) {
         try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("UPDATE Counting SET current = ?, userID = ?, messageID = ? WHERE channelID = ?");
-            prepStmt.setInt(1, countingInfo.getValue());
-            prepStmt.setString(2, countingInfo.getUserID());
-            prepStmt.setString(3, countingInfo.getMessageID());
-            prepStmt.setString(4, channelID);
+            PreparedStatement prepStmt = countingConnection.prepareStatement("UPDATE Counting SET current = ?, userID = ?, messageID = ?, typosLeft = ? WHERE channelID = ?");
+            prepStmt.setInt(1, countingInfo.value());
+            prepStmt.setString(2, countingInfo.userID());
+            prepStmt.setString(3, countingInfo.messageID());
+            prepStmt.setInt(4, countingInfo.typosLeft());
+            prepStmt.setString(5, channelID);
             prepStmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
