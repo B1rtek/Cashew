@@ -164,12 +164,13 @@ public class Counter extends BaseReaction {
                 return;
             }
             if (result != current + 1) {
-                if (checkIfTypo(message, current + 1)) {
-                    int typosLeft = countingData.typosLeft() - 1;
+                int typosLeft = countingData.typosLeft();
+                if (checkIfTypo(message, current + 1) && typosLeft > 0) {
+                    int newTyposLeft = countingData.typosLeft() - 1;
                     event.getMessage().addReaction("⚠️").queue();
-                    String plural = typosLeft == 1 ? "" : "s";
-                    event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (current + 1) + " `, **" + typosLeft + "** typo" + plural + " left! The next number is ` " + (int) (current + 2) + " `!").queue();
-                    database.setCount(new CountingInfo(true, event.getAuthor().getId(), (int) current + 1, event.getMessageId(), typosLeft), event.getChannel().getId());
+                    String plural = newTyposLeft == 1 ? "" : "s";
+                    event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (current + 1) + " `, **" + newTyposLeft + "** typo" + plural + " left! The next number is ` " + (int) (current + 2) + " `!").queue();
+                    database.setCount(new CountingInfo(true, event.getAuthor().getId(), (int) current + 1, event.getMessageId(), newTyposLeft), event.getChannel().getId());
                 } else {
                     double rounded = Math.round(result);
                     String toOutput = String.valueOf(result);
