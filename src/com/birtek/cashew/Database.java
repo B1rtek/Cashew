@@ -701,7 +701,7 @@ public final class Database {
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminder> reminders = new ArrayList<>();
             while(results.next()) {
-                reminders.add(new BirthdayReminder(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6), null));
+                reminders.add(new BirthdayReminder(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6)));
             }
             return reminders;
         } catch (SQLException e) {

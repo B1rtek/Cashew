@@ -13,16 +13,18 @@ import java.util.TimerTask;
 
 public class BirthdayReminder extends TimerTask {
 
-    private final String message, dateAndTime, channelID, serverID, userID;
+    private final int id;
+    private final String message, dateAndTime, serverID, userID;
+    private String channelID;
     private static JDA jdaInstance = null;
 
-    public BirthdayReminder(String message, String dateAndTime, String channelID, String serverID, String userID, JDA jdaInstance) {
+    public BirthdayReminder(int id, String message, String dateAndTime, String channelID, String serverID, String userID) {
+        this.id = id;
         this.message = message;
         this.dateAndTime = dateAndTime;
         this.channelID = channelID;
         this.serverID = serverID;
         this.userID = userID;
-        BirthdayReminder.jdaInstance = jdaInstance;
     }
 
     private static void cantBeDelivered(String reason, BirthdayReminder task) {
@@ -68,6 +70,10 @@ public class BirthdayReminder extends TimerTask {
         }
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getMessage() {
         return message;
     }
@@ -80,6 +86,10 @@ public class BirthdayReminder extends TimerTask {
         return channelID;
     }
 
+    public void setChannelID(String channelID) {
+        this.channelID = channelID;
+    }
+
     public String getServerID() {
         return serverID;
     }
@@ -90,5 +100,9 @@ public class BirthdayReminder extends TimerTask {
 
     public JDA getJdaInstance() {
         return jdaInstance;
+    }
+
+    public static void setJdaInstance(JDA jda) {
+        jdaInstance = jda;
     }
 }
