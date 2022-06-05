@@ -120,4 +120,8 @@ public class BaseCommand extends ListenerAdapter {
         }
         return matching;
     }
+
+    protected boolean isInvalidTimestamp(String timestring) {
+        return timestring.length() != 8 || Integer.parseInt(timestring.substring(0, 2)) > 23 || Integer.parseInt(timestring.substring(3, 5)) > 59 || Integer.parseInt(timestring.substring(6, 8)) > 59;
+    }
 }

@@ -162,10 +162,6 @@ public class TimedMessageCommand extends BaseCommand {
         return server.getGuildChannelById(channelID) != null;
     }
 
-    private boolean isInvalidTimestamp(String timestring) {
-        return timestring.length() != 8 || Integer.parseInt(timestring.substring(0, 2)) > 23 || Integer.parseInt(timestring.substring(3, 5)) > 59 || Integer.parseInt(timestring.substring(6, 8)) > 59;
-    }
-
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
