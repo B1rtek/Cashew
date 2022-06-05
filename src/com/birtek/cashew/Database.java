@@ -5,6 +5,8 @@ import com.birtek.cashew.commands.GiftStats;
 import com.birtek.cashew.commands.SkinInfo;
 import com.birtek.cashew.commands.TwoStringsPair;
 import com.birtek.cashew.messagereactions.CountingInfo;
+import com.birtek.cashew.timings.BirthdayReminder;
+import com.birtek.cashew.timings.BirthdayReminderDefaults;
 import com.birtek.cashew.timings.TimedMessage;
 
 import java.sql.*;
@@ -28,6 +30,7 @@ public final class Database {
     public static final String CASESIM_CASES_DB = "jdbc:sqlite:databases/casesimCases.db";
     public static final String CASESIM_COLLECTIONS_DB = "jdbc:sqlite:databases/casesimCollections.db";
     public static final String CASESIM_CAPSULES_DB = "jdbc:sqlite:databases/casesimCapsules.db";
+    public static final String BIRTHDAY_REMINDSRS_DB = "jdbc:sqlite:databases/birthdayReminders.db";
 
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
@@ -41,6 +44,7 @@ public final class Database {
     private Connection casesimCasesConnection;
     private Connection casesimCollectionsConnection;
     private Connection casesimCapsulesConnection;
+    private Connection birthdayRemindersConnection;
 
     private Database() {
 
@@ -64,6 +68,7 @@ public final class Database {
             casesimCasesConnection = DriverManager.getConnection(CASESIM_CASES_DB);
             casesimCollectionsConnection = DriverManager.getConnection(CASESIM_COLLECTIONS_DB);
             casesimCapsulesConnection = DriverManager.getConnection(CASESIM_CAPSULES_DB);
+            birthdayRemindersConnection = DriverManager.getConnection(BIRTHDAY_REMINDSRS_DB);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the databases");
             e.printStackTrace();
@@ -684,6 +689,36 @@ public final class Database {
                 return null;
             }
             return skins;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ArrayList<BirthdayReminder> getBirthdayReminders() {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM Reminders");
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<BirthdayReminder> reminders = new ArrayList<>();
+            while(results.next()) {
+                reminders.add(new BirthdayReminder(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6), null));
+            }
+            return reminders;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ArrayList<BirthdayReminderDefaults> getBirthdayReminderDefaults() {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT servedID, channelID, override FROM DefaultChannels");
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<BirthdayReminderDefaults> defaults = new ArrayList<>();
+            while(results.next()) {
+                defaults.add(new BirthdayReminderDefaults(results.getString(1), results.getString(2), results.getBoolean(3)));
+            }
+            return defaults;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
