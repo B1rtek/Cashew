@@ -1,9 +1,6 @@
 package com.birtek.cashew;
 
-import com.birtek.cashew.commands.GiftInfo;
-import com.birtek.cashew.commands.GiftStats;
-import com.birtek.cashew.commands.SkinInfo;
-import com.birtek.cashew.commands.TwoStringsPair;
+import com.birtek.cashew.commands.*;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.BirthdayReminder;
 import com.birtek.cashew.timings.BirthdayReminderDefaults;
@@ -722,6 +719,142 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private int getBirthdayReminderId(String serverID, String userID) throws SQLException {
+        PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT _id FROM Reminders WHERE serverID = ? AND userID = ?");
+        preparedStatement.setString(1, serverID);
+        preparedStatement.setString(2, userID);
+        ResultSet results = preparedStatement.executeQuery();
+        int id = 0;
+        if(results.next()) {
+            id = results.getInt(1);
+        }
+        return id;
+    }
+
+    public boolean addBirthdayReminder(BirthdayReminder reminder) {
+        try {
+            int id = getBirthdayReminderId(reminder.getServerID(), reminder.getUserID());
+            if(id == 0) { // new record
+                reminder = insertBirthdayReminder(reminder);
+                return reminder != null && Cashew.birthdayRemindersManager.addBirthdayReminder(reminder);
+            } else { // record update
+                return this.updateBirthdayReminder(reminder) && Cashew.birthdayRemindersManager.updateBirthdayReminder(reminder);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private BirthdayReminder insertBirthdayReminder(BirthdayReminder reminder) {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO Reminders(message, dateAndTime, channelID, serverID, userID) VALUES(?, ?, ?, ?, ?)");
+            preparedStatement.setString(1, reminder.getMessage());
+            preparedStatement.setString(2, reminder.getDateAndTime());
+            preparedStatement.setString(3, reminder.getChannelID());
+            preparedStatement.setString(4, reminder.getServerID());
+            preparedStatement.setString(5, reminder.getUserID());
+            if(preparedStatement.execute()) {
+                ResultSet id = preparedStatement.getGeneratedKeys();
+                if(id.next()) {
+                    reminder.setId(id.getInt(1));
+                    return reminder;
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private boolean updateBirthdayReminder(BirthdayReminder reminder) {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE Reminders SET message = ?, dateAndTime = ?, channelID = ?, serverID = ?, userID = ? WHERE _id = ?");
+            preparedStatement.setString(1, reminder.getMessage());
+            preparedStatement.setString(2, reminder.getDateAndTime());
+            preparedStatement.setString(3, reminder.getChannelID());
+            preparedStatement.setString(4, reminder.getServerID());
+            preparedStatement.setString(5, reminder.getUserID());
+            preparedStatement.setInt(6, reminder.getId());
+            return preparedStatement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteBirthdayReminder(String serverID, String userID) {
+        try {
+            int id = getBirthdayReminderId(serverID, userID);
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM Reminders WHERE serverID = ? AND userID = ?");
+            preparedStatement.setString(1, serverID);
+            preparedStatement.setString(2, userID);
+            if(preparedStatement.execute()) {
+                Cashew.birthdayRemindersManager.deleteBirthdayReminder(id);
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean addBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT _id FROM DefaultChannels WHERE serverID = ?");
+            preparedStatement.setString(1, defaults.serverID());
+            ResultSet results = preparedStatement.executeQuery();
+            int id = 0;
+            if(results.next()) {
+                id = results.getInt(1);
+            }
+            if(id == 0) { // new record
+                if(insertBirthdayRemindersDefaults(defaults)) {
+                    Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults);
+                    return true;
+                }
+            } else {
+                if(updateBirthdayRemindersDefaults(defaults)) {
+                    Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults);
+                    return true;
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    private boolean insertBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO DefaultChannels(serverID, channelID, override) VALUES(?, ?, ?)");
+            preparedStatement.setString(1, defaults.serverID());
+            preparedStatement.setString(2, defaults.channelID());
+            preparedStatement.setBoolean(3, defaults.override());
+            return preparedStatement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE DefaultChannels SET channelID = ?, override = ? WHERE serverID = ?");
+            preparedStatement.setString(1, defaults.channelID());
+            preparedStatement.setBoolean(2, defaults.override());
+            preparedStatement.setString(3, defaults.serverID());
+            return preparedStatement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
