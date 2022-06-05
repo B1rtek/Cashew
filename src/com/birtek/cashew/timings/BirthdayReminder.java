@@ -13,7 +13,7 @@ import java.util.TimerTask;
 
 public class BirthdayReminder extends TimerTask {
 
-    private final int id;
+    private int id;
     private final String message, dateAndTime, serverID, userID;
     private String channelID;
     private static JDA jdaInstance = null;
@@ -72,6 +72,10 @@ public class BirthdayReminder extends TimerTask {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getMessage() {
