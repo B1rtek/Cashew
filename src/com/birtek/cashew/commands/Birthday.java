@@ -100,7 +100,7 @@ public class Birthday extends BaseCommand {
                     if (database.deleteBirthdayReminder(Objects.requireNonNull(event.getGuild()).getId(), event.getUser().getId())) {
                         event.reply("Successfully removed the birthday reminder!").setEphemeral(true).queue();
                     } else {
-                        event.reply("Something went wrong while removing your birthday reminder").setEphemeral(true).queue();
+                        event.reply("Something went wrong while removing your birthday reminder (maybe you didn't have one?)").setEphemeral(true).queue();
                     }
                 }
                 case "setdefault" -> {
