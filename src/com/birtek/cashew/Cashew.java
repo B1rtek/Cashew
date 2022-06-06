@@ -7,6 +7,7 @@ import com.birtek.cashew.events.GuildMemberJoinAndLeave;
 import com.birtek.cashew.messagereactions.Counter;
 import com.birtek.cashew.messagereactions.OwosEtc;
 import com.birtek.cashew.messagereactions.ReactToMaple;
+import com.birtek.cashew.timings.BirthdayRemindersManager;
 import com.birtek.cashew.timings.TimedMessagesManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -32,6 +33,7 @@ public class Cashew {
     public static String NEKOPARA_EMOTES_UWU_SERVER_ID = "852811110158827530";
     public static String PI_SERVER_ID = "848907956379582484";
     public static TimedMessagesManager timedMessagesManager;
+    public static BirthdayRemindersManager birthdayRemindersManager;
 
     public static void main(String[] args) throws LoginException, ParseException {
 
@@ -124,8 +126,21 @@ public class Cashew {
                                         .addOption(STRING, "collection", "Name of the collection to open", true, true),
                                 new SubcommandData("opencapsule", "Opens a CS:GO Capsule")
                                         .addOption(STRING, "capsule", "Name of the capsule to open", true, true),
-                                new SubcommandData("inventory", "Manage your CaseSim 4.0 inventory"))
+                                new SubcommandData("inventory", "Manage your CaseSim 4.0 inventory")),
+                Commands.slash("birthday", "Birthday reminder system command")
+                        .addSubcommands(
+                                new SubcommandData("set", "Set your birthday date and the reminder")
+                                        .addOption(STRING, "month", "Month of your birthday", true, true)
+                                        .addOption(INTEGER, "day", "Day of your birthday (as a number)", true, false)
+                                        .addOption(STRING, "hour", "Hour to send the reminder at (optional, in HH:MM:SS CET, format, otherwise default is noon)", false, false)
+                                        .addOption(STRING, "message", "Message to send as the reminder")
+                                        .addOption(CHANNEL, "channel", "Channel to send the reminder in (otherwise it'll be sent in the server default one or on the current one)", false),
+                                new SubcommandData("delete", "Removes the reminder"),
+                                new SubcommandData("setdefault", "Sets or displays the default reminders channel")
+                                        .addOption(CHANNEL, "channel", "Channel to set the default/override to", true, false)
+                                        .addOption(STRING, "type", "Default channel behaviour - should it override channels set by members or just be default for ones that weren't set?", true, true))
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
+        birthdayRemindersManager = new BirthdayRemindersManager(jda);
     }
 }
