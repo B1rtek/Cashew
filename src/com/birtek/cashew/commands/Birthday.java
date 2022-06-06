@@ -4,17 +4,22 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import com.birtek.cashew.timings.BirthdayReminder;
 import com.birtek.cashew.timings.BirthdayReminderDefaults;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Channel;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.crypto.Data;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -83,7 +88,7 @@ public class Birthday extends BaseCommand {
                         return;
                     }
                     String message = event.getOption("message", "\uD83C\uDF89 Happy birthday, " + event.getUser().getAsMention() + "! \uD83E\uDD73", OptionMapping::getAsString);
-                    if(message.isEmpty() || message.length() > 2000) {
+                    if(message.isEmpty() || message.length() > 1024) {
                         event.reply("Invalid message length").setEphemeral(true).queue();
                         return;
                     }
@@ -130,6 +135,57 @@ public class Birthday extends BaseCommand {
                         }
                     } else {
                         event.reply("You do not have permission to use this command").setEphemeral(true).queue();
+                    }
+                }
+                case "check" -> {
+                    Database database = Database.getInstance();
+                    BirthdayReminder reminder = database.getBirthdayReminder(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
+                    if(reminder == null) {
+                        event.reply("Something went wrong while querying the birthday reminders database").setEphemeral(true).queue();
+                    } else {
+                        if(reminder.getId() == -1) {
+                            event.reply("You don't have a reminder set on this server!").setEphemeral(true).queue();
+                        } else {
+                            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            Calendar calendar = Calendar.getInstance();
+                            try {
+                                calendar.setTime(dateFormat.parse(reminder.getDateAndTime()));
+                            } catch (ParseException e) {
+                                event.reply("Something went wrong while displaying your reminder").setEphemeral(true).queue();
+                                return;
+                            }
+                            EmbedBuilder birthdayReminderEmbed = new EmbedBuilder();
+                            birthdayReminderEmbed.setTitle("Your birthday reminder");
+                            Channel destinationChannel = event.getGuild().getTextChannelById(reminder.getChannelID());
+                            String channelName = reminder.getChannelID();
+                            if(destinationChannel != null) channelName = destinationChannel.getName();
+                            birthdayReminderEmbed.addField("Channel", channelName, true);
+                            birthdayReminderEmbed.addField("Scheduled for", calendar.toString(), true);
+                            birthdayReminderEmbed.addField("Reminder content", reminder.getMessage(), false);
+                            birthdayReminderEmbed.setColor(0xffd297);
+                            event.replyEmbeds(birthdayReminderEmbed.build()).setEphemeral(true).queue();
+                        }
+                    }
+                }
+                case "checkdefault" -> {
+                    Database database = Database.getInstance();
+                    BirthdayReminderDefaults defaults = database.getBirthdayReminderDefault(Objects.requireNonNull(event.getGuild()).getId());
+                    if(defaults == null) {
+                        event.reply("Something went wrong while querying the birthday reminders database").setEphemeral(true).queue();
+                    } else {
+                        if(defaults.serverID().isEmpty()) {
+                            event.reply("Default birthday reminders channel wasn't set for this server yet").setEphemeral(true).queue();
+                        } else {
+                            EmbedBuilder defaultsEmbed = new EmbedBuilder();
+                            defaultsEmbed.setTitle("Birthday reminders defaults");
+                            Channel destinationChannel = event.getGuild().getTextChannelById(defaults.channelID());
+                            String channelName = defaults.channelID();
+                            if(destinationChannel != null) channelName = destinationChannel.getName();
+                            defaultsEmbed.addField("Channel", channelName, true);
+                            defaultsEmbed.addField("Type", defaults.override()?"Overrides members' settings":"Default", true);
+                            defaultsEmbed.setColor(0xffd297);
+                            event.replyEmbeds(defaultsEmbed.build()).setEphemeral(false).queue();
+                        }
                     }
                 }
             }
