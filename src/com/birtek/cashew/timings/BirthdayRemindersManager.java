@@ -39,7 +39,6 @@ public class BirthdayRemindersManager {
         }
         createDefaultsMap(defaultsList);
         BirthdayReminder.setJdaInstance(jdaInstance);
-        scheduleReminders();
     }
 
     /**
