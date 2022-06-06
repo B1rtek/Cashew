@@ -151,8 +151,10 @@ public class Birthday extends BaseCommand {
     private String createDateStringFromArguments(int day, String month, String hour) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateNow = LocalDateTime.now();
+        String dayString = String.valueOf(day);
+        if(dayString.length() == 1) dayString = '0' + dayString;
         try {
-            String dateString = dateNow.getYear() + "-" + month + "-" + day + " " + hour;
+            String dateString = dateNow.getYear() + "-" + month + "-" + dayString + " " + hour;
             dateFormat.parse(dateString);
             return dateString;
         } catch (ParseException e) {
