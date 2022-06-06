@@ -138,7 +138,10 @@ public class Cashew {
                                 new SubcommandData("delete", "Removes the reminder"),
                                 new SubcommandData("setdefault", "Sets or displays the default reminders channel")
                                         .addOption(CHANNEL, "channel", "Channel to set the default/override to", true, false)
-                                        .addOption(STRING, "type", "Default channel behaviour - should it override channels set by members or just be default?", true, true))
+                                        .addOption(STRING, "type", "Default channel behaviour - should it override channels set by members or just be default?", true, true),
+                                new SubcommandData("check", "Shows your birthday reminder"),
+                                new SubcommandData("checkdefault", "Shows the default birthday reminders server settings"))
+
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
