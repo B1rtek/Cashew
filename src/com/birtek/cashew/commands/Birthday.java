@@ -18,10 +18,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 public class Birthday extends BaseCommand {
 
@@ -148,8 +145,12 @@ public class Birthday extends BaseCommand {
                         } else {
                             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             Calendar calendar = Calendar.getInstance();
+                            String dateAndTime = "";
                             try {
                                 calendar.setTime(dateFormat.parse(reminder.getDateAndTime()));
+                                dateAndTime += calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
+                                dateFormat = new SimpleDateFormat("dd, HH:mm:ss");
+                                dateAndTime += " " + dateFormat.format(calendar.getTime());
                             } catch (ParseException e) {
                                 event.reply("Something went wrong while displaying your reminder").setEphemeral(true).queue();
                                 return;
@@ -160,7 +161,7 @@ public class Birthday extends BaseCommand {
                             String channelName = reminder.getChannelID();
                             if(destinationChannel != null) channelName = destinationChannel.getName();
                             birthdayReminderEmbed.addField("Channel", channelName, true);
-                            birthdayReminderEmbed.addField("Scheduled for", calendar.toString(), true);
+                            birthdayReminderEmbed.addField("Scheduled for", dateAndTime, true);
                             birthdayReminderEmbed.addField("Reminder content", reminder.getMessage(), false);
                             birthdayReminderEmbed.setColor(0xffd297);
                             event.replyEmbeds(birthdayReminderEmbed.build()).setEphemeral(true).queue();
