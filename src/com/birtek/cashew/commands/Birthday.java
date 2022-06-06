@@ -21,20 +21,29 @@ import java.util.Objects;
 public class Birthday extends BaseCommand {
 
     private final HashMap<String, String> monthMap = new HashMap<>();
+    private final ArrayList<String> monthList = new ArrayList<>() {
+        {
+            add("January");
+            add("February");
+            add("March");
+            add("April");
+            add("May");
+            add("June");
+            add("July");
+            add("August");
+            add("September");
+            add("October");
+            add("November");
+            add("December");
+        }
+    };
 
     public Birthday() {
-        monthMap.put("January", "01");
-        monthMap.put("February", "02");
-        monthMap.put("March", "03");
-        monthMap.put("April", "04");
-        monthMap.put("May", "05");
-        monthMap.put("June", "06");
-        monthMap.put("July", "07");
-        monthMap.put("August", "08");
-        monthMap.put("September", "09");
-        monthMap.put("October", "10");
-        monthMap.put("November", "11");
-        monthMap.put("December", "12");
+        for(int i=1; i<=12; i++) {
+            String number = String.valueOf(i);
+            if(number.length() < 2) number = '0' + number;
+            monthMap.put(monthList.get(i-1), number);
+        }
     }
 
     @Override
@@ -122,7 +131,7 @@ public class Birthday extends BaseCommand {
         if(event.getName().startsWith("birthday")) {
             switch (event.getFocusedOption().getName()) {
                 case "month" -> {
-                    ArrayList<String> matching = autocompleteFromList((ArrayList<String>) monthMap.keySet(), event.getOption("month", "", OptionMapping::getAsString));
+                    ArrayList<String> matching = autocompleteFromList(monthList, event.getOption("month", "", OptionMapping::getAsString));
                     event.replyChoiceStrings(matching).queue();
                 }
                 case "type" -> {

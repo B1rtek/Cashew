@@ -757,12 +757,11 @@ public final class Database {
             preparedStatement.setString(3, reminder.getChannelID());
             preparedStatement.setString(4, reminder.getServerID());
             preparedStatement.setString(5, reminder.getUserID());
-            if(preparedStatement.execute()) {
-                ResultSet id = preparedStatement.getGeneratedKeys();
-                if(id.next()) {
-                    reminder.setId(id.getInt(1));
-                    return reminder;
-                }
+            preparedStatement.execute();
+            ResultSet id = preparedStatement.getGeneratedKeys();
+            if(id.next()) {
+                reminder.setId(id.getInt(1));
+                return reminder;
             }
             return null;
         } catch (SQLException e) {
@@ -780,7 +779,7 @@ public final class Database {
             preparedStatement.setString(4, reminder.getServerID());
             preparedStatement.setString(5, reminder.getUserID());
             preparedStatement.setInt(6, reminder.getId());
-            return preparedStatement.executeUpdate() == 1;
+            return preparedStatement.executeUpdate() != 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -793,11 +792,9 @@ public final class Database {
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM Reminders WHERE serverID = ? AND userID = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
-            if(preparedStatement.execute()) {
-                Cashew.birthdayRemindersManager.deleteBirthdayReminder(id);
-                return true;
-            }
-            return false;
+            preparedStatement.execute();
+            Cashew.birthdayRemindersManager.deleteBirthdayReminder(id);
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -838,7 +835,8 @@ public final class Database {
             preparedStatement.setString(1, defaults.serverID());
             preparedStatement.setString(2, defaults.channelID());
             preparedStatement.setBoolean(3, defaults.override());
-            return preparedStatement.execute();
+            preparedStatement.execute();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -851,7 +849,7 @@ public final class Database {
             preparedStatement.setString(1, defaults.channelID());
             preparedStatement.setBoolean(2, defaults.override());
             preparedStatement.setString(3, defaults.serverID());
-            return preparedStatement.executeUpdate() == 1;
+            return preparedStatement.executeUpdate() != 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
