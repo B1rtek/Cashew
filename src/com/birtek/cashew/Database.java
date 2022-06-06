@@ -709,7 +709,7 @@ public final class Database {
 
     public ArrayList<BirthdayReminderDefaults> getBirthdayReminderDefaults() {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT servedID, channelID, override FROM DefaultChannels");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT serverID, channelID, override FROM DefaultChannels");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminderDefaults> defaults = new ArrayList<>();
             while(results.next()) {
