@@ -1,5 +1,6 @@
 package com.birtek.cashew.commands;
 
+import com.birtek.cashew.Cashew;
 import com.birtek.cashew.Database;
 import com.birtek.cashew.timings.BirthdayReminder;
 import com.birtek.cashew.timings.BirthdayReminderDefaults;
@@ -67,13 +68,18 @@ public class Birthday extends BaseCommand {
                         event.reply("Invalid message length").setEphemeral(true).queue();
                         return;
                     }
-                    MessageChannel channel = event.getOption("channel", event.getChannel(), OptionMapping::getAsTextChannel);
+                    MessageChannel channel = event.getOption("channel", null, OptionMapping::getAsTextChannel);
+                    String channelID;
                     if(channel == null) {
-                        event.reply("Invalid channel specified").setEphemeral(true).queue();
-                        return;
+                            channelID = Cashew.birthdayRemindersManager.getDefaultChannel(Objects.requireNonNull(event.getGuild()).getId());
+                            if(channelID == null) {
+                                channelID = event.getChannel().getId();
+                            }
+                    } else {
+                        channelID = channel.getId();
                     }
                     Database database = Database.getInstance();
-                    BirthdayReminder reminder = new BirthdayReminder(0, message, date, channel.getId(), Objects.requireNonNull(event.getGuild()).getId(), event.getUser().getId());
+                    BirthdayReminder reminder = new BirthdayReminder(0, message, date, channelID, Objects.requireNonNull(event.getGuild()).getId(), event.getUser().getId());
                     if(database.addBirthdayReminder(reminder)) {
                         event.reply("Successfully added a birthday reminder!").setEphemeral(true).queue();
                     } else {

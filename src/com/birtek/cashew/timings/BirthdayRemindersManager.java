@@ -124,4 +124,8 @@ public class BirthdayRemindersManager {
     public void updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         birthdayReminderDefaults.put(defaults.serverID(), defaults);
     }
+
+    public String getDefaultChannel(String serverID) {
+        return birthdayReminderDefaults.get(serverID).channelID();
+    }
 }
