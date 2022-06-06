@@ -13,7 +13,7 @@ import java.util.*;
 public class BirthdayRemindersManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BirthdayRemindersManager.class);
-    private final HashMap<Integer, BirthdayReminder> birthdayReminders = new HashMap<Integer, BirthdayReminder>();
+    private final HashMap<Integer, BirthdayReminder> birthdayReminders = new HashMap<>();
     private final HashMap<String, BirthdayReminderDefaults> birthdayReminderDefaults = new HashMap<>();
     private final Timer timer = new Timer();
     private final JDA jdaInstance;
@@ -72,7 +72,7 @@ public class BirthdayRemindersManager {
         try {
             Date proposedDate = dateFormatter.parse(reminder.getDateAndTime());
             Date timeNow = new Date();
-            if(timeNow.after(proposedDate)) {
+            while(timeNow.after(proposedDate)) {
                 proposedDate = addOneYear(proposedDate);
             }
             return proposedDate;
