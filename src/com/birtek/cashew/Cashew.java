@@ -134,11 +134,11 @@ public class Cashew {
                                         .addOption(INTEGER, "day", "Day of your birthday (as a number)", true, false)
                                         .addOption(STRING, "hour", "Hour to send the reminder at (optional, in HH:MM:SS CET, format, otherwise default is noon)", false, false)
                                         .addOption(STRING, "message", "Message to send as the reminder")
-                                        .addOption(CHANNEL, "channel", "Channel to send the reminder in (otherwise it'll be sent in the server default one or on the current one)", false),
+                                        .addOption(CHANNEL, "channel", "Channel to send the reminder in (otherwise it'll be the server default)", false),
                                 new SubcommandData("delete", "Removes the reminder"),
                                 new SubcommandData("setdefault", "Sets or displays the default reminders channel")
                                         .addOption(CHANNEL, "channel", "Channel to set the default/override to", true, false)
-                                        .addOption(STRING, "type", "Default channel behaviour - should it override channels set by members or just be default for ones that weren't set?", true, true))
+                                        .addOption(STRING, "type", "Default channel behaviour - should it override channels set by members or just be default?", true, true))
         ).queue();
         timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
