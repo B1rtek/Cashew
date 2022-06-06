@@ -52,10 +52,20 @@ public class Birthday extends BaseCommand {
             switch (Objects.requireNonNull(event.getSubcommandName())) {
                 case "set" -> {
                     String month = event.getOption("month", "", OptionMapping::getAsString);
-                    month = monthMap.get(month);
-                    if(month == null) {
-                        event.reply("Invalid month specified").setEphemeral(true).queue();
-                        return;
+                    if(month.length() <= 2) {
+                        try {
+                            Integer.parseInt(month);
+                            if(month.length() < 2) month = '0' + month;
+                        } catch (NumberFormatException e) {
+                            event.reply("Invalid month number specified").setEphemeral(true).queue();
+                            return;
+                        }
+                    } else {
+                        month = monthMap.get(month);
+                        if(month == null) {
+                            event.reply("Invalid month specified").setEphemeral(true).queue();
+                            return;
+                        }
                     }
                     int day = event.getOption("day", 32, OptionMapping::getAsInt);
                     if(day < 1 || day > 31) {
@@ -72,7 +82,7 @@ public class Birthday extends BaseCommand {
                         event.reply("Invalid date specified").setEphemeral(true).queue();
                         return;
                     }
-                    String message = event.getOption("message", "", OptionMapping::getAsString);
+                    String message = event.getOption("message", "\uD83C\uDF89 Happy birthday, " + event.getUser().getAsMention() + "! \uD83E\uDD73", OptionMapping::getAsString);
                     if(message.isEmpty() || message.length() > 2000) {
                         event.reply("Invalid message length").setEphemeral(true).queue();
                         return;
