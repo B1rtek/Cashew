@@ -741,6 +741,7 @@ public final class Database {
                 reminder = insertBirthdayReminder(reminder);
                 return reminder != null && Cashew.birthdayRemindersManager.addBirthdayReminder(reminder);
             } else { // record update
+                reminder.setId(id);
                 return this.updateBirthdayReminder(reminder) && Cashew.birthdayRemindersManager.updateBirthdayReminder(reminder);
             }
         } catch (SQLException e) {
@@ -779,7 +780,8 @@ public final class Database {
             preparedStatement.setString(4, reminder.getServerID());
             preparedStatement.setString(5, reminder.getUserID());
             preparedStatement.setInt(6, reminder.getId());
-            return preparedStatement.executeUpdate() != 0;
+            preparedStatement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -789,6 +791,7 @@ public final class Database {
     public boolean deleteBirthdayReminder(String serverID, String userID) {
         try {
             int id = getBirthdayReminderId(serverID, userID);
+            if(id == 0) return false;
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM Reminders WHERE serverID = ? AND userID = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
@@ -849,7 +852,8 @@ public final class Database {
             preparedStatement.setString(1, defaults.channelID());
             preparedStatement.setBoolean(2, defaults.override());
             preparedStatement.setString(3, defaults.serverID());
-            return preparedStatement.executeUpdate() != 0;
+            preparedStatement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
