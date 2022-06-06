@@ -4,6 +4,7 @@ import com.birtek.cashew.commands.*;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.BirthdayReminder;
 import com.birtek.cashew.timings.BirthdayReminderDefaults;
+import com.birtek.cashew.timings.BirthdayRemindersManager;
 import com.birtek.cashew.timings.TimedMessage;
 
 import java.sql.*;
@@ -857,6 +858,38 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public BirthdayReminder getBirthdayReminder(String userID, String serverID) {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT message, dateAndTime, channelID FROM Reminders WHERE userID = ? AND serverID = ?");
+            preparedStatement.setString(1, userID);
+            preparedStatement.setString(2, serverID);
+            ResultSet results = preparedStatement.executeQuery();
+            BirthdayReminder reminder;
+            if(results.next()) {
+                return new BirthdayReminder(0, results.getString(1), results.getString(2), results.getString(3), serverID, userID);
+            }
+            return new BirthdayReminder(-1, "", "", "", "", "");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public BirthdayReminderDefaults getBirthdayReminderDefault(String serverID) {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT channelID, override FROM DefaultChannels WHERE serverID = ?");
+            preparedStatement.setString(1, serverID);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                return new BirthdayReminderDefaults(serverID, results.getString(1), results.getBoolean(2));
+            }
+            return new BirthdayReminderDefaults("", "", false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
