@@ -4,7 +4,6 @@ import com.birtek.cashew.commands.*;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.BirthdayReminder;
 import com.birtek.cashew.timings.BirthdayReminderDefaults;
-import com.birtek.cashew.timings.BirthdayRemindersManager;
 import com.birtek.cashew.timings.TimedMessage;
 
 import java.sql.*;
@@ -542,6 +541,17 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while inserting into the Counting table.");
+        }
+    }
+
+    public ArrayList<String> getAllActiveCountingChannels() {
+        try {
+            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT channelID FROM Counting WHERE activity = 1");
+            ResultSet results = preparedStatement.executeQuery();
+            return createArrayListFromResultSet(results);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
