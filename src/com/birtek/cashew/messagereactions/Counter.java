@@ -1,16 +1,33 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.Database;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.EmptyStackException;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 public class Counter extends BaseReaction {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Counter.class);
+
+    private final HashMap<String, Boolean> correctedAfterOffline = new HashMap<>();
+
+    public Counter() {
+        Database database = Database.getInstance();
+        ArrayList<String> countingChannels = database.getAllActiveCountingChannels();
+        if (countingChannels != null && !countingChannels.isEmpty()) {
+            for (String channel : countingChannels) {
+                correctedAfterOffline.put(channel, false);
+            }
+        } else {
+            LOGGER.error("Failed to obtain channels list!");
+        }
+    }
 
     private boolean checkIfTypo(String message, double target) {
         // generate all possible typos
@@ -173,18 +190,16 @@ public class Counter extends BaseReaction {
         }
     }
 
-    private boolean handleTypo(MessageReceivedEvent event, double previous, int typosLeft) {
-        if(typosLeft <= 0) return false;
+    private boolean handleTypo(Message message, double previous, int typosLeft) {
+        if (typosLeft <= 0) return false;
         int newTyposLeft = typosLeft - 1;
-        event.getMessage().addReaction("⚠️").queue();
+        message.addReaction("⚠️").queue();
         String plural = newTyposLeft == 1 ? "" : "s";
-        event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (previous+1) + " `, **" + newTyposLeft + "** typo" + plural + " left! The next number is ` " + (int) (previous + 2) + " `!").queue();
-        Database database = Database.getInstance();
-        database.setCount(new CountingInfo(true, event.getAuthor().getId(), (int) (previous+1), event.getMessageId(), newTyposLeft), event.getChannel().getId());
+        message.reply("<@!" + message.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (previous + 1) + " `, **" + newTyposLeft + "** typo" + plural + " left! The next number is ` " + (int) (previous + 2) + " `!").queue();
         return true;
     }
 
-    private void handleCorrectCount(MessageReceivedEvent event, double result, int typosLeft) {
+    private void handleCorrectCount(Message message, double result) {
         String reactionEmote = "✅";
         if (result == 69) {
             reactionEmote = "♋";
@@ -195,22 +210,70 @@ public class Counter extends BaseReaction {
         } else if (result == 1337) {
             reactionEmote = "\uD83D\uDE0E";
         }
-        event.getMessage().addReaction(reactionEmote).queue();
-        Database database = Database.getInstance();
-        database.setCount(new CountingInfo(true, event.getAuthor().getId(), (int) result, event.getMessageId(), typosLeft), event.getChannel().getId());
-
+        message.addReaction(reactionEmote).queue();
     }
 
-    private void handleIncorrectCount(MessageReceivedEvent event, double result, int current) {
+    private void handleBelievedOfflineCount(Message message, double newCount) {
+        message.reply("Offline count correction: count has been corrected to ` " + (int) newCount + " `, the next number is ` " + (int)(newCount+1) + " `!").queue();
+    }
+
+    private void handleIncorrectCount(Message message, double result, int current) {
         double rounded = Math.round(result);
         String toOutput = String.valueOf(result);
         if (rounded == result) {
             toOutput = String.valueOf((int) result);
         }
-        event.getMessage().addReaction("❌").queue();
-        event.getChannel().sendMessage("<@!" + event.getAuthor().getId() + "> screwed up by writing ` " + toOutput + " `! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
+        message.addReaction("❌").queue();
+        message.reply("<@!" + message.getAuthor().getId() + "> screwed up by writing ` " + toOutput + " `! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
+    }
+
+    private void updateCountingDatabase(CountingInfo newInfo, String channelID) {
         Database database = Database.getInstance();
-        database.setCount(new CountingInfo(true, " ", 0, " ", 3), event.getChannel().getId());
+        database.setCount(newInfo, channelID);
+    }
+
+    private record OfflineCountCorrectionResult(String lastAnalyzedMessageID, boolean successful) {}
+
+    private OfflineCountCorrectionResult correctOfflineCount(MessageChannel channel, CountingInfo lastCount) {
+        List<Message> messageHistory;
+        try {
+            messageHistory = channel.getHistoryAfter(lastCount.messageID(), 10).complete().getRetrievedHistory();
+        } catch (IllegalArgumentException e) {
+            return new OfflineCountCorrectionResult("", false);
+        }
+        if (messageHistory.isEmpty()) return new OfflineCountCorrectionResult("", false);
+        int currentCount = lastCount.value(), currentTypos = lastCount.typosLeft();
+        String lastCounterID = lastCount.userID();
+        for (int i = messageHistory.size()-1; i>=0; i--) {
+            Message messageFromHistory = messageHistory.get(i);
+            if(Objects.equals(lastCounterID, messageFromHistory.getAuthor().getId())) continue;
+            String message = prepareMessage(messageFromHistory.getContentDisplay().toLowerCase(Locale.ROOT));
+            MessageAnalysisResult analysisResult = analyzeMessage(message, currentCount);
+            switch (analysisResult.type()) {
+                case ERROR -> {
+                    continue;
+                }
+                case DIV0 -> messageFromHistory.reply("This is illegal bruh").mentionRepliedUser(false).queue();
+                case CORRECT -> handleCorrectCount(messageFromHistory, analysisResult.result());
+                case INCORRECT -> {
+                    handleIncorrectCount(messageFromHistory, analysisResult.result(), currentCount);
+                    updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId());
+                    return new OfflineCountCorrectionResult("", true);
+                }
+                case TYPO -> {
+                    if (!handleTypo(messageFromHistory, analysisResult.result(), currentTypos)) {
+                        handleIncorrectCount(messageFromHistory, analysisResult.result(), currentCount);
+                        updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId());
+                        return new OfflineCountCorrectionResult("", true);
+                    }
+                    --currentTypos;
+                }
+            }
+            ++currentCount;
+            lastCounterID = messageFromHistory.getAuthor().getId();
+        }
+        updateCountingDatabase(new CountingInfo(true, messageHistory.get(0).getAuthor().getId(), currentCount, messageHistory.get(0).getId(), currentTypos), channel.getId());
+        return new OfflineCountCorrectionResult(messageHistory.get(0).getId(), true);
     }
 
     @Override
@@ -224,7 +287,7 @@ public class Counter extends BaseReaction {
         }
         Database database = Database.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
-        if (countingData.active() && !Objects.equals(countingData.userID(), event.getAuthor().getId())) {
+        if (countingData.active() && (!Objects.equals(countingData.userID(), event.getAuthor().getId()) || !correctedAfterOffline.get(event.getChannel().getId()))) {
             message = prepareMessage(message);
             MessageAnalysisResult analysisResult = analyzeMessage(message, countingData.value());
             switch (analysisResult.type()) {
@@ -232,10 +295,40 @@ public class Counter extends BaseReaction {
                     // do absolutely nothing
                 }
                 case DIV0 -> event.getMessage().reply("This is illegal bruh").mentionRepliedUser(false).queue();
-                case CORRECT -> handleCorrectCount(event, analysisResult.result(), countingData.typosLeft());
-                case INCORRECT -> handleIncorrectCount(event, analysisResult.result(), countingData.value());
+                case CORRECT -> {
+                    if(!correctedAfterOffline.get(event.getChannel().getId()) && Objects.equals(countingData.userID(), event.getAuthor().getId())) {
+                        return;
+                    }
+                    correctedAfterOffline.put(event.getChannel().getId(), true);
+                    handleCorrectCount(event.getMessage(), analysisResult.result());
+                    updateCountingDatabase(new CountingInfo(true, event.getAuthor().getId(), (int) analysisResult.result(), event.getMessageId(), countingData.typosLeft()), event.getChannel().getId());
+                }
+                case INCORRECT -> {
+                    if (correctedAfterOffline.get(event.getChannel().getId())) {
+                        handleIncorrectCount(event.getMessage(), analysisResult.result(), countingData.value());
+                        updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), event.getChannel().getId());
+                    } else {
+                        OfflineCountCorrectionResult correctionResult = correctOfflineCount(event.getChannel(), countingData);
+                        if(correctionResult.successful()) {
+                            if(!Objects.equals(correctionResult.lastAnalyzedMessageID(), event.getMessage().getId()) && !correctionResult.lastAnalyzedMessageID().isEmpty()) { // too much history - cashew will just believe that the count was correct
+                                handleBelievedOfflineCount(event.getMessage(), analysisResult.result());
+                                updateCountingDatabase(new CountingInfo(true, event.getMessage().getAuthor().getId(), (int)analysisResult.result(), event.getMessageId(), countingData.typosLeft()), event.getChannel().getId());
+                            }
+                            correctedAfterOffline.put(event.getChannel().getId(), true);
+                        }
+                    }
+                }
                 case TYPO -> {
-                    if (!handleTypo(event, analysisResult.result(),countingData.typosLeft())) handleIncorrectCount(event, analysisResult.result(), countingData.value());
+                    if(!correctedAfterOffline.get(event.getChannel().getId()) && Objects.equals(countingData.userID(), event.getAuthor().getId())) {
+                        return;
+                    }
+                    correctedAfterOffline.put(event.getChannel().getId(), true);
+                    if (!handleTypo(event.getMessage(), analysisResult.result(), countingData.typosLeft())) {
+                        handleIncorrectCount(event.getMessage(), analysisResult.result(), countingData.value());
+                        updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), event.getChannel().getId());
+                    } else {
+                        updateCountingDatabase(new CountingInfo(true, event.getAuthor().getId(), (int) (analysisResult.result() + 1), event.getMessageId(), countingData.typosLeft() - 1), event.getChannel().getId());
+                    }
                 }
             }
         }
