@@ -195,7 +195,7 @@ public class Counter extends BaseReaction {
         int newTyposLeft = typosLeft - 1;
         message.addReaction("⚠️").queue();
         String plural = newTyposLeft == 1 ? "" : "s";
-        message.getChannel().sendMessage("<@!" + message.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (previous + 1) + " `, **" + newTyposLeft + "** typo" + plural + " left! The next number is ` " + (int) (previous + 2) + " `!").queue();
+        message.reply("<@!" + message.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (previous + 1) + " `, **" + newTyposLeft + "** typo" + plural + " left! The next number is ` " + (int) (previous + 2) + " `!").queue();
         return true;
     }
 
@@ -224,7 +224,7 @@ public class Counter extends BaseReaction {
             toOutput = String.valueOf((int) result);
         }
         message.addReaction("❌").queue();
-        message.getChannel().sendMessage("<@!" + message.getAuthor().getId() + "> screwed up by writing ` " + toOutput + " `! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
+        message.reply("<@!" + message.getAuthor().getId() + "> screwed up by writing ` " + toOutput + " `! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
     }
 
     private void updateCountingDatabase(CountingInfo newInfo, String channelID) {
@@ -264,7 +264,7 @@ public class Counter extends BaseReaction {
                     if (!handleTypo(messageFromHistory, analysisResult.result(), currentTypos)) {
                         handleIncorrectCount(messageFromHistory, analysisResult.result(), currentCount);
                         updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId());
-                        return new OfflineCountCorrectionResult(messageFromHistory.getId(), true);
+                        return new OfflineCountCorrectionResult("", true);
                     }
                     --currentTypos;
                 }
