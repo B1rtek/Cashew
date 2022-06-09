@@ -3,9 +3,7 @@ package com.birtek.cashew.messagereactions;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.internal.utils.Checks;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -17,7 +15,7 @@ public class Counter extends BaseReaction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Counter.class);
 
-    private HashMap<String, Boolean> correctedAfterOffline = new HashMap<>();
+    private final HashMap<String, Boolean> correctedAfterOffline = new HashMap<>();
 
     public Counter() {
         Database database = Database.getInstance();
@@ -231,7 +229,7 @@ public class Counter extends BaseReaction {
     }
 
     private boolean correctOfflineCount(MessageChannel channel, CountingInfo lastCount) {
-        List<Message> messageHistory = null;
+        List<Message> messageHistory;
         try {
             messageHistory = channel.getHistoryAfter(lastCount.messageID(), 100).complete().getRetrievedHistory();
         } catch (IllegalArgumentException e) {
@@ -246,6 +244,9 @@ public class Counter extends BaseReaction {
             String message = prepareMessage(messageFromHistory.getContentDisplay().toLowerCase(Locale.ROOT));
             MessageAnalysisResult analysisResult = analyzeMessage(message, currentCount);
             switch (analysisResult.type()) {
+                case ERROR -> {
+                    continue;
+                }
                 case DIV0 -> messageFromHistory.reply("This is illegal bruh").mentionRepliedUser(false).queue();
                 case CORRECT -> handleCorrectCount(messageFromHistory, analysisResult.result(), currentTypos);
                 case INCORRECT -> {
@@ -280,7 +281,7 @@ public class Counter extends BaseReaction {
         }
         Database database = Database.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
-        if (countingData.active() && !Objects.equals(countingData.userID(), event.getAuthor().getId())) {
+        if (countingData.active() && (!Objects.equals(countingData.userID(), event.getAuthor().getId()) || !correctedAfterOffline.get(event.getChannel().getId()))) {
             message = prepareMessage(message);
             MessageAnalysisResult analysisResult = analyzeMessage(message, countingData.value());
             switch (analysisResult.type()) {
