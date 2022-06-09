@@ -237,7 +237,7 @@ public class Counter extends BaseReaction {
     private OfflineCountCorrectionResult correctOfflineCount(MessageChannel channel, CountingInfo lastCount) {
         List<Message> messageHistory;
         try {
-            messageHistory = channel.getHistoryAfter(lastCount.messageID(), 10).complete().getRetrievedHistory();
+            messageHistory = channel.getHistoryAfter(lastCount.messageID(), 100).complete().getRetrievedHistory();
         } catch (IllegalArgumentException e) {
             return new OfflineCountCorrectionResult("", false);
         }
