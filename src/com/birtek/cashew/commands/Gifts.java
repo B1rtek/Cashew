@@ -15,15 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 public class Gifts extends BaseCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gifts.class);
 
     ArrayList<GiftInfo> availableGifts;
+    HashSet<Integer> processedIDs = new HashSet<>();
 
     public Gifts() {
         Database database = Database.getInstance();
@@ -150,7 +149,8 @@ public class Gifts extends BaseCommand {
                 MessageEmbed giftEmbed = processAndGift(giftName, event.getUser(), event.getGuild());
                 if (giftEmbed != null) {
                     if (Objects.equals(giftEmbed.getTitle(), "A wild gift appears!")) {
-                        String buttonID = event.getUser().getId() + ":gift:" + giftEmbed.getDescription();
+                        Random random = new Random();
+                        String buttonID = event.getUser().getId() + ":gift:" + giftEmbed.getDescription() + ':' + random.nextInt(1048576);
                         event.replyEmbeds(giftEmbed).addActionRow(Button.success(buttonID, "ACCEPT")).queue();
                     } else {
                         event.replyEmbeds(giftEmbed).setEphemeral(true).queue();
@@ -177,8 +177,9 @@ public class Gifts extends BaseCommand {
 
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        //userID:gift:giftName:randomGiftID or userID:gift:giftName (old format)
         String[] buttonID = event.getComponentId().split(":");
-        if (buttonID.length != 3) {
+        if (!(buttonID.length == 4 || buttonID.length == 3)) {
             return;
         }
         String type = buttonID[1];
@@ -195,6 +196,16 @@ public class Gifts extends BaseCommand {
         if (giftInfo == null) {
             event.reply("This gift doesn't exist").setEphemeral(true).queue();
             return;
+        }
+        int randomID = -1;
+        // backwards compatibility moment
+        if(buttonID.length == 4) {
+            randomID = Integer.parseInt(buttonID[3]);
+            if(processedIDs.contains(randomID)) {
+                event.reply("This gift is already being obtained by someone else").setEphemeral(true).queue();
+                return;
+            }
+            processedIDs.add(randomID);
         }
         //success
         String line1 = giftInfo.reactionLine1(), line2 = giftInfo.reactionLine2();
@@ -218,6 +229,9 @@ public class Gifts extends BaseCommand {
             database.updateUserGiftStats(new GiftStats(oldGiftStats.getAmountGifted(), oldGiftStats.getAmountReceived() + 1, oldGiftStats.getLastGifted()), giftInfo.getId(), event.getUser().getId(), event.getGuild().getId());
         } else {
             event.reply("Updating gift stats failed :(").setEphemeral(true).queue();
+        }
+        if(randomID != -1) {
+            processedIDs.remove(randomID);
         }
     }
 
