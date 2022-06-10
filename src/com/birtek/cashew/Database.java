@@ -23,7 +23,9 @@ public final class Database {
     public static final String TIMED_MESSAGES_DB = "jdbc:sqlite:databases/userData/timedMessages.db";
     public static final String SOCIALCREDIT_DB = "jdbc:sqlite:databases/userData/socialCredit.db";
     public static final String COUNTING_DB = "jdbc:sqlite:databases/userData/counting.db";
-    public static final String GIFTS_DB = "jdbc:sqlite:databases/userData/giftHistory.db";
+    public static final String GIFTS_DB = "jdbc:sqlite:databases/data/gifts.db";
+
+    public static final String GIFT_HISTORY_DB = "jdbc:sqlite:databases/userData/giftHistory.db";
     public static final String CASESIM_CASES_DB = "jdbc:sqlite:databases/data/casesimCases.db";
     public static final String CASESIM_COLLECTIONS_DB = "jdbc:sqlite:databases/data/casesimCollections.db";
     public static final String CASESIM_CAPSULES_DB = "jdbc:sqlite:databases/data/casesimCapsules.db";
@@ -38,6 +40,7 @@ public final class Database {
     private Connection socialCreditConnection;
     private Connection countingConnection;
     private Connection giftsConnection;
+    private Connection giftHistoryConnection;
     private Connection casesimCasesConnection;
     private Connection casesimCollectionsConnection;
     private Connection casesimCapsulesConnection;
@@ -62,6 +65,7 @@ public final class Database {
             socialCreditConnection = DriverManager.getConnection(SOCIALCREDIT_DB);
             countingConnection = DriverManager.getConnection(COUNTING_DB);
             giftsConnection = DriverManager.getConnection(GIFTS_DB);
+            giftHistoryConnection = DriverManager.getConnection(GIFT_HISTORY_DB);
             casesimCasesConnection = DriverManager.getConnection(CASESIM_CASES_DB);
             casesimCollectionsConnection = DriverManager.getConnection(CASESIM_COLLECTIONS_DB);
             casesimCapsulesConnection = DriverManager.getConnection(CASESIM_CAPSULES_DB);
@@ -575,7 +579,7 @@ public final class Database {
 
     private void insertNewGiftStats(GiftStats stats, int giftID, String userID, String serverID) {
         try {
-            PreparedStatement prepStmt = giftsConnection.prepareStatement("INSERT INTO GiftHistory(giftID, userID, serverID, amountGifted, amountReceived, lastGifted) VALUES(?, ?, ?, ?, ?, ?)");
+            PreparedStatement prepStmt = giftHistoryConnection.prepareStatement("INSERT INTO GiftHistory(giftID, userID, serverID, amountGifted, amountReceived, lastGifted) VALUES(?, ?, ?, ?, ?, ?)");
             prepStmt.setInt(1, giftID);
             prepStmt.setString(2, userID);
             prepStmt.setString(3, serverID);
@@ -592,12 +596,12 @@ public final class Database {
         try {
             PreparedStatement prepStmt;
             if (giftID != 0) {
-                prepStmt = giftsConnection.prepareStatement("SELECT amountGifted, amountReceived, lastGifted FROM GiftHistory WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
+                prepStmt = giftHistoryConnection.prepareStatement("SELECT amountGifted, amountReceived, lastGifted FROM GiftHistory WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
                 prepStmt.setString(1, serverID);
                 prepStmt.setString(2, userID);
                 prepStmt.setInt(3, giftID);
             } else {
-                prepStmt = giftsConnection.prepareStatement("SELECT SUM(amountGifted), SUM(amountReceived), AVG(lastGifted) FROM GiftHistory WHERE (serverID = ? AND userID = ?)");
+                prepStmt = giftHistoryConnection.prepareStatement("SELECT SUM(amountGifted), SUM(amountReceived), AVG(lastGifted) FROM GiftHistory WHERE (serverID = ? AND userID = ?)");
                 prepStmt.setString(1, serverID);
                 prepStmt.setString(2, userID);
             }
@@ -620,7 +624,7 @@ public final class Database {
 
     public void updateUserGiftStats(GiftStats stats, int giftID, String userID, String serverID) {
         try {
-            PreparedStatement prepStmt = giftsConnection.prepareStatement("UPDATE GiftHistory SET amountGifted = ?, amountReceived = ?, lastGifted = ? WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
+            PreparedStatement prepStmt = giftHistoryConnection.prepareStatement("UPDATE GiftHistory SET amountGifted = ?, amountReceived = ?, lastGifted = ? WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
             prepStmt.setInt(1, stats.getAmountGifted());
             prepStmt.setInt(2, stats.getAmountReceived());
             prepStmt.setLong(3, stats.getLastGifted());
@@ -877,7 +881,6 @@ public final class Database {
             preparedStatement.setString(1, userID);
             preparedStatement.setString(2, serverID);
             ResultSet results = preparedStatement.executeQuery();
-            BirthdayReminder reminder;
             if(results.next()) {
                 return new BirthdayReminder(0, results.getString(1), results.getString(2), results.getString(3), serverID, userID);
             }
