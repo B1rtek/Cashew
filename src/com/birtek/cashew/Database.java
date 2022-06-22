@@ -4,6 +4,7 @@ import com.birtek.cashew.commands.*;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.BirthdayReminder;
 import com.birtek.cashew.timings.BirthdayReminderDefaults;
+import com.birtek.cashew.timings.ScheduledMessage;
 import com.birtek.cashew.timings.TimedMessage;
 
 import java.sql.*;
@@ -430,7 +431,25 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while querying the Messages table.");
-            return new ArrayList<>();
+            return null;
+        }
+    }
+
+    public ArrayList<ScheduledMessage> getScheduledMessages() {
+        try {
+            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, messageContent, executionTime, destinationChannelID FROM Messages");
+            ResultSet scheduledMessages = prepStmt.executeQuery();
+            ArrayList<ScheduledMessage> scheduledMessageArrayList = new ArrayList<>();
+            if(scheduledMessages != null) {
+                while(scheduledMessages.next()) {
+                    scheduledMessageArrayList.add(new ScheduledMessage(scheduledMessages.getInt(1), scheduledMessages.getString(2), scheduledMessages.getString(3), scheduledMessages.getString(4)));
+                }
+            }
+            return scheduledMessageArrayList;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("An error occured while querying the Messages table.");
+            return null;
         }
     }
 
