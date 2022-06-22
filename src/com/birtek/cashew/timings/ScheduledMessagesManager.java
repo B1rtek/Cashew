@@ -60,8 +60,12 @@ public class ScheduledMessagesManager {
     private int calculateInitialDelay(String executionTimeString) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
-        String currentDayString = String.valueOf(now.getYear() + '-' + now.getMonthValue() + '-' + now.getDayOfMonth());
-        LocalDateTime timeOfNextRun = LocalDateTime.parse(currentDayString + ' ' + executionTimeString, dateTimeFormatter);
+        String currentYearString = String.valueOf(now.getYear());
+        if (currentYearString.length() == 1) currentYearString = '0' + currentYearString;
+        String currentMonthString = String.valueOf(now.getMonthValue());
+        if(currentMonthString.length() == 1) currentMonthString = '0' + currentMonthString;
+        String currentDayString = String.valueOf(now.getDayOfMonth());
+        LocalDateTime timeOfNextRun = LocalDateTime.parse(currentYearString + '-' + currentMonthString + '-' + currentDayString + ' ' + executionTimeString, dateTimeFormatter);
         if (now.isAfter(timeOfNextRun)) {
             timeOfNextRun = timeOfNextRun.plusDays(1);
         }
