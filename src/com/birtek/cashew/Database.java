@@ -1,6 +1,9 @@
 package com.birtek.cashew;
 
-import com.birtek.cashew.commands.*;
+import com.birtek.cashew.commands.GiftInfo;
+import com.birtek.cashew.commands.GiftStats;
+import com.birtek.cashew.commands.SkinInfo;
+import com.birtek.cashew.commands.TwoStringsPair;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.BirthdayReminder;
 import com.birtek.cashew.timings.BirthdayReminderDefaults;
@@ -8,7 +11,6 @@ import com.birtek.cashew.timings.ScheduledMessage;
 import com.birtek.cashew.timings.TimedMessage;
 
 import java.sql.*;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -355,20 +357,22 @@ public final class Database {
         try {
             PreparedStatement prepStmtQuery;
             if (selection.startsWith(">")) {
-                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*) FROM Messages WHERE _id > ? AND serverID = ?");
+                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM Messages WHERE _id > ? AND serverID = ?");
                 prepStmtQuery.setInt(1, 0);
             } else if (selection.startsWith("=")) {
-                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*) FROM Messages WHERE _id = ? AND serverID = ?");
+                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM Messages WHERE _id = ? AND serverID = ?");
                 prepStmtQuery.setInt(1, Integer.parseInt(selection.substring(1)));
             } else {
                 return -1;
             }
             prepStmtQuery.setString(2, serverID);
             ResultSet preQuery = prepStmtQuery.executeQuery();
+            ArrayList<Integer> idsToDelete = new ArrayList<>();
             while (preQuery.next()) {
                 if (preQuery.getInt(1) == 0) {
                     return -1;
                 }
+                idsToDelete.add(preQuery.getInt(2));
             }
             PreparedStatement prepStmtDelete;
             if (selection.startsWith(">")) {
@@ -383,9 +387,11 @@ public final class Database {
                 System.err.println("An error occured while deleting stuff from the Messages table.");
                 return -1;
             }
-            Cashew.timedMessagesManager.refresh();
+            for(int id: idsToDelete) {
+                Cashew.scheduledMessagesManager.deleteScheduledMessage(id);
+            }
             return 0;
-        } catch (SQLException | ParseException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while modifying the Messages table.");
             return 1;
@@ -407,10 +413,10 @@ public final class Database {
                 returnedInsertID = (int) insertID.getLong(1);
             }
             if (returnedInsertID != 0) {
-                Cashew.timedMessagesManager.refresh();
+                Cashew.scheduledMessagesManager.addScheduledMessage(new ScheduledMessage(returnedInsertID, messageContent, executionTime, destinationChannelID));
                 return returnedInsertID;
             } else return 0;
-        } catch (SQLException | ParseException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while modifying the Messages table.");
             return 0;
