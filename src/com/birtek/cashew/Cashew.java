@@ -8,7 +8,7 @@ import com.birtek.cashew.messagereactions.Counter;
 import com.birtek.cashew.messagereactions.OwosEtc;
 import com.birtek.cashew.messagereactions.ReactToMaple;
 import com.birtek.cashew.timings.BirthdayRemindersManager;
-import com.birtek.cashew.timings.TimedMessagesManager;
+import com.birtek.cashew.timings.ScheduledMessagesManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -21,7 +21,6 @@ import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
 import javax.security.auth.login.LoginException;
-import java.text.ParseException;
 
 import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
@@ -32,10 +31,11 @@ public class Cashew {
     public static String BIRTEK_USER_ID = "288000870187139073";
     public static String NEKOPARA_EMOTES_UWU_SERVER_ID = "852811110158827530";
     public static String PI_SERVER_ID = "848907956379582484";
-    public static TimedMessagesManager timedMessagesManager;
+    //public static TimedMessagesManager timedMessagesManager;
+    public static ScheduledMessagesManager scheduledMessagesManager;
     public static BirthdayRemindersManager birthdayRemindersManager;
 
-    public static void main(String[] args) throws LoginException, ParseException {
+    public static void main(String[] args) throws LoginException {
 
         KeyLoader keyLoader = new KeyLoader();
         String TOKEN;
@@ -143,7 +143,8 @@ public class Cashew {
                                 new SubcommandData("checkdefault", "Shows the default birthday reminders server settings"))
 
         ).queue();
-        timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
+        //timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
+        scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
     }
 }
