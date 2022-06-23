@@ -779,10 +779,18 @@ public final class Database {
             int id = getBirthdayReminderId(reminder.getServerID(), reminder.getUserID());
             if(id == 0) { // new record
                 reminder = insertBirthdayReminder(reminder);
-                return reminder != null && Cashew.birthdayRemindersManager.addBirthdayReminder(reminder);
+                if(reminder != null) {
+                    Cashew.birthdayRemindersManager.addBirthdayReminder(reminder);
+                    return true;
+                }
+                return false;
             } else { // record update
                 reminder.setId(id);
-                return this.updateBirthdayReminder(reminder) && Cashew.birthdayRemindersManager.updateBirthdayReminder(reminder);
+                if(this.updateBirthdayReminder(reminder)) {
+                    Cashew.birthdayRemindersManager.updateBirthdayReminder(reminder);
+                    return true;
+                }
+                return false;
             }
         } catch (SQLException e) {
             e.printStackTrace();
