@@ -9,9 +9,8 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
 import java.awt.*;
 import java.util.Objects;
-import java.util.TimerTask;
 
-public class BirthdayReminder extends TimerTask {
+public class BirthdayReminder implements Runnable {
 
     private int id;
     private final String message, dateAndTime, serverID, userID;
@@ -49,7 +48,6 @@ public class BirthdayReminder extends TimerTask {
             deliveryFailEmbed.addField("Message", task.getMessage(), false);
             privateChannel.sendMessageEmbeds(deliveryFailEmbed.build()).queue();
         }
-        task.cancel();
     }
 
     @Override

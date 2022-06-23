@@ -5,17 +5,22 @@ import net.dv8tion.jda.api.JDA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class BirthdayRemindersManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BirthdayRemindersManager.class);
     private final HashMap<Integer, BirthdayReminder> birthdayReminders = new HashMap<>();
+    private final HashMap<Integer, ScheduledFuture<?>> birthdayRemindersFutures = new HashMap<>();
     private final HashMap<String, BirthdayReminderDefaults> birthdayReminderDefaults = new HashMap<>();
-    private final Timer timer = new Timer();
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final JDA jdaInstance;
 
     public BirthdayRemindersManager(JDA jda) {
@@ -46,47 +51,33 @@ public class BirthdayRemindersManager {
      */
     private void scheduleReminders() {
         for (BirthdayReminder reminder : birthdayReminders.values()) {
-            reminder = scheduleReminder(reminder);
-            if(reminder != null) {
-                birthdayReminders.put(reminder.getId(), reminder);
-            }
+            ScheduledFuture<?> scheduleReminderFuture = scheduleReminder(reminder);
+            birthdayRemindersFutures.put(reminder.getId(), scheduleReminderFuture);
         }
     }
 
-    BirthdayReminder scheduleReminder(BirthdayReminder reminder) {
+    ScheduledFuture<?> scheduleReminder(BirthdayReminder reminder) {
         BirthdayReminderDefaults defaults = birthdayReminderDefaults.get(reminder.getServerID());
-        if (defaults.override() || reminder.getChannelID().isEmpty()) {
-            reminder.setChannelID(defaults.channelID());
-        }
-        Date executionDate = getExecutionDate(reminder);
-        if (executionDate != null) {
-            timer.schedule(reminder, executionDate);
-            return reminder;
-        } else {
-            return null;
-        }
-    }
-
-    private Date getExecutionDate(BirthdayReminder reminder) {
-        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        try {
-            Date proposedDate = dateFormatter.parse(reminder.getDateAndTime());
-            Date timeNow = new Date();
-            while(timeNow.after(proposedDate)) {
-                proposedDate = addOneYear(proposedDate);
+        if(defaults != null) {
+            if (defaults.override() || reminder.getChannelID().isEmpty()) {
+                reminder.setChannelID(defaults.channelID());
             }
-            return proposedDate;
-        } catch (ParseException e) {
-            LOGGER.warn("Failed to schedule reminder with id = " + reminder.getId());
-            return null;
         }
+        int initialDelay = calculateInitialDelay(reminder.getDateAndTime());
+        return scheduler.scheduleAtFixedRate(reminder, initialDelay, 31536000, TimeUnit.SECONDS);
     }
 
-    private Date addOneYear(Date proposedDate) throws ParseException {
-        Calendar c = Calendar.getInstance();
-        c.setTime(proposedDate);
-        c.add(Calendar.YEAR, 1);
-        return c.getTime();
+    private int calculateInitialDelay(String executionDateTimeString) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
+        LocalDateTime timeOfNextRun = LocalDateTime.parse(executionDateTimeString, dateTimeFormatter);
+        while (now.isAfter(timeOfNextRun)) {
+            timeOfNextRun = timeOfNextRun.plusYears(1);
+        }
+        ZonedDateTime zdt = ZonedDateTime.of(timeOfNextRun, ZoneId.of("Europe/Warsaw"));
+        Instant instantOfNextRun = zdt.toInstant();
+        Duration diff = Duration.between(Instant.now(), instantOfNextRun);
+        return (int) diff.toSeconds();
     }
 
     private void createDefaultsMap(ArrayList<BirthdayReminderDefaults> defaultsList) {
@@ -101,23 +92,21 @@ public class BirthdayRemindersManager {
         }
     }
 
-    public boolean addBirthdayReminder(BirthdayReminder reminder) {
-        reminder = scheduleReminder(reminder);
-        if(reminder != null) {
-            birthdayReminders.put(reminder.getId(), reminder);
-            return true;
-        }
-        return false;
+    public void addBirthdayReminder(BirthdayReminder reminder) {
+        ScheduledFuture<?> reminderFuture = scheduleReminder(reminder);
+        birthdayReminders.put(reminder.getId(), reminder);
+        birthdayRemindersFutures.put(reminder.getId(), reminderFuture);
     }
 
     public void deleteBirthdayReminder(int id) {
-        birthdayReminders.get(id).cancel();
+        birthdayRemindersFutures.get(id).cancel(false);
+        birthdayRemindersFutures.remove(id);
         birthdayReminders.remove(id);
     }
 
-    public boolean updateBirthdayReminder(BirthdayReminder reminder) {
+    public void updateBirthdayReminder(BirthdayReminder reminder) {
         deleteBirthdayReminder(reminder.getId());
-        return addBirthdayReminder(reminder);
+        addBirthdayReminder(reminder);
     }
 
     public void updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
@@ -125,6 +114,8 @@ public class BirthdayRemindersManager {
     }
 
     public String getDefaultChannel(String serverID) {
-        return birthdayReminderDefaults.get(serverID).channelID();
+        BirthdayReminderDefaults defaults = birthdayReminderDefaults.get(serverID);
+        if(defaults == null) return null;
+        return defaults.channelID();
     }
 }
