@@ -58,8 +58,10 @@ public class BirthdayRemindersManager {
 
     ScheduledFuture<?> scheduleReminder(BirthdayReminder reminder) {
         BirthdayReminderDefaults defaults = birthdayReminderDefaults.get(reminder.getServerID());
-        if (defaults.override() || reminder.getChannelID().isEmpty()) {
-            reminder.setChannelID(defaults.channelID());
+        if(defaults != null) {
+            if (defaults.override() || reminder.getChannelID().isEmpty()) {
+                reminder.setChannelID(defaults.channelID());
+            }
         }
         int initialDelay = calculateInitialDelay(reminder.getDateAndTime());
         return scheduler.scheduleAtFixedRate(reminder, initialDelay, 31536000, TimeUnit.SECONDS);
@@ -112,6 +114,8 @@ public class BirthdayRemindersManager {
     }
 
     public String getDefaultChannel(String serverID) {
-        return birthdayReminderDefaults.get(serverID).channelID();
+        BirthdayReminderDefaults defaults = birthdayReminderDefaults.get(serverID);
+        if(defaults == null) return null;
+        return defaults.channelID();
     }
 }
