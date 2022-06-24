@@ -140,8 +140,22 @@ public class Cashew {
                                         .addOption(CHANNEL, "channel", "Channel to set the default/override to", true, false)
                                         .addOption(STRING, "type", "Default channel behaviour - should it override channels set by members or just be default?", true, true),
                                 new SubcommandData("check", "Shows your birthday reminder"),
-                                new SubcommandData("checkdefault", "Shows the default birthday reminders server settings"))
-
+                                new SubcommandData("checkdefault", "Shows the default birthday reminders server settings")),
+                Commands.slash("reminder", "Set reminders that will be delivered to your DMs!")
+                        .addSubcommands(
+                                new SubcommandData("set", "Set a reminder")
+                                        .addOption(STRING, "content", "Content of the reminder", true)
+                                        .addOption(INTEGER, "time", "Time after which the reminder will be sent", true)
+                                        .addOption(STRING, "unit", "Unit of the specified time (hours is default)", false, true)
+                                        .addOption(BOOLEAN, "ping", "Should the bot ping you with this reminder (default is yes)")
+                        )
+                        .addSubcommands(
+                                new SubcommandData("list", "List your reminders")
+                        )
+                        .addSubcommands(
+                                new SubcommandData("delete", "Delete a reminder")
+                                        .addOption(INTEGER, "id", "ID of the reminder to delete", true)
+                        )
         ).queue();
         //timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
