@@ -1005,20 +1005,26 @@ public final class Database {
         }
     }
 
-    public boolean deleteReminder(int id, String userID) {
+    public int deleteReminder(int id, String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("DELETE FROM Reminders WHERE _id = ? AND userID = ?");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM Reminders where _id = ?");
+            preparedStatement.setInt(1, id);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                if(results.getInt(1) == 0) return 0;
+            } else return -1;
+            preparedStatement = remindersConnection.prepareStatement("DELETE FROM Reminders WHERE _id = ? AND userID = ?");
             preparedStatement.setInt(1, id);
             preparedStatement.setString(2, userID);
             int rowsDeleted = preparedStatement.executeUpdate();
             if(rowsDeleted != 0) {
                 Cashew.remindersManager.deleteReminder(id);
-                return true;
+                return 1;
             }
-            return false;
+            return -1;
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
 }

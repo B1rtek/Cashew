@@ -43,7 +43,7 @@ public class ReminderRunnable implements Runnable {
             privateChannel.sendMessageEmbeds(reminderEmbed.build()).queue();
         }
         Database database = Database.getInstance();
-        if(!database.deleteReminder(this.id, this.userID)) LOGGER.warn("Failed to remove Reminder " + this.id + " from RemindersManager!");
+        if(database.deleteReminder(this.id, this.userID) != 1) LOGGER.warn("Failed to remove Reminder " + this.id + " from RemindersManager!");
         Cashew.remindersManager.deleteReminder(this.id);
     }
 

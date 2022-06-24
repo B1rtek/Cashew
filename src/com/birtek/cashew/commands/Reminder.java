@@ -107,10 +107,13 @@ public class Reminder extends BaseCommand {
                         return;
                     }
                     Database database = Database.getInstance();
-                    if(database.deleteReminder(id, event.getUser().getId())) {
+                    int result = database.deleteReminder(id, event.getUser().getId());
+                    if(result == 1) {
                         event.reply("Reminder successfully deleted!").setEphemeral(true).queue();
-                    } else {
+                    } else if (result == -1){
                         event.reply("Something went wrong while deleting the reminder (Error 1)").setEphemeral(true).queue();
+                    } else {
+                        event.reply("Reminder with this ID doesn't exist").setEphemeral(true).queue();
                     }
                 }
             }
