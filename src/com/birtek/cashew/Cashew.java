@@ -8,6 +8,7 @@ import com.birtek.cashew.messagereactions.Counter;
 import com.birtek.cashew.messagereactions.OwosEtc;
 import com.birtek.cashew.messagereactions.ReactToMaple;
 import com.birtek.cashew.timings.BirthdayRemindersManager;
+import com.birtek.cashew.timings.RemindersManager;
 import com.birtek.cashew.timings.ScheduledMessagesManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -34,6 +35,8 @@ public class Cashew {
     //public static TimedMessagesManager timedMessagesManager;
     public static ScheduledMessagesManager scheduledMessagesManager;
     public static BirthdayRemindersManager birthdayRemindersManager;
+
+    public static RemindersManager remindersManager;
 
     public static void main(String[] args) throws LoginException {
 
@@ -160,5 +163,6 @@ public class Cashew {
         //timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
+        remindersManager = new RemindersManager(jda);
     }
 }

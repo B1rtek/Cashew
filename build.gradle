@@ -30,4 +30,5 @@ dependencies {
     implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-alpha.12'
     implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
     implementation('ch.qos.logback:logback-classic:1.2.11')
+    implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
 }
