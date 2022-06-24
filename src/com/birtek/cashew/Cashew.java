@@ -32,7 +32,6 @@ public class Cashew {
     public static String BIRTEK_USER_ID = "288000870187139073";
     public static String NEKOPARA_EMOTES_UWU_SERVER_ID = "852811110158827530";
     public static String PI_SERVER_ID = "848907956379582484";
-    //public static TimedMessagesManager timedMessagesManager;
     public static ScheduledMessagesManager scheduledMessagesManager;
     public static BirthdayRemindersManager birthdayRemindersManager;
 
@@ -54,7 +53,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new OpenCase(), new OpenCollection(), new TimedMessageCommand(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(), new ChoccyMilk(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(),  //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
                         new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
@@ -160,7 +159,6 @@ public class Cashew {
                                         .addOption(INTEGER, "id", "ID of the reminder to delete", true)
                         )
         ).queue();
-        //timedMessagesManager = new TimedMessagesManager(jda); //initiate timed messages
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
         remindersManager = new RemindersManager(jda);
