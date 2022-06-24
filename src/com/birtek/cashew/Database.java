@@ -949,6 +949,7 @@ public final class Database {
             ResultSet id = preparedStatement.getGeneratedKeys();
             if(id.next()) {
                 reminder.setId(id.getInt(1));
+                Cashew.remindersManager.addReminder(reminder);
                 return reminder;
             }
             return null;
