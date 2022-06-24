@@ -5,10 +5,7 @@ import com.birtek.cashew.commands.GiftStats;
 import com.birtek.cashew.commands.SkinInfo;
 import com.birtek.cashew.commands.TwoStringsPair;
 import com.birtek.cashew.messagereactions.CountingInfo;
-import com.birtek.cashew.timings.BirthdayReminder;
-import com.birtek.cashew.timings.BirthdayReminderDefaults;
-import com.birtek.cashew.timings.ScheduledMessage;
-import com.birtek.cashew.timings.TimedMessage;
+import com.birtek.cashew.timings.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -27,12 +24,12 @@ public final class Database {
     public static final String SOCIALCREDIT_DB = "jdbc:sqlite:databases/userData/socialCredit.db";
     public static final String COUNTING_DB = "jdbc:sqlite:databases/userData/counting.db";
     public static final String GIFTS_DB = "jdbc:sqlite:databases/data/gifts.db";
-
     public static final String GIFT_HISTORY_DB = "jdbc:sqlite:databases/userData/giftHistory.db";
     public static final String CASESIM_CASES_DB = "jdbc:sqlite:databases/data/casesimCases.db";
     public static final String CASESIM_COLLECTIONS_DB = "jdbc:sqlite:databases/data/casesimCollections.db";
     public static final String CASESIM_CAPSULES_DB = "jdbc:sqlite:databases/data/casesimCapsules.db";
     public static final String BIRTHDAY_REMINDSRS_DB = "jdbc:sqlite:databases/userData/birthdayReminders.db";
+    public static final String REMINDERS_DB = "jdbc:sqlite:databases/userData/reminders.db";
 
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
@@ -48,6 +45,7 @@ public final class Database {
     private Connection casesimCollectionsConnection;
     private Connection casesimCapsulesConnection;
     private Connection birthdayRemindersConnection;
+    private Connection remindersConnection;
 
     private Database() {
 
@@ -73,6 +71,7 @@ public final class Database {
             casesimCollectionsConnection = DriverManager.getConnection(CASESIM_COLLECTIONS_DB);
             casesimCapsulesConnection = DriverManager.getConnection(CASESIM_CAPSULES_DB);
             birthdayRemindersConnection = DriverManager.getConnection(BIRTHDAY_REMINDSRS_DB);
+            remindersConnection = DriverManager.getConnection(REMINDERS_DB);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the databases");
             e.printStackTrace();
@@ -936,6 +935,89 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public ReminderRunnable addReminder(ReminderRunnable reminder) {
+        try {
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("INSERT INTO Reminders(content, timedate, userID, ping) VALUES(?, ?, ?, ?)");
+            preparedStatement.setString(1, reminder.getContent());
+            preparedStatement.setString(2, reminder.getDateTime());
+            preparedStatement.setString(3, reminder.getUserID());
+            preparedStatement.setBoolean(1, reminder.isPing());
+            preparedStatement.execute();
+            ResultSet id = preparedStatement.getGeneratedKeys();
+            if(id.next()) {
+                reminder.setId(id.getInt(1));
+                return reminder;
+            }
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ArrayList<ReminderRunnable> getReminders(String userID) {
+        try {
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping FROM Reminders where userID = ?");
+            preparedStatement.setString(1, userID);
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<ReminderRunnable> reminders = new ArrayList<>();
+            while(results.next()) {
+                reminders.add(new ReminderRunnable(results.getInt(1), results.getBoolean(4), results.getString(2), results.getString(3), userID));
+            }
+            return reminders;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ArrayList<ReminderRunnable> getAllReminders() {
+        try {
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping, userID FROM Reminders");
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<ReminderRunnable> reminders = new ArrayList<>();
+            while(results.next()) {
+                reminders.add(new ReminderRunnable(results.getInt(1), results.getBoolean(4), results.getString(2), results.getString(3), results.getString(5)));
+            }
+            return reminders;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public int getRemindersCount(String userID) {
+        try {
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM Reminders WHERE userID = ?");
+            preparedStatement.setString(1, userID);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                return results.getInt(1);
+            }
+            return -1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public boolean deleteReminder(int id, String userID) {
+        try {
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("DELETE FROM Reminders WHERE _id = ? AND userID = ?");
+            preparedStatement.setInt(1, id);
+            preparedStatement.setString(2, userID);
+            int rowsDeleted = preparedStatement.executeUpdate();
+            if(rowsDeleted != 0) {
+                Cashew.remindersManager.deleteReminder(id);
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
