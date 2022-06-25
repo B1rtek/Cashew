@@ -34,13 +34,13 @@ public class ReminderRunnable implements Runnable {
         PrivateChannel privateChannel = Objects.requireNonNull(jdaInstance.getUserById(userID)).openPrivateChannel().complete();
         if(privateChannel != null) {
             EmbedBuilder reminderEmbed = new EmbedBuilder();
-            if(this.ping) {
-                reminderEmbed.setTitle(Objects.requireNonNull(privateChannel.getUser()).getAsMention() + ", your reminder:");
-            } else {
-                reminderEmbed.setTitle(Objects.requireNonNull(privateChannel.getUser()).getName() + ", your reminder:");
-            }
+            reminderEmbed.setTitle(Objects.requireNonNull(privateChannel.getUser()).getName() + ", your reminder:");
             reminderEmbed.setDescription(this.content);
-            privateChannel.sendMessageEmbeds(reminderEmbed.build()).queue();
+            if(this.ping) {
+                privateChannel.sendMessageEmbeds(reminderEmbed.build()).append(privateChannel.getUser().getAsMention()).queue();
+            } else {
+                privateChannel.sendMessageEmbeds(reminderEmbed.build()).queue();
+            }
         }
         Database database = Database.getInstance();
         if(database.deleteReminder(this.id, this.userID) != 1) LOGGER.warn("Failed to remove Reminder " + this.id + " from RemindersManager!");

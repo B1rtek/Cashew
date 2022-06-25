@@ -55,6 +55,10 @@ public class Reminder extends BaseCommand {
                         event.reply("Content of the reminder cannot be empty").setEphemeral(true).queue();
                         return;
                     }
+                    if(content.length() > 256) {
+                        event.reply("Content of the reminder cannot be longer than 256 characters").setEphemeral(true).queue();
+                        return;
+                    }
                     int time = event.getOption("time", 0, OptionMapping::getAsInt);
                     if(time <= 0) {
                         event.reply("The reminder timer needs to be greater than 0").setEphemeral(true).queue();
@@ -87,10 +91,14 @@ public class Reminder extends BaseCommand {
                         return;
                     }
                     Table remindersTable = new Table(4, BorderStyle.UNICODE_BOX, ShownBorders.HEADER_AND_COLUMNS);
-                    remindersTable.setColumnWidth(0, 1, 10);
+                    remindersTable.setColumnWidth(0, 2, 10);
                     remindersTable.setColumnWidth(1, 19, 19);
-                    remindersTable.setColumnWidth(2, 3, 3);
+                    remindersTable.setColumnWidth(2, 4, 4);
                     remindersTable.setColumnWidth(3, 1, 48);
+                    remindersTable.addCell("ID");
+                    remindersTable.addCell("Scheduled for");
+                    remindersTable.addCell("Ping");
+                    remindersTable.addCell("Reminder content");
                     for(ReminderRunnable reminder: reminders) {
                         remindersTable.addCell(String.valueOf(reminder.getId()));
                         remindersTable.addCell(reminder.getDateTime());
