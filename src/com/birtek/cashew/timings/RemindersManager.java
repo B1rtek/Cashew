@@ -20,13 +20,14 @@ public class RemindersManager {
     private final HashMap<Integer, ReminderRunnable> reminders = new HashMap<>();
     private final HashMap<Integer, ScheduledFuture<?>> remindersFutures = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final JDA jdaInstance;
 
-    public RemindersManager(JDA jdaInstance) {
-        this.jdaInstance = jdaInstance;
-        ReminderRunnable.setJdaInstance(jdaInstance);
+    public RemindersManager() {
         getReminders();
         scheduleReminders();
+    }
+
+    public void setJDA(JDA jdaInstance) {
+        ReminderRunnable.setJdaInstance(jdaInstance);
     }
 
     private void getReminders() {
@@ -46,20 +47,34 @@ public class RemindersManager {
     }
 
     private void scheduleReminders() {
+        ArrayList<ReminderRunnable> toDelete = new ArrayList<>();
         for(ReminderRunnable reminder: reminders.values()) {
             ScheduledFuture<?> reminderFuture = scheduleReminder(reminder);
-            remindersFutures.put(reminder.getId(), reminderFuture);
+            if(reminderFuture == null) {
+                toDelete.add(reminder);
+            } else {
+                remindersFutures.put(reminder.getId(), reminderFuture);
+            }
+        }
+        Database database = Database.getInstance();
+        for(ReminderRunnable reminder: toDelete) {
+            database.deleteReminder(reminder.getId(), reminder.getUserID());
         }
     }
 
     private ScheduledFuture<?> scheduleReminder(ReminderRunnable reminder) {
         int initialDelay = calculateInitialDelay(reminder.getDateTime());
+        if(initialDelay <= 0) {
+            return null;
+        }
         return scheduler.schedule(reminder, initialDelay, TimeUnit.SECONDS);
     }
 
     private int calculateInitialDelay(String dateTimeString) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
         LocalDateTime timeOfExecution = LocalDateTime.parse(dateTimeString, dateTimeFormatter);
+        if(now.isAfter(timeOfExecution)) return -1;
         ZonedDateTime zdt = ZonedDateTime.of(timeOfExecution, ZoneId.of("Europe/Warsaw"));
         Instant instantOfExecution = zdt.toInstant();
         Duration diff = Duration.between(Instant.now(), instantOfExecution);

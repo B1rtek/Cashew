@@ -47,6 +47,7 @@ public class Cashew {
             System.err.println("The API key is missing.");
             return;
         }
+        remindersManager = new RemindersManager();
         JDA jda = JDABuilder.createDefault(TOKEN)
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
@@ -161,6 +162,6 @@ public class Cashew {
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
-        remindersManager = new RemindersManager(jda);
+        remindersManager.setJDA(jda);
     }
 }
