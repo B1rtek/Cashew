@@ -1021,7 +1021,7 @@ public final class Database {
                 Cashew.remindersManager.deleteReminder(id);
                 return 1;
             }
-            return -1;
+            return 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
