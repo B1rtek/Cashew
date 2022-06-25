@@ -944,7 +944,7 @@ public final class Database {
             preparedStatement.setString(1, reminder.getContent());
             preparedStatement.setString(2, reminder.getDateTime());
             preparedStatement.setString(3, reminder.getUserID());
-            preparedStatement.setBoolean(1, reminder.isPing());
+            preparedStatement.setBoolean(4, reminder.isPing());
             preparedStatement.execute();
             ResultSet id = preparedStatement.getGeneratedKeys();
             if(id.next()) {
