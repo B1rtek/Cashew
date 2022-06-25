@@ -1,9 +1,6 @@
 package com.birtek.cashew;
 
-import com.birtek.cashew.commands.GiftInfo;
-import com.birtek.cashew.commands.GiftStats;
-import com.birtek.cashew.commands.SkinInfo;
-import com.birtek.cashew.commands.TwoStringsPair;
+import com.birtek.cashew.commands.*;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.*;
 
@@ -658,6 +655,30 @@ public final class Database {
             prepStmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public ArrayList<LeaderboardRecord> getGiftsLeaderboardPage(Gifts.GiftsLeaderboardType type, int page, String serverID) {
+        String selectedColumn;
+        if (type == Gifts.GiftsLeaderboardType.MOST_GIFTED) {
+            selectedColumn = "amountGifted";
+        } else {
+            selectedColumn = "amountReceived";
+        }
+        try {
+            PreparedStatement preparedStatement = giftsConnection.prepareStatement("select pos, userID, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? order by " + selectedColumn + " desc) where pos between (?-1)*10+1 and (?-1)*10+10;");
+            preparedStatement.setString(1, serverID);
+            preparedStatement.setInt(2, page);
+            preparedStatement.setInt(3, page);
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<LeaderboardRecord> leaderboardRecords = new ArrayList<>();
+            while(results.next()) {
+                leaderboardRecords.add(new LeaderboardRecord(results.getInt(1), results.getString(2), results.getInt(3)));
+            }
+            return leaderboardRecords;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
