@@ -47,36 +47,25 @@ public class RemindersManager {
     }
 
     private void scheduleReminders() {
-        ArrayList<ReminderRunnable> toDelete = new ArrayList<>();
         for(ReminderRunnable reminder: reminders.values()) {
             ScheduledFuture<?> reminderFuture = scheduleReminder(reminder);
-            if(reminderFuture == null) {
-                toDelete.add(reminder);
-            } else {
-                remindersFutures.put(reminder.getId(), reminderFuture);
-            }
-        }
-        Database database = Database.getInstance();
-        for(ReminderRunnable reminder: toDelete) {
-            database.deleteReminder(reminder.getId(), reminder.getUserID());
+            remindersFutures.put(reminder.getId(), reminderFuture);
         }
     }
 
     private ScheduledFuture<?> scheduleReminder(ReminderRunnable reminder) {
         int initialDelay = calculateInitialDelay(reminder.getDateTime());
-        if(initialDelay <= 0) {
-            return null;
-        }
         return scheduler.schedule(reminder, initialDelay, TimeUnit.SECONDS);
     }
 
     private int calculateInitialDelay(String dateTimeString) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
-        LocalDateTime timeOfExecution = LocalDateTime.parse(dateTimeString, dateTimeFormatter);
-        if(now.isAfter(timeOfExecution)) return -1;
-        ZonedDateTime zdt = ZonedDateTime.of(timeOfExecution, ZoneId.of("Europe/Warsaw"));
-        Instant instantOfExecution = zdt.toInstant();
+        ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.of("Europe/Warsaw"));
+        ZonedDateTime timeOfExecution = LocalDateTime.parse(dateTimeString, dateTimeFormatter).atZone(ZoneId.of("Europe/Warsaw"));
+        if(now.isAfter(timeOfExecution)) {
+            timeOfExecution = now.plusSeconds(10); // schedule the missed ones to be delivered immediately
+        }
+        Instant instantOfExecution = timeOfExecution.toInstant();
         Duration diff = Duration.between(Instant.now(), instantOfExecution);
         return (int) diff.toSeconds();
     }
