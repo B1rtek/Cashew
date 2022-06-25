@@ -217,7 +217,9 @@ public class Gifts extends BaseCommand {
                 leaderboardEmbed.setImage("attachment://leaderboard.png");
                 File leaderboardImage = new File(generatedTableImagePath);
                 event.replyFile(leaderboardImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
-                //event.reply("Leaderboard generated to " + generatedTableImagePath).queue();
+                if(!leaderboardImage.delete()) {
+                    LOGGER.warn("Failed to remove temporary leaderboard image " + generatedTableImagePath);
+                }
             }
         }
     }
