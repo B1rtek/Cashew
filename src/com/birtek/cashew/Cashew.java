@@ -121,7 +121,7 @@ public class Cashew {
                                 .addOption(STRING, "gift", "Gift to show stats of", false, true)
                                 .addOption(USER, "user", "User to show stats of"))
                         .addSubcommands(new SubcommandData("leaderboard", "Displays leaderboards of most gifted gifts etc")
-                                .addOption(STRING, "leaderboard", "Leaderboard to display", false, true)
+                                .addOption(STRING, "scoreboard", "Leaderboard to display", false, true)
                                 .addOption(STRING, "gift", "Gift to display the leaderboard of (default is all)", false, true)
                                 .addOption(INTEGER, "page", "Page of the leaderboard to display (Default = 1, which is top 10)", false)),
                 Commands.slash("casesim", "CS:GO opening simulator")

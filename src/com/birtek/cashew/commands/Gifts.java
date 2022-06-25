@@ -185,7 +185,7 @@ public class Gifts extends BaseCommand {
                     event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
                 }
             } else if (event.getSubcommandName().equals("leaderboard")) {
-                String leaderboard = event.getOption("leaderboard", leaderboardTypesStrings.get(0), OptionMapping::getAsString);
+                String leaderboard = event.getOption("scoreboard", leaderboardTypesStrings.get(0), OptionMapping::getAsString);
                 int leaderboardIndex = leaderboardTypesStrings.indexOf(leaderboard);
                 if(leaderboardIndex == -1) {
                     event.reply("This leaderboard doesn't exist").setEphemeral(true).queue();
@@ -298,6 +298,9 @@ public class Gifts extends BaseCommand {
                 } else {
                     event.replyChoiceStrings(matching).queue();
                 }
+            } else if(event.getFocusedOption().getName().equals("scoreboard")) {
+                String typed = event.getOption("gift", "", OptionMapping::getAsString);
+                event.replyChoiceStrings(autocompleteFromList(leaderboardTypesStrings, typed)).queue();
             }
         }
     }
