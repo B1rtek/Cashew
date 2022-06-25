@@ -208,7 +208,7 @@ public class Gifts extends BaseCommand {
                     event.reply("This page doesn't exist!").setEphemeral(true).queue();
                     return;
                 }
-                String generatedTableImagePath = generateLeaderboard(leaderboardPage, leaderboardTypesStrings.get(leaderboardIndex));
+                String generatedTableImagePath = generateLeaderboard(leaderboardPage, leaderboardTypesStrings.get(leaderboardIndex), event.getJDA(), event.getGuild().getId());
                 if(generatedTableImagePath == null) {
                     event.reply("Something went wrong while generating the table image").setEphemeral(true).queue();
                     return;

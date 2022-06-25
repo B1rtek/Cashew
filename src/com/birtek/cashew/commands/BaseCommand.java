@@ -1,8 +1,11 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -131,11 +134,18 @@ public class BaseCommand extends ListenerAdapter {
         return timestring.length() != 8 || Integer.parseInt(timestring.substring(0, 2)) > 23 || Integer.parseInt(timestring.substring(3, 5)) > 59 || Integer.parseInt(timestring.substring(6, 8)) > 59;
     }
 
-    protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName) {
+    protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID) {
         String[][] tableData = new String[leaderboardRecords.size()][3];
         for(int i=0; i<leaderboardRecords.size(); i++) {
             tableData[i][0] = String.valueOf(leaderboardRecords.get(i).place());
-            tableData[i][1] = leaderboardRecords.get(i).userID();
+            String userName = leaderboardRecords.get(i).userID();
+            try {
+                Guild server = jda.getGuildById(serverID);
+                assert server != null;
+                Member member = server.retrieveMemberById(leaderboardRecords.get(i).userID()).complete();
+                userName = member.getEffectiveName();
+            } catch (Exception ignored) {}
+            tableData[i][1] = userName;
             tableData[i][2] = String.valueOf(leaderboardRecords.get(i).count());
         }
         JTable table = new JTable(tableData, new String[]{"#", "User", pointsName});
