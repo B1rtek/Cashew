@@ -21,6 +21,18 @@ public class Gifts extends BaseCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gifts.class);
 
+    public enum GiftsLeaderboardType {
+        MOST_GIFTED,
+        MOST_RECEIVED
+    }
+
+    ArrayList<String> leaderboardTypesStrings = new ArrayList<>() {
+        {
+            add("Most gifted");
+            add("Most received");
+        }
+    };
+
     ArrayList<GiftInfo> availableGifts;
     HashSet<Integer> processedIDs = new HashSet<>();
 
@@ -171,6 +183,30 @@ public class Gifts extends BaseCommand {
                 } else {
                     event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
                 }
+            } else if (event.getSubcommandName().equals("leaderboard")) {
+                String leaderboard = event.getOption("leaderboard", leaderboardTypesStrings.get(0), OptionMapping::getAsString);
+                int leaderboardIndex = leaderboardTypesStrings.indexOf(leaderboard);
+                if(leaderboardIndex == -1) {
+                    event.reply("This leaderboard doesn't exist").setEphemeral(true).queue();
+                    return;
+                }
+                GiftsLeaderboardType leaderboardType = GiftsLeaderboardType.values()[leaderboardIndex];
+                int pageNumber = event.getOption("page", 1, OptionMapping::getAsInt);
+                if(pageNumber <= 0) {
+                    event.reply("Invalid page number").setEphemeral(true).queue();
+                    return;
+                }
+                Database database = Database.getInstance();
+                ArrayList<LeaderboardRecord> leaderboardPage = database.getGiftsLeaderboardPage(leaderboardType, pageNumber, Objects.requireNonNull(event.getGuild()).getId());
+                if(leaderboardPage == null) {
+                    event.reply("Something went wrong while fetching the leaderboard...").setEphemeral(true).queue();
+                    return;
+                } else if(leaderboardPage.isEmpty()) {
+                    event.reply("This page doesn't exist!").setEphemeral(true).queue();
+                    return;
+                }
+                String generatedTableImagePath = generateLeaderboard(leaderboardPage, leaderboardTypesStrings.get(leaderboardIndex));
+                event.reply("Leaderboard generated to " + generatedTableImagePath).queue();
             }
         }
     }
