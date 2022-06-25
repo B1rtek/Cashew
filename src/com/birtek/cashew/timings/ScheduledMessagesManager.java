@@ -59,18 +59,17 @@ public class ScheduledMessagesManager {
 
     private int calculateInitialDelay(String executionTimeString) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
+        ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.of("Europe/Warsaw"));
         String currentYearString = String.valueOf(now.getYear());
         if (currentYearString.length() == 1) currentYearString = '0' + currentYearString;
         String currentMonthString = String.valueOf(now.getMonthValue());
         if(currentMonthString.length() == 1) currentMonthString = '0' + currentMonthString;
         String currentDayString = String.valueOf(now.getDayOfMonth());
-        LocalDateTime timeOfNextRun = LocalDateTime.parse(currentYearString + '-' + currentMonthString + '-' + currentDayString + ' ' + executionTimeString, dateTimeFormatter);
+        ZonedDateTime timeOfNextRun = LocalDateTime.parse(currentYearString + '-' + currentMonthString + '-' + currentDayString + ' ' + executionTimeString, dateTimeFormatter).atZone(ZoneId.of("Europe/Warsaw"));
         if (now.isAfter(timeOfNextRun)) {
             timeOfNextRun = timeOfNextRun.plusDays(1);
         }
-        ZonedDateTime zdt = ZonedDateTime.of(timeOfNextRun, ZoneId.of("Europe/Warsaw"));
-        Instant instantOfNextRun = zdt.toInstant();
+        Instant instantOfNextRun = timeOfNextRun.toInstant();
         Duration diff = Duration.between(Instant.now(), instantOfNextRun);
         return (int) diff.toSeconds();
     }
