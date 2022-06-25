@@ -69,13 +69,12 @@ public class BirthdayRemindersManager {
 
     private int calculateInitialDelay(String executionDateTimeString) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
-        LocalDateTime timeOfNextRun = LocalDateTime.parse(executionDateTimeString, dateTimeFormatter);
+        ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.of("Europe/Warsaw"));
+        ZonedDateTime timeOfNextRun = LocalDateTime.parse(executionDateTimeString, dateTimeFormatter).atZone(ZoneId.of("Europe/Warsaw"));
         while (now.isAfter(timeOfNextRun)) {
             timeOfNextRun = timeOfNextRun.plusYears(1);
         }
-        ZonedDateTime zdt = ZonedDateTime.of(timeOfNextRun, ZoneId.of("Europe/Warsaw"));
-        Instant instantOfNextRun = zdt.toInstant();
+        Instant instantOfNextRun = timeOfNextRun.toInstant();
         Duration diff = Duration.between(Instant.now(), instantOfNextRun);
         return (int) diff.toSeconds();
     }
