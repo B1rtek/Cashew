@@ -1,23 +1,32 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 public class BaseCommand extends ListenerAdapter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseCommand.class);
 
     public Permission[] adminPermissions = {
             Permission.ADMINISTRATOR
@@ -80,7 +89,7 @@ public class BaseCommand extends ListenerAdapter {
         if (strNum == null) {
             return false;
         }
-        if(strNum.isEmpty()) {
+        if (strNum.isEmpty()) {
             return true;
         }
         int start = 0;
@@ -107,11 +116,11 @@ public class BaseCommand extends ListenerAdapter {
     public static ArrayList<String> autocompleteFromList(ArrayList<String> options, String typed) {
         ArrayList<String> matching = new ArrayList<>();
         for (String option : options) {
-            if(option.toLowerCase().contains(typed.toLowerCase(Locale.ROOT))) {
+            if (option.toLowerCase().contains(typed.toLowerCase(Locale.ROOT))) {
                 matching.add(option);
             }
         }
-        if(matching.size() > 25) {
+        if (matching.size() > 25) {
             matching = new ArrayList<>() {
                 {
                     add("There's more than 25 matching options");
@@ -123,5 +132,54 @@ public class BaseCommand extends ListenerAdapter {
 
     protected boolean isInvalidTimestamp(String timestring) {
         return timestring.length() != 8 || Integer.parseInt(timestring.substring(0, 2)) > 23 || Integer.parseInt(timestring.substring(3, 5)) > 59 || Integer.parseInt(timestring.substring(6, 8)) > 59;
+    }
+
+    protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID) {
+        String[][] tableData = new String[leaderboardRecords.size()][3];
+        for(int i=0; i<leaderboardRecords.size(); i++) {
+            tableData[i][0] = String.valueOf(leaderboardRecords.get(i).place());
+            String userName = leaderboardRecords.get(i).userID();
+            try {
+                Guild server = jda.getGuildById(serverID);
+                assert server != null;
+                Member member = server.retrieveMemberById(leaderboardRecords.get(i).userID()).complete();
+                userName = member.getEffectiveName();
+            } catch (Exception ignored) {}
+            tableData[i][1] = userName;
+            tableData[i][2] = String.valueOf(leaderboardRecords.get(i).count());
+        }
+        JTable table = new JTable(tableData, new String[]{"Pos", "User", pointsName});
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.getColumnModel().getColumn(0).setMaxWidth(50);
+        table.getColumnModel().getColumn(1).setMinWidth(200);
+        // https://stackoverflow.com/questions/12477522/jframe-to-image-without-showing-the-jframe
+        JFrame frame = new JFrame();
+        frame.setBackground(Color.WHITE);
+        frame.setUndecorated(true);
+        frame.getContentPane().add(table);
+        frame.pack();
+        JFrame frame2 = new JFrame();
+        frame2.setBackground(Color.WHITE);
+        frame2.setUndecorated(true);
+        frame2.getContentPane().add(table.getTableHeader());
+        frame2.pack();
+        BufferedImage bi = new BufferedImage(table.getWidth(), table.getHeight() + table.getTableHeader().getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = bi.createGraphics();
+        table.getTableHeader().paint(graphics);
+        graphics.translate(0, table.getTableHeader().getHeight());
+        table.paint(graphics);
+        graphics.dispose();
+        frame.dispose();
+        frame2.dispose();
+        // https://coderanch.com/t/338608/java/save-jtable-image
+        Random random = new Random();
+        String fileName = "generated/leaderboardTable" + random.nextInt(10000) + ".png";
+        try {
+            ImageIO.write(bi, "png", new File(fileName));
+            return fileName;
+        } catch (IOException e) {
+            LOGGER.error("Failed to generate leaderboard " + pointsName);
+            return null;
+        }
     }
 }
