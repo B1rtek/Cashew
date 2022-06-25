@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.time.Instant;
 import java.util.*;
 
@@ -206,7 +207,15 @@ public class Gifts extends BaseCommand {
                     return;
                 }
                 String generatedTableImagePath = generateLeaderboard(leaderboardPage, leaderboardTypesStrings.get(leaderboardIndex));
-                event.reply("Leaderboard generated to " + generatedTableImagePath).queue();
+                if(generatedTableImagePath == null) {
+                    event.reply("Something went wrong while generating the table image").setEphemeral(true).queue();
+                    return;
+                }
+                EmbedBuilder leaderboardEmbed = new EmbedBuilder();
+                leaderboardEmbed.setImage("attachment://leaderboard.png");
+                File leaderboardImage = new File(generatedTableImagePath);
+                event.replyFile(leaderboardImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
+                //event.reply("Leaderboard generated to " + generatedTableImagePath).queue();
             }
         }
     }
