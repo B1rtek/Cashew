@@ -133,22 +133,30 @@ public class BaseCommand extends ListenerAdapter {
 
     protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName) {
         String[][] tableData = new String[leaderboardRecords.size()][3];
+        for(int i=0; i<leaderboardRecords.size(); i++) {
+            tableData[i][0] = String.valueOf(leaderboardRecords.get(i).place());
+            tableData[i][1] = leaderboardRecords.get(i).userID();
+            tableData[i][2] = String.valueOf(leaderboardRecords.get(i).count());
+        }
         JTable table = new JTable(tableData, new String[]{"#", "User", pointsName});
-        // thanks https://coderanch.com/t/338608/java/save-jtable-image ^^
-        int width = Math.max(table.getTableHeader().getWidth(), table.getWidth());
-        int height = table.getHeight() + table.getTableHeader().getHeight();
-        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = bi.createGraphics();
-        table.getTableHeader().paint(g2);
-        g2.translate(0, table.getTableHeader().getHeight());
-        table.paint(g2);
-        g2.dispose();
+        // https://stackoverflow.com/questions/12477522/jframe-to-image-without-showing-the-jframe
+        JFrame frame = new JFrame();
+        frame.setBackground(Color.WHITE);
+        frame.setUndecorated(true);
+        frame.getContentPane().add(table);
+        frame.pack();
+        BufferedImage bi = new BufferedImage(table.getWidth(), table.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = bi.createGraphics();
+        table.print(graphics);
+        graphics.dispose();
+        frame.dispose();
+        // https://coderanch.com/t/338608/java/save-jtable-image
         Random random = new Random();
         String fileName = "generated/leaderboardTable" + random.nextInt(10000) + ".png";
         try {
             ImageIO.write(bi, "png", new File(fileName));
             return fileName;
-        } catch (IOException ioe) {
+        } catch (IOException e) {
             LOGGER.error("Failed to generate leaderboard " + pointsName);
             return null;
         }

@@ -666,7 +666,7 @@ public final class Database {
             selectedColumn = "amountReceived";
         }
         try {
-            PreparedStatement preparedStatement = giftsConnection.prepareStatement("select pos, userID, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? order by " + selectedColumn + " desc) where pos between (?-1)*10+1 and (?-1)*10+10;");
+            PreparedStatement preparedStatement = giftHistoryConnection.prepareStatement("select pos, userID, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? order by " + selectedColumn + " desc) where pos between (?-1)*10+1 and (?-1)*10+10;");
             preparedStatement.setString(1, serverID);
             preparedStatement.setInt(2, page);
             preparedStatement.setInt(3, page);
