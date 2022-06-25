@@ -197,8 +197,10 @@ public class Gifts extends BaseCommand {
                     event.reply("Invalid page number").setEphemeral(true).queue();
                     return;
                 }
+                GiftInfo chosenGift = findGiftByName(giftName);
+                int giftID = chosenGift.id();
                 Database database = Database.getInstance();
-                ArrayList<LeaderboardRecord> leaderboardPage = database.getGiftsLeaderboardPage(leaderboardType, pageNumber, Objects.requireNonNull(event.getGuild()).getId());
+                ArrayList<LeaderboardRecord> leaderboardPage = database.getGiftsLeaderboardPage(leaderboardType, pageNumber, Objects.requireNonNull(event.getGuild()).getId(), giftID);
                 if(leaderboardPage == null) {
                     event.reply("Something went wrong while fetching the leaderboard...").setEphemeral(true).queue();
                     return;
