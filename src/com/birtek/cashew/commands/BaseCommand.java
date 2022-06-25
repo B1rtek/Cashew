@@ -148,18 +148,29 @@ public class BaseCommand extends ListenerAdapter {
             tableData[i][1] = userName;
             tableData[i][2] = String.valueOf(leaderboardRecords.get(i).count());
         }
-        JTable table = new JTable(tableData, new String[]{"#", "User", pointsName});
+        JTable table = new JTable(tableData, new String[]{"Pos", "User", pointsName});
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        table.getColumnModel().getColumn(0).setMaxWidth(50);
+        table.getColumnModel().getColumn(1).setMinWidth(200);
         // https://stackoverflow.com/questions/12477522/jframe-to-image-without-showing-the-jframe
         JFrame frame = new JFrame();
         frame.setBackground(Color.WHITE);
         frame.setUndecorated(true);
         frame.getContentPane().add(table);
         frame.pack();
-        BufferedImage bi = new BufferedImage(table.getWidth(), table.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        JFrame frame2 = new JFrame();
+        frame2.setBackground(Color.WHITE);
+        frame2.setUndecorated(true);
+        frame2.getContentPane().add(table.getTableHeader());
+        frame2.pack();
+        BufferedImage bi = new BufferedImage(table.getWidth(), table.getHeight() + table.getTableHeader().getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = bi.createGraphics();
-        table.print(graphics);
+        table.getTableHeader().paint(graphics);
+        graphics.translate(0, table.getTableHeader().getHeight());
+        table.paint(graphics);
         graphics.dispose();
         frame.dispose();
+        frame2.dispose();
         // https://coderanch.com/t/338608/java/save-jtable-image
         Random random = new Random();
         String fileName = "generated/leaderboardTable" + random.nextInt(10000) + ".png";
