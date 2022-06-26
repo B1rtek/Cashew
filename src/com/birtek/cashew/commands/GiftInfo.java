@@ -1,6 +1,8 @@
 package com.birtek.cashew.commands;
 
-public record GiftInfo(int id, String name, String imageURL, String reactionLine1, String reactionLine2, String displayName) {
+import java.awt.*;
+
+public record GiftInfo(int id, String name, String imageURL, String reactionLine1, String reactionLine2, String displayName, Color color) {
 
     public int getId() {
         return id;

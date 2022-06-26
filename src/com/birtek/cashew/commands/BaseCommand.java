@@ -140,7 +140,12 @@ public class BaseCommand extends ListenerAdapter {
     // https://stackoverflow.com/questions/5673430/java-jtable-change-cell-color
     private static class LeaderboardCellRenderer extends DefaultTableCellRenderer {
 
-        Color blue = new Color(81, 195, 237);
+        final Color gradientColor;
+
+        public LeaderboardCellRenderer(Color gradientColor) {
+            this.gradientColor = gradientColor;
+        }
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
 
@@ -149,9 +154,9 @@ public class BaseCommand extends ListenerAdapter {
 
             //Get the status for the current row.
             if(row >= 0) {
-                int targetR = blue.getRed() + (255 - blue.getRed())/10*(10-row);
-                int targetG = blue.getGreen() + (255 - blue.getGreen())/10*(10-row);
-                int targetB = blue.getBlue() + (255 - blue.getBlue())/10*(10-row);
+                int targetR = gradientColor.getRed() + (255 - gradientColor.getRed())/10*(10-row);
+                int targetG = gradientColor.getGreen() + (255 - gradientColor.getGreen())/10*(10-row);
+                int targetB = gradientColor.getBlue() + (255 - gradientColor.getBlue())/10*(10-row);
                 l.setBackground(new Color(targetR, targetG, targetB));
             } else l.setBackground(Color.WHITE);
 
@@ -165,13 +170,16 @@ public class BaseCommand extends ListenerAdapter {
 
         TableCellRenderer render;
         Border b;
-        public LeaderboardHeaderRenderer(TableCellRenderer r){
+
+        final Color gradientColor;
+        public LeaderboardHeaderRenderer(TableCellRenderer r, Color gradientColor){
             render = r;
+            this.gradientColor = gradientColor;
 
             //It looks funky to have a different color on each side - but this is what you asked
             //You can comment out borders if you want too. (example try commenting out top and left borders)
             b = BorderFactory.createCompoundBorder();
-            b = BorderFactory.createCompoundBorder(b, BorderFactory.createMatteBorder(0,0,2,0, new Color(81, 195, 237)));
+            b = BorderFactory.createCompoundBorder(b, BorderFactory.createMatteBorder(0,0,2,0, gradientColor));
         }
         @Override
         public Component getTableCellRendererComponent(JTable table,
@@ -183,7 +191,7 @@ public class BaseCommand extends ListenerAdapter {
         }
     }
 
-    protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID) {
+    protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID, Color themeColor) {
         String[][] tableData = new String[leaderboardRecords.size()][3];
         for(int i=0; i<leaderboardRecords.size(); i++) {
             tableData[i][0] = String.valueOf(leaderboardRecords.get(i).place());
@@ -204,7 +212,7 @@ public class BaseCommand extends ListenerAdapter {
         table.setRowHeight(28);
         table.setFont(new Font("SansSerif", Font.PLAIN, 24));
         for(int i=0; i<table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setCellRenderer(new LeaderboardCellRenderer());
+            table.getColumnModel().getColumn(i).setCellRenderer(new LeaderboardCellRenderer(themeColor));
         }
         // https://stackoverflow.com/questions/11609900/how-to-make-the-background-of-a-jtable-transparent
         table.setOpaque(false);
@@ -214,7 +222,7 @@ public class BaseCommand extends ListenerAdapter {
         table.setShowVerticalLines(false);
         table.setShowHorizontalLines(false);
         table.setIntercellSpacing(new Dimension(0,0));
-        table.getTableHeader().setDefaultRenderer(new LeaderboardHeaderRenderer(table.getTableHeader().getDefaultRenderer()));
+        table.getTableHeader().setDefaultRenderer(new LeaderboardHeaderRenderer(table.getTableHeader().getDefaultRenderer(), themeColor));
         // https://stackoverflow.com/questions/12477522/jframe-to-image-without-showing-the-jframe
         JFrame frame = new JFrame();
         frame.setUndecorated(true);
