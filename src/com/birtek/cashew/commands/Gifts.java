@@ -148,6 +148,10 @@ public class Gifts extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if(event.getGuild() == null) {
+            event.reply("Gifts don't work in DMs").setEphemeral(true).queue();
+            return;
+        }
         if (event.getName().equals("gifts")) {
             if(!event.getChannel().canTalk()) {
                 event.reply("This command won't work in here, Cashew can't see or/and write in this channel!").setEphemeral(true).queue();
@@ -208,19 +212,39 @@ public class Gifts extends BaseCommand {
                     event.reply("This page doesn't exist!").setEphemeral(true).queue();
                     return;
                 }
-                String generatedTableImagePath = generateLeaderboard(leaderboardPage, leaderboardTypesStrings.get(leaderboardIndex), event.getJDA(), event.getGuild().getId());
-                if(generatedTableImagePath == null) {
-                    event.reply("Something went wrong while generating the table image").setEphemeral(true).queue();
-                    return;
-                }
-                EmbedBuilder leaderboardEmbed = new EmbedBuilder();
-                leaderboardEmbed.setImage("attachment://leaderboard.png");
-                File leaderboardImage = new File(generatedTableImagePath);
-                event.replyFile(leaderboardImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
-                if(!leaderboardImage.delete()) {
-                    LOGGER.warn("Failed to remove temporary leaderboard image " + generatedTableImagePath);
-                }
+                LeaderboardRecord callersStats = database.getLeaderboardStats(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID, event.getUser().getId());
+                generateAndSendLeaderboardEmbed(leaderboard, leaderboardIndex, leaderboardPage, event, chosenGift, callersStats);
             }
+        }
+    }
+
+    private void generateAndSendLeaderboardEmbed(String leaderboard, int leaderboardIndex, ArrayList<LeaderboardRecord> leaderboardPage, SlashCommandInteractionEvent event, GiftInfo gift, LeaderboardRecord callersStats) {
+        String pointsName = leaderboardTypesStrings.get(leaderboardIndex).split("\\s+")[1];
+        String capitalPointsName = Character.toString(pointsName.charAt(0)-32) + pointsName.substring(1);
+        String generatedTableImagePath = generateLeaderboard(leaderboardPage, capitalPointsName, event.getJDA(), Objects.requireNonNull(event.getGuild()).getId());
+        if(generatedTableImagePath == null) {
+            event.reply("Something went wrong while generating the table image").setEphemeral(true).queue();
+            return;
+        }
+        EmbedBuilder leaderboardEmbed = new EmbedBuilder();
+        if(gift.getId() != 0) {
+            leaderboardEmbed.setTitle("Leaderboard for " + leaderboard.toLowerCase(Locale.ROOT) + " " + gift.getName() + "s");
+        } else {
+            leaderboardEmbed.setTitle("Leaderboard for " + leaderboard.toLowerCase(Locale.ROOT) + " gifts");
+        }
+        if(callersStats.place() != 0) {
+            leaderboardEmbed.addField("Your position", "#" + callersStats.place() + " with " + callersStats.count() + " " + pointsName, false);
+        }
+        if(gift.getId() != 0) {
+            leaderboardEmbed.setThumbnail(gift.imageURL());
+        } else {
+            leaderboardEmbed.setThumbnail(event.getGuild().getIconUrl());
+        }
+        leaderboardEmbed.setImage("attachment://leaderboard.png");
+        File leaderboardImage = new File(generatedTableImagePath);
+        event.replyFile(leaderboardImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
+        if(!leaderboardImage.delete()) {
+            LOGGER.warn("Failed to remove temporary leaderboard image " + generatedTableImagePath);
         }
     }
 
