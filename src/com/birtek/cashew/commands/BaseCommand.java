@@ -209,6 +209,7 @@ public class BaseCommand extends ListenerAdapter {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.getColumnModel().getColumn(0).setMaxWidth(50);
         table.getColumnModel().getColumn(1).setMinWidth(250);
+        table.getColumnModel().getColumn(2).setMinWidth(80);
         table.setRowHeight(28);
         table.setFont(new Font("SansSerif", Font.PLAIN, 24));
         for(int i=0; i<table.getColumnCount(); i++) {
