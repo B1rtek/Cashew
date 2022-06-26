@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -134,7 +137,61 @@ public class BaseCommand extends ListenerAdapter {
         return timestring.length() != 8 || Integer.parseInt(timestring.substring(0, 2)) > 23 || Integer.parseInt(timestring.substring(3, 5)) > 59 || Integer.parseInt(timestring.substring(6, 8)) > 59;
     }
 
-    protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID) {
+    // https://stackoverflow.com/questions/5673430/java-jtable-change-cell-color
+    private static class LeaderboardCellRenderer extends DefaultTableCellRenderer {
+
+        final Color gradientColor;
+
+        public LeaderboardCellRenderer(Color gradientColor) {
+            this.gradientColor = gradientColor;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+
+            //Cells are by default rendered as a JLabel.
+            JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+
+            //Get the status for the current row.
+            if(row >= 0) {
+                int targetR = gradientColor.getRed() + (255 - gradientColor.getRed())/10*(10-row);
+                int targetG = gradientColor.getGreen() + (255 - gradientColor.getGreen())/10*(10-row);
+                int targetB = gradientColor.getBlue() + (255 - gradientColor.getBlue())/10*(10-row);
+                l.setBackground(new Color(targetR, targetG, targetB));
+            } else l.setBackground(Color.WHITE);
+
+
+            //Return the JLabel which renders the cell.
+            return l;
+        }
+    }
+
+    private static class LeaderboardHeaderRenderer extends DefaultTableCellRenderer {
+
+        TableCellRenderer render;
+        Border b;
+
+        final Color gradientColor;
+        public LeaderboardHeaderRenderer(TableCellRenderer r, Color gradientColor){
+            render = r;
+            this.gradientColor = gradientColor;
+
+            //It looks funky to have a different color on each side - but this is what you asked
+            //You can comment out borders if you want too. (example try commenting out top and left borders)
+            b = BorderFactory.createCompoundBorder();
+            b = BorderFactory.createCompoundBorder(b, BorderFactory.createMatteBorder(0,0,2,0, gradientColor));
+        }
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                                                       Object value, boolean isSelected, boolean hasFocus, int row,
+                                                       int column) {
+            JComponent result = (JComponent)render.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            result.setBorder(b);
+            return result;
+        }
+    }
+
+    protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID, Color themeColor) {
         String[][] tableData = new String[leaderboardRecords.size()][3];
         for(int i=0; i<leaderboardRecords.size(); i++) {
             tableData[i][0] = String.valueOf(leaderboardRecords.get(i).place());
@@ -148,14 +205,29 @@ public class BaseCommand extends ListenerAdapter {
             tableData[i][1] = userName;
             tableData[i][2] = String.valueOf(leaderboardRecords.get(i).count());
         }
-        JTable table = new JTable(tableData, new String[]{"Pos", "User", pointsName});
+        JTable table = new JTable(tableData, new String[]{"#", "User", pointsName});
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.getColumnModel().getColumn(0).setMaxWidth(50);
-        table.getColumnModel().getColumn(1).setMinWidth(200);
+        table.getColumnModel().getColumn(1).setMinWidth(250);
+        table.getColumnModel().getColumn(2).setMinWidth(80);
+        table.setRowHeight(28);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 24));
+        for(int i=0; i<table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(new LeaderboardCellRenderer(themeColor));
+        }
+        // https://stackoverflow.com/questions/11609900/how-to-make-the-background-of-a-jtable-transparent
+        table.setOpaque(false);
+        ((DefaultTableCellRenderer)table.getDefaultRenderer(Object.class)).setOpaque(false);
+        table.setGridColor(new Color(255, 255, 255, 0));
+        table.setShowGrid(false);
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(false);
+        table.setIntercellSpacing(new Dimension(0,0));
+        table.getTableHeader().setDefaultRenderer(new LeaderboardHeaderRenderer(table.getTableHeader().getDefaultRenderer(), themeColor));
         // https://stackoverflow.com/questions/12477522/jframe-to-image-without-showing-the-jframe
         JFrame frame = new JFrame();
-        frame.setBackground(Color.WHITE);
         frame.setUndecorated(true);
+        frame.setBackground(Color.CYAN);
         frame.getContentPane().add(table);
         frame.pack();
         JFrame frame2 = new JFrame();

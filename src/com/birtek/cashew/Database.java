@@ -4,6 +4,7 @@ import com.birtek.cashew.commands.*;
 import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.*;
 
+import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -582,14 +583,14 @@ public final class Database {
 
     public ArrayList<GiftInfo> getAvailableGifts() {
         try {
-            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT giftID, giftName, giftImageURL, reactionLine1, reactionLine2, displayName FROM Gifts");
+            PreparedStatement prepStmt = giftsConnection.prepareStatement("SELECT giftID, giftName, giftImageURL, reactionLine1, reactionLine2, displayName, color FROM Gifts");
             ResultSet results = prepStmt.executeQuery();
             ArrayList<GiftInfo> availableGifts = new ArrayList<>();
             if (results == null) {
                 return availableGifts;
             }
             while (results.next()) {
-                availableGifts.add(new GiftInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6)));
+                availableGifts.add(new GiftInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6), new Color(results.getInt(7))));
             }
             return availableGifts;
         } catch (SQLException e) {
@@ -669,13 +670,13 @@ public final class Database {
             ArrayList<LeaderboardRecord> leaderboardRecords = new ArrayList<>();
             PreparedStatement preparedStatement;
             if(giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userID, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? AND giftID = ? order by " + selectedColumn + " desc) where pos between (?-1)*10+1 and (?-1)*10+10");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userID, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? AND giftID = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) where pos between (?-1)*10+1 and (?-1)*10+10");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
                 preparedStatement.setInt(3, page);
                 preparedStatement.setInt(4, page);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userID, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userID, SUM(" + selectedColumn + ") as total from GiftHistory where serverID = ? group by userID order by total desc) where pos between (?-1)*10+1 and (?-1)*10+10");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userID, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userID, SUM(" + selectedColumn + ") as total from GiftHistory where serverID = ? group by userID order by total desc) where pos between (?-1)*10+1 and (?-1)*10+10 and total > 0");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, page);
                 preparedStatement.setInt(3, page);
@@ -685,6 +686,36 @@ public final class Database {
                 leaderboardRecords.add(new LeaderboardRecord(results.getInt(1), results.getString(2), results.getInt(3)));
             }
             return leaderboardRecords;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public LeaderboardRecord getLeaderboardStats(Gifts.GiftsLeaderboardType type, String serverID, int giftID, String userID) {
+        String selectedColumn;
+        if (type == Gifts.GiftsLeaderboardType.MOST_GIFTED) {
+            selectedColumn = "amountGifted";
+        } else {
+            selectedColumn = "amountReceived";
+        }
+        try {
+            PreparedStatement preparedStatement;
+            if(giftID != 0) {
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? AND giftID = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) where userID = ?");
+                preparedStatement.setString(1, serverID);
+                preparedStatement.setInt(2, giftID);
+                preparedStatement.setString(3, userID);
+            } else {
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userID, SUM(" + selectedColumn + ") as total from GiftHistory where serverID = ? group by userID order by total desc) where userID = ? AND total > 0");
+                preparedStatement.setString(1, serverID);
+                preparedStatement.setString(2, userID);
+            }
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                return new LeaderboardRecord(results.getInt(1), userID, results.getInt(2));
+            }
+            return new LeaderboardRecord(0, userID, 0);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
