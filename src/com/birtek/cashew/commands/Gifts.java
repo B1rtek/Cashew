@@ -191,7 +191,7 @@ public class Gifts extends BaseCommand {
                     event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
                 }
             } else if (event.getSubcommandName().equals("leaderboard")) {
-                String leaderboard = event.getOption("scoreboard", leaderboardTypesStrings.get(0), OptionMapping::getAsString);
+                String leaderboard = event.getOption("scoreboard", leaderboardTypesStrings.get(1), OptionMapping::getAsString);
                 int leaderboardIndex = leaderboardTypesStrings.indexOf(leaderboard);
                 if(leaderboardIndex == -1) {
                     event.reply("This leaderboard doesn't exist").setEphemeral(true).queue();
@@ -236,6 +236,8 @@ public class Gifts extends BaseCommand {
         }
         if(callersStats.place() != 0) {
             leaderboardEmbed.addField("Your position", "#" + callersStats.place() + " with " + callersStats.count() + " " + pointsName, false);
+        } else {
+            leaderboardEmbed.addField("Your position", "You haven't yet " + pointsName + " any " + gift.getName() + "s!", false);
         }
         if(gift.getId() != 0) {
             leaderboardEmbed.setThumbnail(gift.imageURL());
