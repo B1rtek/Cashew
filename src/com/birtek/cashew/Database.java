@@ -778,6 +778,21 @@ public final class Database {
         }
     }
 
+    public CaseInfo getCollectionInfo(String collectionName) {
+        try {
+            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT * FROM Collections WHERE name = ?");
+            preparedStatement.setString(1, collectionName);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), 0);
+            }
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private ArrayList<SkinInfo> getSkinsFromResultSet(ResultSet results) throws SQLException {
         ArrayList<SkinInfo> skins = new ArrayList<>();
         while (results.next()) {
@@ -804,6 +819,17 @@ public final class Database {
         try {
             PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * From Knives where knifeGroup = ?");
             preparedStatement.setInt(1, caseInfo.knifeGroup());
+            return getSkinsFromResultSet(preparedStatement.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ArrayList<SkinInfo> getCollectionSkins(CaseInfo caseInfo) {
+        try {
+            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT * FROM Skins WHERE collectionId = ?");
+            preparedStatement.setInt(1, caseInfo.caseId());
             return getSkinsFromResultSet(preparedStatement.executeQuery());
         } catch (SQLException e) {
             e.printStackTrace();

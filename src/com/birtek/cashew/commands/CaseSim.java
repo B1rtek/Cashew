@@ -202,6 +202,23 @@ public class CaseSim extends BaseCommand {
         return buttonID;
     }
 
+    private void sendSkinOpeningEmbed(SlashCommandInteractionEvent event, CaseInfo caseInfo, float floatValue, SkinInfo skin, String itemOrigin) {
+        EmbedBuilder caseUnboxEmbed = new EmbedBuilder();
+        caseUnboxEmbed.setAuthor(caseInfo.caseName(), caseInfo.caseUrl(), caseInfo.imageUrl());
+        caseUnboxEmbed.setTitle(skin.name());
+        caseUnboxEmbed.setFooter(skin.description());
+        caseUnboxEmbed.addField("Condition: " + getConditionFromFloat(floatValue), String.valueOf(floatValue), true);
+        caseUnboxEmbed.addField("Finish style", skin.finishStyle(), true);
+        caseUnboxEmbed.setImage(getImageUrlFromFloat(floatValue, skin));
+        caseUnboxEmbed.setDescription(skin.flavorText());
+
+        event.replyEmbeds(caseUnboxEmbed.build()).addActionRow(
+                Button.link(skin.stashUrl(), "CSGO Stash"),
+                Button.primary(createInspectButtonID(event.getUser().getId(), floatValue, skin), "Inspect URL"),
+                Button.success(createSaveToInvButtonID(event.getUser().getId(), itemOrigin, floatValue, skin), "Save to inventory")
+        ).queue();
+    }
+
     private void openCase(SlashCommandInteractionEvent event) {
         // Find the selected case name
         String typed = event.getOption("case", "", OptionMapping::getAsString);
@@ -215,7 +232,7 @@ public class CaseSim extends BaseCommand {
         Database database = Database.getInstance();
         CaseInfo caseInfo = database.getCaseInfo(selectedCase);
         if(caseInfo == null) {
-            LOGGER.error("Query for case info of " + selectedCase + " in casesimCases.Skins returned null");
+            LOGGER.error("Query for case info of " + selectedCase + " in casesimCases.Cases returned null");
             event.reply("Something went wrong while executing the command").setEphemeral(true).queue();
             return;
         }
@@ -237,7 +254,7 @@ public class CaseSim extends BaseCommand {
         if(rarity == SkinRarity.EXTRAORDINARY) {
             ArrayList<SkinInfo> caseKnives = database.getCaseKnives(caseInfo);
             if(caseKnives == null) {
-                LOGGER.error("Query for knives from " + selectedCase + " in casesimCases.Skins returned null");
+                LOGGER.error("Query for knives from " + selectedCase + " in casesimCases.Knives returned null");
                 event.reply("Something went wrong while executing the command").setEphemeral(true).queue();
                 return;
             }
@@ -247,26 +264,45 @@ public class CaseSim extends BaseCommand {
         }
         float floatValue = getSkinFloat(skin);
 
-        // at this point all values are known
-
-        EmbedBuilder caseUnboxEmbed = new EmbedBuilder();
-        caseUnboxEmbed.setAuthor(caseInfo.caseName(), caseInfo.caseUrl(), caseInfo.imageUrl());
-        caseUnboxEmbed.setTitle(skin.name());
-        caseUnboxEmbed.setDescription(skin.description());
-        caseUnboxEmbed.addField("Condition: " + getConditionFromFloat(floatValue), String.valueOf(floatValue), true);
-        caseUnboxEmbed.addField("Finish style", skin.finishStyle(), true);
-        caseUnboxEmbed.setImage(getImageUrlFromFloat(floatValue, skin));
-        caseUnboxEmbed.setFooter(skin.flavorText());
-
-        event.replyEmbeds(caseUnboxEmbed.build()).addActionRow(
-                Button.link(skin.stashUrl(), "CSGO Stash"),
-                Button.primary(createInspectButtonID(event.getUser().getId(), floatValue, skin), "Inspect URL"),
-                Button.success(createSaveToInvButtonID(event.getUser().getId(), "case", floatValue, skin), "Save to inventory")
-        ).queue();
+        // at this point all values are known, send back the result
+        sendSkinOpeningEmbed(event, caseInfo, floatValue, skin, "case");
     }
 
     private void openCollection(SlashCommandInteractionEvent event) {
-        event.reply("This doesn't work yet").setEphemeral(true).queue();
+        // Find the selected case name
+        String typed = event.getOption("collection", "", OptionMapping::getAsString);
+        String selectedCollection = getSelectedContainerName(collectionsChoices, typed);
+        if(selectedCollection == null) {
+            event.reply("No matching collections found.").setEphemeral(true).queue();
+            return;
+        }
+
+        // Get all skins from the collection
+        Database database = Database.getInstance();
+        CaseInfo collectionInfo = database.getCollectionInfo(selectedCollection);
+        if(collectionInfo == null) {
+            LOGGER.error("Query for collection info of " + selectedCollection + " in casesimCollections.Collections returned null");
+            event.reply("Something went wrong while executing the command").setEphemeral(true).queue();
+            return;
+        }
+        ArrayList<SkinInfo> collectionSkins = database.getCollectionSkins(collectionInfo);
+        if(collectionSkins == null) {
+            LOGGER.error("Query for skins from " + selectedCollection + " in casesimCollections.Skins returned null");
+            event.reply("Something went wrong while executing the command").setEphemeral(true).queue();
+            return;
+        }
+
+        // Find all possible rarities
+        ArrayList<SkinRarity> rarities = findPossibleRarities(collectionSkins);
+        ArrayList<Double> percentages = calculatePercentages(rarities, true);
+
+        // roll all random values
+        SkinRarity rarity = getRarityFromPercent(percentages);
+        SkinInfo skin = getSkinOfRarity(rarity, collectionSkins);
+        float floatValue = getSkinFloat(skin);
+
+        // at this point all values are known, send back the result
+        sendSkinOpeningEmbed(event, collectionInfo, floatValue, skin, "collection");
     }
 
     private void openCapsule(SlashCommandInteractionEvent event) {
@@ -309,6 +345,7 @@ public class CaseSim extends BaseCommand {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         //userID:casesim:inspect:inspectURL
+        //userID:casesim:savetoinv:skinID:float
         String[] buttonID = event.getComponentId().split(":");
         if(buttonID.length < 4) return;
         if(buttonID[1].equals("casesim")) {
@@ -319,7 +356,11 @@ public class CaseSim extends BaseCommand {
                     event.reply(inspectURL).setEphemeral(true).queue();
                 }
                 case "savetoinv" -> {
-                    event.reply("Saving to inventory doesn't work yet, come back later!").setEphemeral(true).queue();
+                    if(buttonID[0].equals(event.getUser().getId())) {
+                        event.reply("Saving to inventory doesn't work yet, come back later!").setEphemeral(true).queue();
+                    } else {
+                        event.reply("This is not your item!").setEphemeral(true).queue();
+                    }
                 }
             }
         }
