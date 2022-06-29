@@ -51,7 +51,7 @@ public class Cashew {
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
                 .setCompression(Compression.NONE)
-                .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new OpenCase(), new OpenCollection(), new TimedMessageCommand(),
+                .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), /*new OpenCase(), new OpenCollection(),*/ new TimedMessageCommand(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(), new ChoccyMilk(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(),  //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
@@ -108,12 +108,12 @@ public class Cashew {
                         .addSubcommands(new SubcommandData("delete", "Deletes the specified messages")
                                 .addOption(STRING, "all", "Deletes ALL scheduled messages (type \"definitely\" to confirm)")
                                 .addOption(INTEGER, "id", "ID of the messsage to delete")),
-                Commands.slash("opencase", "CS:GO case opening simulator")
-                        .addOption(STRING, "case", "Name of the case to open", false, true)
-                        .addOption(INTEGER, "id", "ID of the case to open (IDs are assigned in chronological order)"),
-                Commands.slash("opencollection", "CS:GO collection opening simulator")
-                        .addOption(STRING, "collection", "Name of the collection to open", false, true)
-                        .addOption(INTEGER, "id", "ID of the collection to open (IDs are assigned in chronological order)"),
+//                Commands.slash("opencase", "CS:GO case opening simulator")
+//                        .addOption(STRING, "case", "Name of the case to open", false, true)
+//                        .addOption(INTEGER, "id", "ID of the case to open (IDs are assigned in chronological order)"),
+//                Commands.slash("opencollection", "CS:GO collection opening simulator")
+//                        .addOption(STRING, "collection", "Name of the collection to open", false, true)
+//                        .addOption(INTEGER, "id", "ID of the collection to open (IDs are assigned in chronological order)"),
                 Commands.slash("gifts", "Gift system command")
                         .addSubcommands(new SubcommandData("gift", "Give someone a gift!")
                                 .addOption(STRING, "gift", "Name of the gift to gift", true, true))
