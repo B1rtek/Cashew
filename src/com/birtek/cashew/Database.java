@@ -384,7 +384,7 @@ public final class Database {
                 System.err.println("An error occured while deleting stuff from the Messages table.");
                 return -1;
             }
-            for(int id: idsToDelete) {
+            for (int id : idsToDelete) {
                 Cashew.scheduledMessagesManager.deleteScheduledMessage(id);
             }
             return 0;
@@ -443,8 +443,8 @@ public final class Database {
             PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, messageContent, executionTime, destinationChannelID FROM Messages");
             ResultSet scheduledMessages = prepStmt.executeQuery();
             ArrayList<ScheduledMessage> scheduledMessageArrayList = new ArrayList<>();
-            if(scheduledMessages != null) {
-                while(scheduledMessages.next()) {
+            if (scheduledMessages != null) {
+                while (scheduledMessages.next()) {
                     scheduledMessageArrayList.add(new ScheduledMessage(scheduledMessages.getInt(1), scheduledMessages.getString(2), scheduledMessages.getString(3), scheduledMessages.getString(4)));
                 }
             }
@@ -669,7 +669,7 @@ public final class Database {
         try {
             ArrayList<LeaderboardRecord> leaderboardRecords = new ArrayList<>();
             PreparedStatement preparedStatement;
-            if(giftID != 0) {
+            if (giftID != 0) {
                 preparedStatement = giftHistoryConnection.prepareStatement("select pos, userID, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? AND giftID = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) where pos between (?-1)*10+1 and (?-1)*10+10");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
@@ -682,7 +682,7 @@ public final class Database {
                 preparedStatement.setInt(3, page);
             }
             ResultSet results = preparedStatement.executeQuery();
-            while(results.next()) {
+            while (results.next()) {
                 leaderboardRecords.add(new LeaderboardRecord(results.getInt(1), results.getString(2), results.getInt(3)));
             }
             return leaderboardRecords;
@@ -701,7 +701,7 @@ public final class Database {
         }
         try {
             PreparedStatement preparedStatement;
-            if(giftID != 0) {
+            if (giftID != 0) {
                 preparedStatement = giftHistoryConnection.prepareStatement("select pos, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? AND giftID = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) where userID = ?");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
@@ -712,7 +712,7 @@ public final class Database {
                 preparedStatement.setString(2, userID);
             }
             ResultSet results = preparedStatement.executeQuery();
-            if(results.next()) {
+            if (results.next()) {
                 return new LeaderboardRecord(results.getInt(1), userID, results.getInt(2));
             }
             return new LeaderboardRecord(0, userID, 0);
@@ -763,29 +763,48 @@ public final class Database {
         }
     }
 
-    public ArrayList<SkinInfo> getCaseSkins(String caseName) {
+    public CaseInfo getCaseInfo(String caseName) {
         try {
-            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT _id FROM Cases WHERE name = ?");
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Cases WHERE name = ?");
             preparedStatement.setString(1, caseName);
             ResultSet results = preparedStatement.executeQuery();
-            int caseId = -1;
             if (results.next()) {
-                caseId = results.getInt(1);
+                return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getInt(5));
             }
-            if (caseId == -1) {
-                return null;
-            }
-            preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Skins WHERE caseId = ?");
-            preparedStatement.setInt(1, caseId);
-            results = preparedStatement.executeQuery();
-            ArrayList<SkinInfo> skins = new ArrayList<>();
-            while (results.next()) {
-                skins.add(new SkinInfo(results.getInt(2), results.getString(3), results.getInt(4), results.getFloat(5), results.getFloat(6), results.getString(7), results.getString(8), results.getString(9), results.getString(10), results.getString(11), results.getString(12), results.getString(13), results.getString(14), results.getString(15), results.getString(16), results.getString(17), results.getString(18)));
-            }
-            if(skins.isEmpty()) {
-                return null;
-            }
-            return skins;
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private ArrayList<SkinInfo> getSkinsFromResultSet(ResultSet results) throws SQLException {
+        ArrayList<SkinInfo> skins = new ArrayList<>();
+        while (results.next()) {
+            skins.add(new SkinInfo(results.getInt(2), results.getString(3), CaseSim.SkinRarity.values()[results.getInt(4)], results.getFloat(5), results.getFloat(6), results.getString(7), results.getString(8), results.getString(9), results.getString(10), results.getString(11), results.getString(12), results.getString(13), results.getString(14), results.getString(15), results.getString(16), results.getString(17), results.getString(18)));
+        }
+        if (skins.isEmpty()) {
+            return null;
+        }
+        return skins;
+    }
+
+    public ArrayList<SkinInfo> getCaseSkins(CaseInfo caseInfo) {
+        try {
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Skins WHERE caseId = ?");
+            preparedStatement.setInt(1, caseInfo.caseId());
+            return getSkinsFromResultSet(preparedStatement.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ArrayList<SkinInfo> getCaseKnives(CaseInfo caseInfo) {
+        try {
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * From Knives where knifeGroup = ?");
+            preparedStatement.setInt(1, caseInfo.knifeGroup());
+            return getSkinsFromResultSet(preparedStatement.executeQuery());
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -797,7 +816,7 @@ public final class Database {
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM Reminders");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminder> reminders = new ArrayList<>();
-            while(results.next()) {
+            while (results.next()) {
                 reminders.add(new BirthdayReminder(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6)));
             }
             return reminders;
@@ -812,7 +831,7 @@ public final class Database {
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT serverID, channelID, override FROM DefaultChannels");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminderDefaults> defaults = new ArrayList<>();
-            while(results.next()) {
+            while (results.next()) {
                 defaults.add(new BirthdayReminderDefaults(results.getString(1), results.getString(2), results.getBoolean(3)));
             }
             return defaults;
@@ -828,7 +847,7 @@ public final class Database {
         preparedStatement.setString(2, userID);
         ResultSet results = preparedStatement.executeQuery();
         int id = 0;
-        if(results.next()) {
+        if (results.next()) {
             id = results.getInt(1);
         }
         return id;
@@ -837,16 +856,16 @@ public final class Database {
     public boolean addBirthdayReminder(BirthdayReminder reminder) {
         try {
             int id = getBirthdayReminderId(reminder.getServerID(), reminder.getUserID());
-            if(id == 0) { // new record
+            if (id == 0) { // new record
                 reminder = insertBirthdayReminder(reminder);
-                if(reminder != null) {
+                if (reminder != null) {
                     Cashew.birthdayRemindersManager.addBirthdayReminder(reminder);
                     return true;
                 }
                 return false;
             } else { // record update
                 reminder.setId(id);
-                if(this.updateBirthdayReminder(reminder)) {
+                if (this.updateBirthdayReminder(reminder)) {
                     Cashew.birthdayRemindersManager.updateBirthdayReminder(reminder);
                     return true;
                 }
@@ -868,7 +887,7 @@ public final class Database {
             preparedStatement.setString(5, reminder.getUserID());
             preparedStatement.execute();
             ResultSet id = preparedStatement.getGeneratedKeys();
-            if(id.next()) {
+            if (id.next()) {
                 reminder.setId(id.getInt(1));
                 return reminder;
             }
@@ -899,7 +918,7 @@ public final class Database {
     public boolean deleteBirthdayReminder(String serverID, String userID) {
         try {
             int id = getBirthdayReminderId(serverID, userID);
-            if(id == 0) return false;
+            if (id == 0) return false;
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM Reminders WHERE serverID = ? AND userID = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
@@ -918,16 +937,16 @@ public final class Database {
             preparedStatement.setString(1, defaults.serverID());
             ResultSet results = preparedStatement.executeQuery();
             int id = 0;
-            if(results.next()) {
+            if (results.next()) {
                 id = results.getInt(1);
             }
-            if(id == 0) { // new record
-                if(insertBirthdayRemindersDefaults(defaults)) {
+            if (id == 0) { // new record
+                if (insertBirthdayRemindersDefaults(defaults)) {
                     Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults);
                     return true;
                 }
             } else {
-                if(updateBirthdayRemindersDefaults(defaults)) {
+                if (updateBirthdayRemindersDefaults(defaults)) {
                     Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults);
                     return true;
                 }
@@ -974,7 +993,7 @@ public final class Database {
             preparedStatement.setString(1, userID);
             preparedStatement.setString(2, serverID);
             ResultSet results = preparedStatement.executeQuery();
-            if(results.next()) {
+            if (results.next()) {
                 return new BirthdayReminder(0, results.getString(1), results.getString(2), results.getString(3), serverID, userID);
             }
             return new BirthdayReminder(-1, "", "", "", "", "");
@@ -989,7 +1008,7 @@ public final class Database {
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT channelID, override FROM DefaultChannels WHERE serverID = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
-            if(results.next()) {
+            if (results.next()) {
                 return new BirthdayReminderDefaults(serverID, results.getString(1), results.getBoolean(2));
             }
             return new BirthdayReminderDefaults("", "", false);
@@ -1008,7 +1027,7 @@ public final class Database {
             preparedStatement.setBoolean(4, reminder.isPing());
             preparedStatement.execute();
             ResultSet id = preparedStatement.getGeneratedKeys();
-            if(id.next()) {
+            if (id.next()) {
                 reminder.setId(id.getInt(1));
                 Cashew.remindersManager.addReminder(reminder);
                 return reminder;
@@ -1026,7 +1045,7 @@ public final class Database {
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<ReminderRunnable> reminders = new ArrayList<>();
-            while(results.next()) {
+            while (results.next()) {
                 reminders.add(new ReminderRunnable(results.getInt(1), results.getBoolean(4), results.getString(2), results.getString(3), userID));
             }
             return reminders;
@@ -1041,7 +1060,7 @@ public final class Database {
             PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping, userID FROM Reminders");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<ReminderRunnable> reminders = new ArrayList<>();
-            while(results.next()) {
+            while (results.next()) {
                 reminders.add(new ReminderRunnable(results.getInt(1), results.getBoolean(4), results.getString(2), results.getString(3), results.getString(5)));
             }
             return reminders;
@@ -1056,7 +1075,7 @@ public final class Database {
             PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM Reminders WHERE userID = ?");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
-            if(results.next()) {
+            if (results.next()) {
                 return results.getInt(1);
             }
             return -1;
@@ -1071,14 +1090,14 @@ public final class Database {
             PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM Reminders where _id = ?");
             preparedStatement.setInt(1, id);
             ResultSet results = preparedStatement.executeQuery();
-            if(results.next()) {
-                if(results.getInt(1) == 0) return 0;
+            if (results.next()) {
+                if (results.getInt(1) == 0) return 0;
             } else return -1;
             preparedStatement = remindersConnection.prepareStatement("DELETE FROM Reminders WHERE _id = ? AND userID = ?");
             preparedStatement.setInt(1, id);
             preparedStatement.setString(2, userID);
             int rowsDeleted = preparedStatement.executeUpdate();
-            if(rowsDeleted != 0) {
+            if (rowsDeleted != 0) {
                 Cashew.remindersManager.deleteReminder(id);
                 return 1;
             }
