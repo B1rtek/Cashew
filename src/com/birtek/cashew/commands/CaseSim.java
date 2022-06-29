@@ -196,6 +196,12 @@ public class CaseSim extends BaseCommand {
         return buttonID;
     }
 
+    private String createSaveToInvButtonID(String userID, String itemOrigin, float floatValue, SkinInfo skin) {
+        String buttonID = userID + ":casesim:savetoinv:" + itemOrigin + ":";
+        buttonID += skin.id() + ":" + floatValue;
+        return buttonID;
+    }
+
     private void openCase(SlashCommandInteractionEvent event) {
         // Find the selected case name
         String typed = event.getOption("case", "", OptionMapping::getAsString);
@@ -235,7 +241,7 @@ public class CaseSim extends BaseCommand {
                 event.reply("Something went wrong while executing the command").setEphemeral(true).queue();
                 return;
             }
-            skin = getSkinOfRarity(rarity, caseKnives);
+            skin = getSkinOfRarity(SkinRarity.COVERT, caseKnives);
         } else {
             skin = getSkinOfRarity(rarity, caseSkins);
         }
@@ -245,14 +251,18 @@ public class CaseSim extends BaseCommand {
 
         EmbedBuilder caseUnboxEmbed = new EmbedBuilder();
         caseUnboxEmbed.setAuthor(caseInfo.caseName(), caseInfo.caseUrl(), caseInfo.imageUrl());
-        caseUnboxEmbed.setTitle(skin.name(), skin.stashUrl());
+        caseUnboxEmbed.setTitle(skin.name());
         caseUnboxEmbed.setDescription(skin.description());
         caseUnboxEmbed.addField("Condition: " + getConditionFromFloat(floatValue), String.valueOf(floatValue), true);
         caseUnboxEmbed.addField("Finish style", skin.finishStyle(), true);
         caseUnboxEmbed.setImage(getImageUrlFromFloat(floatValue, skin));
         caseUnboxEmbed.setFooter(skin.flavorText());
 
-        event.replyEmbeds(caseUnboxEmbed.build()).addActionRow(Button.primary(createInspectButtonID(event.getUser().getId(), floatValue, skin), "Inspect URL")).queue();
+        event.replyEmbeds(caseUnboxEmbed.build()).addActionRow(
+                Button.link(skin.stashUrl(), "CSGO Stash"),
+                Button.primary(createInspectButtonID(event.getUser().getId(), floatValue, skin), "Inspect URL"),
+                Button.success(createSaveToInvButtonID(event.getUser().getId(), "case", floatValue, skin), "Save to inventory")
+        ).queue();
     }
 
     private void openCollection(SlashCommandInteractionEvent event) {
@@ -302,10 +312,15 @@ public class CaseSim extends BaseCommand {
         String[] buttonID = event.getComponentId().split(":");
         if(buttonID.length < 4) return;
         if(buttonID[1].equals("casesim")) {
-            if(buttonID[2].equals("inspect")) {
-                String inspectURL = event.getComponentId().substring(35);
-                inspectURL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20M" + inspectURL;
-                event.reply(inspectURL).setEphemeral(true).queue();
+            switch(buttonID[2]) {
+                case "inspect" -> {
+                    String inspectURL = event.getComponentId().substring(35);
+                    inspectURL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20M" + inspectURL;
+                    event.reply(inspectURL).setEphemeral(true).queue();
+                }
+                case "savetoinv" -> {
+                    event.reply("Saving to inventory doesn't work yet, come back later!").setEphemeral(true).queue();
+                }
             }
         }
     }
