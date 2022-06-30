@@ -38,16 +38,7 @@ public class Cashew {
     public static RemindersManager remindersManager;
 
     public static void main(String[] args) throws LoginException {
-
-        KeyLoader keyLoader = new KeyLoader();
-        String TOKEN;
-        if (keyLoader.loadKey()) {
-            TOKEN = keyLoader.getKey();
-        } else {
-            System.err.println("The API key is missing.");
-            return;
-        }
-        JDA jda = JDABuilder.createDefault(TOKEN)
+        JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
                 .setCompression(Compression.NONE)
