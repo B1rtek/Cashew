@@ -32,6 +32,10 @@ sourceSets {
     }
 }
 
+wrapper {
+    gradleVersion = '7.0'
+}
+
 //
 //task runCashew(dependsOn: configurations.compileClasspath, type: JavaExec) {
 //    group = "app"
