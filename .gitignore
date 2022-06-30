@@ -24,7 +24,6 @@
 /gradlew.bat
 /build/
 /.gradle/
-/gradle/
 /caseWebscraper/build/
 /databases/sync backup/
 /databases/userData/
