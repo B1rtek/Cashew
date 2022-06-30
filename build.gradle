@@ -1,14 +1,27 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'com.birtek.cashew'
-version '2.0.1-pre1'
-
+version '2.16'
 compileJava.options.encoding = 'UTF-8'
+
 
 repositories {
     mavenCentral()
+}
+
+dependencies {
+    implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.36.0.3'
+    implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-alpha.12'
+    implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
+    implementation('ch.qos.logback:logback-classic:1.2.11')
+    implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
+}
+
+application {
+    mainClass = 'com.birtek.cashew.Cashew'
 }
 
 sourceSets {
@@ -19,16 +32,10 @@ sourceSets {
     }
 }
 
-task runCashew(dependsOn: configurations.compileClasspath, type: JavaExec) {
-    group = "app"
-    classpath = sourceSets.test.runtimeClasspath
-    main('com.birtek.cashew.Cashew')
-}
+//
+//task runCashew(dependsOn: configurations.compileClasspath, type: JavaExec) {
+//    group = "app"
+//    classpath = sourceSets.test.runtimeClasspath
+//    main('com.birtek.cashew.Cashew')
+//}
 
-dependencies {
-    implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.36.0.3'
-    implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-alpha.12'
-    implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
-    implementation('ch.qos.logback:logback-classic:1.2.11')
-    implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
-}
