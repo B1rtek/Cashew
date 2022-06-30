@@ -32,6 +32,16 @@ sourceSets {
     }
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.birtek.cashew.Cashew'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 wrapper {
     gradleVersion = '7.0'
 }
