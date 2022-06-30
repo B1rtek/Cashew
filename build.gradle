@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 group 'com.birtek.cashew'
@@ -32,14 +33,13 @@ sourceSets {
     }
 }
 
+task stage(dependsOn: ['build', 'shadowJar', 'clean'])
+build.mustRunAfter clean
+
 jar {
     manifest {
-        attributes 'Main-Class': 'com.birtek.cashew.Cashew'
+        attributes  'Class-Path': '/libs/build/Cashew-2.16-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
     }
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 wrapper {
