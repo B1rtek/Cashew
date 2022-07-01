@@ -10,9 +10,9 @@ public final class Database {
     private static volatile Database instance;
 
     public static final String DRIVER = "org.sqlite.JDBC";
-    public static final String CASES_DB = "jdbc:sqlite:../databases/casesimCases.db";
-    public static final String COLLECTIONS_DB = "jdbc:sqlite:../databases/casesimCollections.db";
-    public static final String CAPSULES_DB = "jdbc:sqlite:../databases/casesimCapsules.db";
+    public static final String CASES_DB = "jdbc:sqlite:../databases/data/casesimCases.db";
+    public static final String COLLECTIONS_DB = "jdbc:sqlite:../databases/data/casesimCollections.db";
+    public static final String CAPSULES_DB = "jdbc:sqlite:../databases/data/casesimCapsules.db";
 
     private Connection casesConnection;
     private Connection collectionsConnection;
