@@ -225,24 +225,14 @@ public class BaseCommand extends ListenerAdapter {
         table.setIntercellSpacing(new Dimension(0,0));
         table.getTableHeader().setDefaultRenderer(new LeaderboardHeaderRenderer(table.getTableHeader().getDefaultRenderer(), themeColor));
         // https://stackoverflow.com/questions/12477522/jframe-to-image-without-showing-the-jframe
-        JFrame frame = new JFrame();
-        frame.setUndecorated(true);
-        frame.setBackground(Color.CYAN);
-        frame.getContentPane().add(table);
-        frame.pack();
-        JFrame frame2 = new JFrame();
-        frame2.setBackground(Color.WHITE);
-        frame2.setUndecorated(true);
-        frame2.getContentPane().add(table.getTableHeader());
-        frame2.pack();
+        table.setSize(table.getPreferredSize());
+        table.getTableHeader().setSize(table.getTableHeader().getPreferredSize());
         BufferedImage bi = new BufferedImage(table.getWidth(), table.getHeight() + table.getTableHeader().getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = bi.createGraphics();
         table.getTableHeader().paint(graphics);
         graphics.translate(0, table.getTableHeader().getHeight());
         table.paint(graphics);
         graphics.dispose();
-        frame.dispose();
-        frame2.dispose();
         // https://coderanch.com/t/338608/java/save-jtable-image
         Random random = new Random();
         String fileName = "generated/leaderboardTable" + random.nextInt(10000) + ".png";
