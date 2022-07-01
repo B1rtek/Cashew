@@ -168,6 +168,7 @@ public class Counter extends BaseReaction {
     }
 
     private MessageAnalysisResult analyzeMessage(String message, int current) {
+        if(message.isEmpty()) return new MessageAnalysisResult(MessageAnalysisResultType.ERROR, 0);
         ExpressionBuilder test = new ExpressionBuilder(message);
         double result;
         try {
