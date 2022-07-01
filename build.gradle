@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.birtek.cashew'
-version '2.16'
+version '2.16.1'
 compileJava.options.encoding = 'UTF-8'
 
 
@@ -38,12 +38,16 @@ build.mustRunAfter clean
 
 jar {
     manifest {
-        attributes  'Class-Path': '/libs/build/Cashew-2.16-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
+        attributes  'Class-Path': 'build/libs/CashewDeploy-2.16.1-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
     }
 }
 
 wrapper {
     gradleVersion = '7.0'
+}
+
+shadowJar {
+    archiveFileName = "CashewDeploy-2.16.1-all.jar"
 }
 
 //

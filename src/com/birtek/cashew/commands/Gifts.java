@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
-import java.io.File;
+import java.io.InputStream;
 import java.time.Instant;
 import java.util.*;
 
@@ -223,8 +223,8 @@ public class Gifts extends BaseCommand {
     private void generateAndSendLeaderboardEmbed(String leaderboard, int leaderboardIndex, ArrayList<LeaderboardRecord> leaderboardPage, SlashCommandInteractionEvent event, GiftInfo gift, LeaderboardRecord callersStats) {
         String pointsName = leaderboardTypesStrings.get(leaderboardIndex).split("\\s+")[1];
         String capitalPointsName = Character.toString(pointsName.charAt(0)-32) + pointsName.substring(1);
-        String generatedTableImagePath = generateLeaderboard(leaderboardPage, capitalPointsName, event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), gift.color());
-        if(generatedTableImagePath == null) {
+        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, capitalPointsName, event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), gift.color());
+        if(generatedTableImage == null) {
             event.reply("Something went wrong while generating the table image").setEphemeral(true).queue();
             return;
         }
@@ -246,11 +246,7 @@ public class Gifts extends BaseCommand {
         }
         leaderboardEmbed.setColor(gift.color().getRGB());
         leaderboardEmbed.setImage("attachment://leaderboard.png");
-        File leaderboardImage = new File(generatedTableImagePath);
-        event.replyFile(leaderboardImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
-        if(!leaderboardImage.delete()) {
-            LOGGER.warn("Failed to remove temporary leaderboard image " + generatedTableImagePath);
-        }
+        event.replyFile(generatedTableImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
     }
 
     @Override

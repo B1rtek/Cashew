@@ -65,6 +65,7 @@ public class ScheduledMessagesManager {
         String currentMonthString = String.valueOf(now.getMonthValue());
         if(currentMonthString.length() == 1) currentMonthString = '0' + currentMonthString;
         String currentDayString = String.valueOf(now.getDayOfMonth());
+        if(currentDayString.length() == 1) currentDayString = '0' + currentDayString;
         ZonedDateTime timeOfNextRun = LocalDateTime.parse(currentYearString + '-' + currentMonthString + '-' + currentDayString + ' ' + executionTimeString, dateTimeFormatter).atZone(ZoneId.of("Europe/Warsaw"));
         if (now.isAfter(timeOfNextRun)) {
             timeOfNextRun = timeOfNextRun.plusDays(1);
