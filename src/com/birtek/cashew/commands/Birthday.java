@@ -7,13 +7,11 @@ import com.birtek.cashew.timings.BirthdayReminderDefaults;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Channel;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.crypto.Data;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -51,6 +49,10 @@ public class Birthday extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("birthday")) {
+            if(isPrivateChannel(event)) {
+                event.reply("Birthday reminders command doesn't work in DMs").setEphemeral(true).queue();
+                return;
+            }
             switch (Objects.requireNonNull(event.getSubcommandName())) {
                 case "set" -> {
                     String month = event.getOption("month", "", OptionMapping::getAsString);

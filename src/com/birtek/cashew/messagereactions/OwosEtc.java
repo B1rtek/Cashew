@@ -1,6 +1,7 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.Cashew;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,7 +75,7 @@ public class OwosEtc extends BaseReaction {
 
             //literal reactions
             if(message.contains("sex") && rawMessage.contains("sex") && checkActivitySettings(event, 1)) {
-                event.getMessage().addReaction("👍").queue();
+                event.getMessage().addReaction(Emoji.fromUnicode("👍")).queue();
             }
 
             if (message.contains("bot") && rawMessage.contains("bot") && checkActivitySettings(event, 2)) {

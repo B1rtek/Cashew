@@ -43,7 +43,7 @@ public class Cashew {
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), /*new OpenCase(), new OpenCollection(),*/ new TimedMessageCommand(),
-                        new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(), new ChoccyMilk(),
+                        new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(),  //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
                         new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
@@ -74,7 +74,7 @@ public class Cashew {
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
                         .addOption(STRING, "toggle", "Toggles reactions on, off or turns even the annoying ones (all) on", false, true)
                         .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one"),
-                Commands.slash("choccymilk", "Gift someone some Choccy Milk!"),
+                //Commands.slash("choccymilk", "Gift someone some Choccy Milk!"),
                 Commands.slash("cuddle", "Cuddle someone!")
                         .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true),
                 Commands.slash("hug", "Hug someone!")

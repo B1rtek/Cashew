@@ -35,6 +35,7 @@ public class Nekoichi extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("nekoichi")) {
+            event.reply("Nekoichi by Duca").queue();
             singNekoichi(event.getChannel());
         }
     }

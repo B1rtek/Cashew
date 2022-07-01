@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -160,23 +161,23 @@ public class Clear extends BaseCommand {
             if (checkPermissions(event, clearCommandPermissions)) {
                 if (event.isWebhookMessage()) return;
                 if (args.length < 2) {
-                    event.getChannel().sendMessageEmbeds(removeRecentMessages(event.getChannel(), 2, false)).queue(message -> message.addReaction("❌").queue());
+                    event.getChannel().sendMessageEmbeds(removeRecentMessages(event.getChannel(), 2, false)).queue(message -> message.addReaction(Emoji.fromUnicode("❌")).queue());
                 } else if (args.length == 2) {
                     try {
-                        event.getChannel().sendMessageEmbeds(removeRecentMessages(event.getChannel(), Integer.parseInt(args[1]) + 1, false)).queue(message -> message.addReaction("❌").queue());
+                        event.getChannel().sendMessageEmbeds(removeRecentMessages(event.getChannel(), Integer.parseInt(args[1]) + 1, false)).queue(message -> message.addReaction(Emoji.fromUnicode("❌")).queue());
                     } catch (NumberFormatException e) {
                         EmbedBuilder clearEmbed = new EmbedBuilder();
                         clearEmbed.setTitle("❌ Clear failed! Invalid argument: recent messages amount was not a number");
                         clearEmbed.setDescription("React with ❌ to delete this message");
                         clearEmbed.setColor(0xdd2e45);
-                        event.getChannel().sendMessageEmbeds(clearEmbed.build()).queue(message -> message.addReaction("❌").queue());
+                        event.getChannel().sendMessageEmbeds(clearEmbed.build()).queue(message -> message.addReaction(Emoji.fromUnicode("❌")).queue());
                     }
                 } else {
                     StringBuilder ranges = new StringBuilder();
                     for (int i = 2; i < args.length; i++) {
                         ranges.append(args[i]).append(" ");
                     }
-                    event.getChannel().sendMessageEmbeds(removeMessagesByRange(event.getChannel(), ranges.toString(), false)).queue(message -> message.addReaction("❌").queue());
+                    event.getChannel().sendMessageEmbeds(removeMessagesByRange(event.getChannel(), ranges.toString(), false)).queue(message -> message.addReaction(Emoji.fromUnicode("❌")).queue());
                 }
             } else {
                 event.getMessage().delete().complete();
@@ -187,6 +188,10 @@ public class Clear extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("clear")) {
+            if(isPrivateChannel(event)) {
+                event.reply("Clear doesn't work in DMs").setEphemeral(true).queue();
+                return;
+            }
             if (checkSlashCommandPermissions(event, clearCommandPermissions)) {
                 int recent = event.getOption("recent", 0, OptionMapping::getAsInt);
                 String range = event.getOption("range", "", OptionMapping::getAsString);

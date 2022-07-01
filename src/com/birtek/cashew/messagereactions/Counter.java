@@ -3,6 +3,7 @@ package com.birtek.cashew.messagereactions;
 import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -168,6 +169,7 @@ public class Counter extends BaseReaction {
     }
 
     private MessageAnalysisResult analyzeMessage(String message, int current) {
+        if(message.isEmpty()) return new MessageAnalysisResult(MessageAnalysisResultType.ERROR, 0);
         ExpressionBuilder test = new ExpressionBuilder(message);
         double result;
         try {
@@ -194,22 +196,22 @@ public class Counter extends BaseReaction {
     private boolean handleTypo(Message message, double previous, int typosLeft) {
         if (typosLeft <= 0) return false;
         int newTyposLeft = typosLeft - 1;
-        message.addReaction("⚠️").queue();
+        message.addReaction(Emoji.fromUnicode("⚠️")).queue();
         String plural = newTyposLeft == 1 ? "" : "s";
         message.reply("<@!" + message.getAuthor().getId() + "> made a typo, but the count was saved. Count has been corrected to ` " + (int) (previous + 1) + " `, **" + newTyposLeft + "** typo" + plural + " left! The next number is ` " + (int) (previous + 2) + " `!").queue();
         return true;
     }
 
     private void handleCorrectCount(Message message, double result) {
-        String reactionEmote = "✅";
+        Emoji reactionEmote = Emoji.fromUnicode("✅");
         if (result == 69) {
-            reactionEmote = "♋";
+            reactionEmote = Emoji.fromUnicode("♋");
         } else if (result == 100) {
-            reactionEmote = "\uD83D\uDCAF";
+            reactionEmote = Emoji.fromUnicode("\uD83D\uDCAF");
         } else if (result == 420 || result == 2137) {
-            reactionEmote = "\uD83D\uDE01";
+            reactionEmote = Emoji.fromUnicode("\uD83D\uDE01");
         } else if (result == 1337) {
-            reactionEmote = "\uD83D\uDE0E";
+            reactionEmote = Emoji.fromUnicode("\uD83D\uDE0E");
         }
         message.addReaction(reactionEmote).queue();
     }
@@ -224,7 +226,7 @@ public class Counter extends BaseReaction {
         if (rounded == result) {
             toOutput = String.valueOf((int) result);
         }
-        message.addReaction("❌").queue();
+        message.addReaction(Emoji.fromUnicode("❌")).queue();
         message.reply("<@!" + message.getAuthor().getId() + "> screwed up by writing ` " + toOutput + " `! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
     }
 
@@ -247,13 +249,13 @@ public class Counter extends BaseReaction {
                 messageHistory = channel.getHistoryAfter(lastCountMessageID, 100).complete().getRetrievedHistory();
             } catch (IllegalArgumentException e) {
                 try {
-                    countCheckingMessage[0].addReaction("⚠️").queue();
+                    countCheckingMessage[0].addReaction(Emoji.fromUnicode("⚠️")).queue();
                 } catch (Exception ignored) {}
                 return new OfflineCountCorrectionResult("", false);
             }
             if (messageHistory.isEmpty()) {
                 try {
-                    countCheckingMessage[0].addReaction("⚠️").queue();
+                    countCheckingMessage[0].addReaction(Emoji.fromUnicode("⚠️")).queue();
                 } catch (Exception ignored) {}
                 return new OfflineCountCorrectionResult("", false);
             }
@@ -272,7 +274,7 @@ public class Counter extends BaseReaction {
                         handleIncorrectCount(messageFromHistory, analysisResult.result(), currentCount);
                         updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId());
                         try {
-                            countCheckingMessage[0].addReaction("✅").queue();
+                            countCheckingMessage[0].addReaction(Emoji.fromUnicode("✅")).queue();
                         } catch (Exception ignored) {}
                         return new OfflineCountCorrectionResult("", true);
                     }
@@ -281,7 +283,7 @@ public class Counter extends BaseReaction {
                             handleIncorrectCount(messageFromHistory, analysisResult.result(), currentCount);
                             updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId());
                             try {
-                                countCheckingMessage[0].addReaction("✅").queue();
+                                countCheckingMessage[0].addReaction(Emoji.fromUnicode("✅")).queue();
                             } catch (Exception ignored) {}
                             return new OfflineCountCorrectionResult("", true);
                         }
@@ -301,7 +303,7 @@ public class Counter extends BaseReaction {
             }
             updateCountingDatabase(new CountingInfo(true, messageHistory.get(0).getAuthor().getId(), currentCount, messageHistory.get(0).getId(), currentTypos), channel.getId());
             try {
-                countCheckingMessage[0].addReaction("✅").queueAfter(3, TimeUnit.SECONDS);
+                countCheckingMessage[0].addReaction(Emoji.fromUnicode("✅")).queueAfter(3, TimeUnit.SECONDS);
             } catch (Exception ignored) {}
             return new OfflineCountCorrectionResult(messageHistory.get(0).getId(), true);
         }
