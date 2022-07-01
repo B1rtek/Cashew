@@ -240,4 +240,8 @@ public class BaseCommand extends ListenerAdapter {
             return null;
         }
     }
+
+    public static boolean isPrivateChannel(SlashCommandInteractionEvent event) {
+        return event.getGuild() == null;
+    }
 }
