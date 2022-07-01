@@ -20,10 +20,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URLConnection;
 import java.util.*;
 
@@ -191,7 +188,7 @@ public class BaseCommand extends ListenerAdapter {
         }
     }
 
-    protected String generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID, Color themeColor) {
+    protected InputStream generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID, Color themeColor) {
         String[][] tableData = new String[leaderboardRecords.size()][3];
         for(int i=0; i<leaderboardRecords.size(); i++) {
             tableData[i][0] = String.valueOf(leaderboardRecords.get(i).place());
@@ -233,12 +230,11 @@ public class BaseCommand extends ListenerAdapter {
         graphics.translate(0, table.getTableHeader().getHeight());
         table.paint(graphics);
         graphics.dispose();
-        // https://coderanch.com/t/338608/java/save-jtable-image
-        Random random = new Random();
-        String fileName = "generated/leaderboardTable" + random.nextInt(10000) + ".png";
+        // https://stackoverflow.com/questions/4251383/how-to-convert-bufferedimage-to-inputstream
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
-            ImageIO.write(bi, "png", new File(fileName));
-            return fileName;
+            ImageIO.write(bi, "png", outputStream);
+            return new ByteArrayInputStream(outputStream.toByteArray());
         } catch (IOException e) {
             LOGGER.error("Failed to generate leaderboard " + pointsName);
             return null;
