@@ -206,6 +206,10 @@ public class TimedMessageCommand extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("scheduler")) {
+            if(isPrivateChannel(event)) {
+                event.reply("Scheduler doesn't work in DMs").setEphemeral(true).queue();
+                return;
+            }
             if (checkSlashCommandPermissions(event, timedMessageCommandPermissions)) {
                 if (event.getSubcommandName() == null) {
                     event.reply("No command specified (how???)").setEphemeral(true).queue();

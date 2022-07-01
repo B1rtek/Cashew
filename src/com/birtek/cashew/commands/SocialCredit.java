@@ -145,6 +145,10 @@ public class SocialCredit extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("socialcredit")) {
+            if(isPrivateChannel(event)) {
+                event.reply("Social credit doesn't work in DMs").setEphemeral(true).queue();
+                return;
+            }
             String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
             String reason = event.getOption("reason", "", OptionMapping::getAsString);
             long amount;

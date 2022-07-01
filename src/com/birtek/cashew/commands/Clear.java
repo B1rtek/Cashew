@@ -188,6 +188,10 @@ public class Clear extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("clear")) {
+            if(isPrivateChannel(event)) {
+                event.reply("Clear doesn't work in DMs").setEphemeral(true).queue();
+                return;
+            }
             if (checkSlashCommandPermissions(event, clearCommandPermissions)) {
                 int recent = event.getOption("recent", 0, OptionMapping::getAsInt);
                 String range = event.getOption("range", "", OptionMapping::getAsString);

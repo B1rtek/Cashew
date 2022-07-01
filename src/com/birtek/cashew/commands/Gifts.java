@@ -150,11 +150,11 @@ public class Gifts extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if(event.getGuild() == null) {
-            event.reply("Gifts don't work in DMs").setEphemeral(true).queue();
-            return;
-        }
         if (event.getName().equals("gifts")) {
+            if(isPrivateChannel(event)) {
+                event.reply("Gifts doesn't work in DMs").setEphemeral(true).queue();
+                return;
+            }
             if(!event.getChannel().canTalk()) {
                 event.reply("This command won't work in here, Cashew can't see or/and write in this channel!").setEphemeral(true).queue();
                 return;
