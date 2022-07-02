@@ -150,6 +150,7 @@ public class Help extends BaseCommand {
     private MessageEmbed createAdminHelpEmbed(String cashewAvatarUrl) {
         EmbedBuilder helpEmbed = new EmbedBuilder();
         helpEmbed.setAuthor("🥜 Cashew's admin commands 🥜", null, cashewAvatarUrl);
+        helpEmbed.addField("`/birthday setdefault <channel> <type>`", "Sets the default birthday reminders channel and whether that channel should override user's settings", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear range <ranges>`", "Removes recent messages in the given range. For example, `$clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "counting <\"off\"|\"on\">`", "Turns on or off the counting game in the channel", false);
