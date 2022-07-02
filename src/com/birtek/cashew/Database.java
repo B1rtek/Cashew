@@ -692,7 +692,7 @@ public final class Database {
         }
     }
 
-    public LeaderboardRecord getLeaderboardStats(Gifts.GiftsLeaderboardType type, String serverID, int giftID, String userID) {
+    public LeaderboardRecord getGiftsLeaderboardStats(Gifts.GiftsLeaderboardType type, String serverID, int giftID, String userID) {
         String selectedColumn;
         if (type == Gifts.GiftsLeaderboardType.MOST_GIFTED) {
             selectedColumn = "amountGifted";
@@ -719,6 +719,35 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public int getGiftsLeaderboardPageCount(Gifts.GiftsLeaderboardType type, String serverID, int giftID) {
+        String selectedColumn;
+        if (type == Gifts.GiftsLeaderboardType.MOST_GIFTED) {
+            selectedColumn = "amountGifted";
+        } else {
+            selectedColumn = "amountReceived";
+        }
+        try {
+            ArrayList<LeaderboardRecord> leaderboardRecords = new ArrayList<>();
+            PreparedStatement preparedStatement;
+            if (giftID != 0) {
+                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from GiftHistory where serverID = ? AND giftID = ? AND " + selectedColumn + " > 0");
+                preparedStatement.setString(1, serverID);
+                preparedStatement.setInt(2, giftID);
+            } else {
+                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userID, SUM(" + selectedColumn + ") as total from GiftHistory where serverID = ? group by userID order by total desc) where total > 0");
+                preparedStatement.setString(1, serverID);
+            }
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return results.getInt(1)/10+(results.getInt(1)%10==0?0:1);
+            }
+            return 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
         }
     }
 
