@@ -33,14 +33,14 @@ public class Inspirobot extends BaseCommand {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
-        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "inspirobot") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "insp")) {
+        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "insp")) {
             event.getMessage().reply(getAnInspirobotQuote()).mentionRepliedUser(false).queue();
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if(event.getName().equals("inspirobot") || event.getName().equals("insp")) {
+        if(event.getName().equals("insp")) {
             event.reply(getAnInspirobotQuote()).queue();
         }
     }

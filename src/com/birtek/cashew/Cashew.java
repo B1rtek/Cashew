@@ -60,7 +60,6 @@ public class Cashew {
                 Commands.slash("boburnham", "Sends you a random quote from Bo Burnham's songs")
                         .addOption(STRING, "nsfw", "Decide whether you want an nsfw quote or not", false, true),
                 Commands.slash("dadjoke", "Sends you a random dad joke from icanhazdadjoke.com"),
-                Commands.slash("inspirobot", "Sends you an inspiring quote from inspirobot.me"),
                 Commands.slash("insp", "Sends you an inspiring quote from inspirobot.me"),
                 Commands.slash("korwin", "Sends you a totally legit quote from an infamous politician Janusz Korwin-Mikke"),
                 Commands.slash("nekoichi", "Sends two first lines of Nekoichi by Duca, the Nekopara Vol. 3 opening"),
