@@ -27,6 +27,16 @@ import java.util.*;
 public class BaseCommand extends ListenerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseCommand.class);
+    private static Font leaderboardFont;
+
+    static {
+        System.setProperty("awt.useSystemAAFontSettings","lcd");
+        try {
+            leaderboardFont = Font.createFont(Font.TRUETYPE_FONT, new File("fonts/NotoSansDisplay-Regular.ttf")).deriveFont(Font.PLAIN, 24);
+        } catch (FontFormatException | IOException e) {
+            LOGGER.error("Failed to load the custom leaderboards font!");
+        }
+    }
 
     public Permission[] adminPermissions = {
             Permission.ADMINISTRATOR
@@ -208,7 +218,9 @@ public class BaseCommand extends ListenerAdapter {
         table.getColumnModel().getColumn(1).setMinWidth(250);
         table.getColumnModel().getColumn(2).setMinWidth(80);
         table.setRowHeight(28);
-        table.setFont(new Font("SansSerif", Font.PLAIN, 24));
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        ge.registerFont(leaderboardFont);
+        table.setFont(leaderboardFont);
         for(int i=0; i<table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(new LeaderboardCellRenderer(themeColor));
         }
