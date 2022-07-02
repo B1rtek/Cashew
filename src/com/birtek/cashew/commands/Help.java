@@ -20,68 +20,113 @@ public class Help extends BaseCommand {
         specificHelpEmbed.setColor(0xffd297);
         if (command.equalsIgnoreCase("cuddle")) {
             specificHelpEmbed.setTitle("Cuddle");
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "cuddle <user(doesn't have to be an @)>`", "Sends an embed with a gif with cuddling nekos and a message saying that you decided to cuddle the specified user.", false);
         } else if (command.equalsIgnoreCase("hug")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
             specificHelpEmbed.setTitle("Hug");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "hug <user(doesn't have to be an @)>`", "Sends an embed with a gif with hugging nekos and a message saying that you decided to hug the specified user.", false);
         } else if (command.equalsIgnoreCase("kiss")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
             specificHelpEmbed.setTitle("Kiss");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "kiss <user(doesn't have to be an @)>`", "Sends an embed with a gif with kissing nekos and a message saying that you decided to kiss the specified user.", false);
         } else if (command.equalsIgnoreCase("pat")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
             specificHelpEmbed.setTitle("Pat");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "pat <user(doesn't have to be an @)>`", "Sends an embed with a gif with nekos getting pats and a message saying that you decided to pat the specified user.", false);
-        } else if (command.equalsIgnoreCase("opencase")) {
-            specificHelpEmbed.setTitle("Open case");
-            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "opencase`", "Shows a list of CS:GO cases available to open.", false);
-            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "opencase <id(int)|name or part of the name of the case(string)>`", "Opens the specified case and shows the dropped item.", false);
-        } else if (command.equalsIgnoreCase("opencollection") || command.equalsIgnoreCase("opencol")) {
-            specificHelpEmbed.setTitle("Open collection");
-            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "opencollection`", "Shows a list of CS:GO collections available to open.", false);
-            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "opencollection <id(int)|name or part of the name of the collection(string)>`", "Opens the specified collection and shows the dropped item.", false);
-            specificHelpEmbed.addField("Aliases", '`' + Cashew.COMMAND_PREFIX + "opencol`", false);
         } else if (command.equalsIgnoreCase("bestneko")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Best neko");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "bestneko`", "Sends a gif of Maple Minaduki", false);
         } else if (command.equalsIgnoreCase("boburnham")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Bo Burnham");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "boburnham [\"nsfw\"]`", "Sends a quote from one of Bo Burnham's songs/shows. Addiing the \"nsfw\" option will send an nsfw quote instead.", false);
         } else if (command.equalsIgnoreCase("nekoichi")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Nekoichi");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "nekoichi`", "Sends the first two lines of \"Nekoichi\" by Duca, the opening song from Nekopara Vol. 3.", false);
         } else if (command.equalsIgnoreCase("socialcredit") || command.equalsIgnoreCase("soc")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
             specificHelpEmbed.setTitle("Social credit");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "socialcredit [@User]`", "Shows your social credit score, or the specified user's social credit score. Social credit can be added or removed only by the server admins.", false);
             specificHelpEmbed.addField("Aliases", '`' + Cashew.COMMAND_PREFIX + "soc`", false);
         } else if (command.equalsIgnoreCase("kromer")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Kromer");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "kromer`", "Sends a random Kromer related meme/gif.", false);
         } else if (command.equalsIgnoreCase("korwin")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Korwin");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "korwin`", "Generates a quote from Janusz Korwin-Mikke.", false);
-        } else if (command.equalsIgnoreCase("inspirobot") || command.equalsIgnoreCase("insp")) {
+        } else if (command.equalsIgnoreCase("insp")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Inspirobot");
-            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "inspirobot`", "Generates an inspiring quote using https://inspirobot.me/", false);
-            specificHelpEmbed.addField("Aliases", '`' + Cashew.COMMAND_PREFIX + "insp`", false);
+            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "insp`", "Generates an inspiring quote using https://inspirobot.me/", false);
         } else if (command.equalsIgnoreCase("dadjoke")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Dad Joke");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "dadjoke`", "Displays a random dad joke from https://icanhazdadjoke.com/", false);
         } else if (command.equalsIgnoreCase("ping")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Ping");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "ping`", "Measures bot's ping", false);
-        } else if (command.equalsIgnoreCase("choccymilk")) {
-            specificHelpEmbed.setTitle("Choccy Milk");
-            specificHelpEmbed.addField("`/choccymilk`", "Gift someone some Choccy Milk!", false);
         } else if (command.equalsIgnoreCase("help")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Help");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "help`", "bruh.", false);
         } else if (command.equalsIgnoreCase("gifts")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
             specificHelpEmbed.setTitle("Gifts");
             specificHelpEmbed.setDescription("Gift system command");
-            specificHelpEmbed.addField("`/gifts gift <gift name>`", "Generates a gift for anyone in chat to claim", false);
-            specificHelpEmbed.addField("`/gifts stats <@user> [gift]", "Retrieves user's gifting stats for all or the specified gift", false);
+            specificHelpEmbed.addField("`/gifts gift <gift>`", "Generates a gift for anyone in chat to claim", false);
+            specificHelpEmbed.addField("`/gifts stats <@user> [gift]`", "Retrieves user's gifting stats for all or the specified gift", false);
+            specificHelpEmbed.addField("`/gifts leaderboard [gift] [scoreboard] [page]`", "Shows the leaderboard of the desired type. You can select the gift to show the leaderboard of, whether it should be a leaderboard of most received or most gifted gifts, and the page number. By default displays top 10 of the total received gifts leaderboard.", false);
         } else if (command.equalsIgnoreCase("info")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Info");
             specificHelpEmbed.addField("`/info`", "Displays info about Cashew", false);
+        } else if (command.equalsIgnoreCase("birthday")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
+            specificHelpEmbed.setTitle("Birthday");
+            specificHelpEmbed.setDescription("Birthday reminders system command - let everyone else know that it's your birthday through a bot's message!");
+            specificHelpEmbed.addField("`/birthday set <month> <day> [hour] [message] [channel]`", "Sets a message that will be sent on your birthday (assuming you provide the right month and day). By default it sends the reminder at noon CEST on the default server channel (or the one in which you set the reminder if the server doesn't have one), and the default message is \"Happy Birthday, @User\", but you can set any message you want. You can have only one reminder per server.", false);
+            specificHelpEmbed.addField("`/birthday delete`", "Deletes your birthday reminder", false);
+            specificHelpEmbed.addField("`/birthday check`", "Displays your birthday reminder", false);
+            specificHelpEmbed.addField("`/birthday checkdefault`", "Displays server's default birthday reminders channel and whether it overrides user's settings", false);
+        } else if (command.equalsIgnoreCase("reminder")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
+            specificHelpEmbed.setTitle("Reminder");
+            specificHelpEmbed.setDescription("Lets you set up to 10 reminders that will be sent to your DMs");
+            specificHelpEmbed.addField("`/reminder set <content> <time> [unit] [ping]`", "Sets a reminder. You need to provide the reminder content and the time after which it will be sent (by default the delay is measured in hours). You can change the delay unit using the `unit` option. You can also specify whether the bot should ping you with the reminder or not (by default ping is set to `true`). The reminder is automatically deleted from the reminders list after it's delivered", false);
+            specificHelpEmbed.addField("`/reminder list`", "Shows the list of your reminders", false);
+            specificHelpEmbed.addField("`/reminder delete <id>`", "Deletes the reminder with the specified ID, the ID can be obtained with `/reminder list`", false);
+        } else if (command.equalsIgnoreCase("casesim")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
+            specificHelpEmbed.setTitle("Case Simulator");
+            specificHelpEmbed.setDescription("Cashew's built in CS:GO Case simulator");
+            specificHelpEmbed.addField("`/casesim opencase [case]`", "Opens the selected case", false);
+            specificHelpEmbed.addField("`/casesim opencollection [collection]`", "Opens the selected collection", false);
+            specificHelpEmbed.addField("`/casesim opencapsule [capsule]`", "Opens the selected capsule", false);
         }
         else {
             specificHelpEmbed.setTitle("Unknown");
@@ -95,9 +140,9 @@ public class Help extends BaseCommand {
         helpEmbed.setAuthor("🥜 Cashew's commands 🥜");
         helpEmbed.setThumbnail(cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
-        helpEmbed.addField("🔫 CS:GO", "`opencase`, `opencollection`", false);
-        helpEmbed.addField("😂 Fun stuff", "`bestneko`, `boburnham`, `nekoichi`, `socialcredit`, `kromer`, `korwin`, `inspirobot`, `dadjoke` , `ping`, `/choccymilk`, `/gifts`", false);
-        helpEmbed.addField("❓ Help", "To learn more about a specific command, type " + Cashew.COMMAND_PREFIX + "help <command>. Note that some of the commands only work as slash commands. To get more information about the bot use /info", false);
+        helpEmbed.addField("\uD83D\uDD27 Utilities", "`/reminder`", false);
+        helpEmbed.addField("😂 Fun stuff", "`bestneko`, `/birthday`, `boburnham`, `/casesim`, `dadjoke`, `/gifts`, `insp`, `kromer`, `korwin`, `nekoichi`, `ping`, `socialcredit`", false);
+        helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
     }
@@ -105,6 +150,7 @@ public class Help extends BaseCommand {
     private MessageEmbed createAdminHelpEmbed(String cashewAvatarUrl) {
         EmbedBuilder helpEmbed = new EmbedBuilder();
         helpEmbed.setAuthor("🥜 Cashew's admin commands 🥜", null, cashewAvatarUrl);
+        helpEmbed.addField("`/birthday setdefault <channel> <type>`", "Sets the default birthday reminders channel and whether that channel should override user's settings", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear range <ranges>`", "Removes recent messages in the given range. For example, `$clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "counting <\"off\"|\"on\">`", "Turns on or off the counting game in the channel", false);
@@ -168,7 +214,7 @@ public class Help extends BaseCommand {
         if (event.getName().equals("help")) {
             if (event.getFocusedOption().getName().equals("command")) {
                 String typed = event.getOption("command", "", OptionMapping::getAsString);
-                String[] options = {"bestneko", "boburnham", "choccymilk", "cuddle", "dadjoke", "gifts", "help", "hug", "info", "inspirobot", "kiss", "korwin", "kromer", "nekoichi", "opencase", "opencollection", "pat", "ping", "socialcredit"};
+                String[] options = {"bestneko", "birthday", "boburnham", "casesim", "cuddle", "dadjoke", "gifts", "help", "hug", "info", "insp", "kiss", "korwin", "kromer", "nekoichi", "pat", "ping", "reminder", "socialcredit"};
                 List<String> matching = new ArrayList<>();
                 for (String option : options) {
                     if (option.contains(typed)) {

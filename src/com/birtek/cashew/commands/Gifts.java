@@ -214,13 +214,14 @@ public class Gifts extends BaseCommand {
                     event.reply("This page doesn't exist!").setEphemeral(true).queue();
                     return;
                 }
-                LeaderboardRecord callersStats = database.getLeaderboardStats(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID, event.getUser().getId());
-                generateAndSendLeaderboardEmbed(leaderboard, leaderboardIndex, leaderboardPage, event, chosenGift, callersStats);
+                LeaderboardRecord callersStats = database.getGiftsLeaderboardStats(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID, event.getUser().getId());
+                int totalPages = database.getGiftsLeaderboardPageCount(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID);
+                generateAndSendLeaderboardEmbed(leaderboard, leaderboardIndex, leaderboardPage, event, chosenGift, callersStats, pageNumber, totalPages);
             }
         }
     }
 
-    private void generateAndSendLeaderboardEmbed(String leaderboard, int leaderboardIndex, ArrayList<LeaderboardRecord> leaderboardPage, SlashCommandInteractionEvent event, GiftInfo gift, LeaderboardRecord callersStats) {
+    private void generateAndSendLeaderboardEmbed(String leaderboard, int leaderboardIndex, ArrayList<LeaderboardRecord> leaderboardPage, SlashCommandInteractionEvent event, GiftInfo gift, LeaderboardRecord callersStats, int pageNumber, int totalPages) {
         String pointsName = leaderboardTypesStrings.get(leaderboardIndex).split("\\s+")[1];
         String capitalPointsName = Character.toString(pointsName.charAt(0)-32) + pointsName.substring(1);
         InputStream generatedTableImage = generateLeaderboard(leaderboardPage, capitalPointsName, event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), gift.color());
@@ -246,6 +247,7 @@ public class Gifts extends BaseCommand {
         }
         leaderboardEmbed.setColor(gift.color().getRGB());
         leaderboardEmbed.setImage("attachment://leaderboard.png");
+        leaderboardEmbed.setFooter("Page " + pageNumber + " out of " + totalPages);
         event.replyFile(generatedTableImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
     }
 
