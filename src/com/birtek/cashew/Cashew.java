@@ -153,7 +153,15 @@ public class Cashew {
                                         .addOption(INTEGER, "id", "ID of the reminder to delete", true)
                         ),
                 Commands.slash("feedback", "Send feedback to Cashew's creator!")
-                        .addOption(STRING, "content", "Content of your feedback message", true, false)
+                        .addOption(STRING, "content", "Content of your feedback message", true, false),
+                Commands.slash("poll", "Create a poll")
+                        .addOption(INTEGER, "timetovote", "Time after which the poll will conclude, by default in hours", true, false)
+                        .addOption(STRING, "unit", "Unit of the time to vote", false, true)
+                        .addOption(STRING, "option1", "Option 1 of the poll", true, false)
+                        .addOption(STRING, "option2", "Option 2 of the poll", true, false)
+                        .addOption(STRING, "option3", "Option 3 of the poll", false, false)
+                        .addOption(STRING, "option4", "Option 4 of the poll", false, false)
+                        .addOption(STRING, "option5", "Option 5 of the poll", false, false)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
