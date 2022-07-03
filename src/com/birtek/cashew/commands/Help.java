@@ -124,11 +124,16 @@ public class Help extends BaseCommand {
             specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Case Simulator");
             specificHelpEmbed.setDescription("Cashew's built in CS:GO Case simulator");
-            specificHelpEmbed.addField("`/casesim opencase [case]`", "Opens the selected case", false);
-            specificHelpEmbed.addField("`/casesim opencollection [collection]`", "Opens the selected collection", false);
-            specificHelpEmbed.addField("`/casesim opencapsule [capsule]`", "Opens the selected capsule", false);
-        }
-        else {
+            specificHelpEmbed.addField("`/casesim opencase <case>`", "Opens the selected case", false);
+            specificHelpEmbed.addField("`/casesim opencollection <collection>`", "Opens the selected collection", false);
+            specificHelpEmbed.addField("`/casesim opencapsule <capsule>`", "Opens the selected capsule", false);
+        } else if (command.equalsIgnoreCase("feedback")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "Yes", true);
+            specificHelpEmbed.setTitle("Feedback");
+            specificHelpEmbed.setDescription("Sends feedback to Cashew's creator");
+            specificHelpEmbed.addField("`/feedback <content>`", "Sends feedback with the provided content to Cashew's creator", false);
+        } else {
             specificHelpEmbed.setTitle("Unknown");
             specificHelpEmbed.addField("There is no such command", "Try again :(", false);
         }
@@ -140,7 +145,7 @@ public class Help extends BaseCommand {
         helpEmbed.setAuthor("🥜 Cashew's commands 🥜");
         helpEmbed.setThumbnail(cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
-        helpEmbed.addField("\uD83D\uDD27 Utilities", "`/reminder`", false);
+        helpEmbed.addField("\uD83D\uDD27 Utilities", "`/reminder`, `/feedback`", false);
         helpEmbed.addField("😂 Fun stuff", "`bestneko`, `/birthday`, `boburnham`, `/casesim`, `dadjoke`, `/gifts`, `insp`, `kromer`, `korwin`, `nekoichi`, `ping`, `socialcredit`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
@@ -214,7 +219,7 @@ public class Help extends BaseCommand {
         if (event.getName().equals("help")) {
             if (event.getFocusedOption().getName().equals("command")) {
                 String typed = event.getOption("command", "", OptionMapping::getAsString);
-                String[] options = {"bestneko", "birthday", "boburnham", "casesim", "cuddle", "dadjoke", "gifts", "help", "hug", "info", "insp", "kiss", "korwin", "kromer", "nekoichi", "pat", "ping", "reminder", "socialcredit"};
+                String[] options = {"bestneko", "birthday", "boburnham", "casesim", "cuddle", "dadjoke", "feedback", "gifts", "help", "hug", "info", "insp", "kiss", "korwin", "kromer", "nekoichi", "pat", "ping", "reminder", "socialcredit"};
                 List<String> matching = new ArrayList<>();
                 for (String option : options) {
                     if (option.contains(typed)) {
