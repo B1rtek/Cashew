@@ -29,7 +29,7 @@ public class Feedback extends BaseCommand {
             fromString = caller.getEffectiveName() + " (" + caller.getUser().getAsTag() + ", " + caller.getUser().getId() + ")";
             serverString = event.getGuild().getName() + " (" + event.getGuild().getId() ;
             try {
-                List<Invite> invites = Objects.requireNonNull(event.getGuild().getDefaultChannel()).retrieveInvites().complete();
+                List<Invite> invites = event.getGuild().retrieveInvites().complete();
                 if(invites.size() != 0) {
                     serverString += ", Invite link: " + invites.get(0).getUrl();
                 }
