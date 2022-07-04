@@ -44,7 +44,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), /*new OpenCase(), new OpenCollection(),*/ new TimedMessageCommand(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
                         new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
@@ -157,8 +157,8 @@ public class Cashew {
                 Commands.slash("poll", "Create a poll")
                         .addOption(INTEGER, "timetovote", "Time after which the poll will conclude, by default in hours", true, false)
                         .addOption(STRING, "unit", "Unit of the time to vote", false, true)
-                        .addOption(STRING, "option1", "Option 1 of the poll", true, false)
-                        .addOption(STRING, "option2", "Option 2 of the poll", true, false)
+                        .addOption(STRING, "option1", "Option 1 of the poll", false, false)
+                        .addOption(STRING, "option2", "Option 2 of the poll", false, false)
                         .addOption(STRING, "option3", "Option 3 of the poll", false, false)
                         .addOption(STRING, "option4", "Option 4 of the poll", false, false)
                         .addOption(STRING, "option5", "Option 5 of the poll", false, false)
