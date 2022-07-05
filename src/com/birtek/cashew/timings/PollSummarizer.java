@@ -1,6 +1,7 @@
 package com.birtek.cashew.timings;
 
 import com.birtek.cashew.Cashew;
+import com.birtek.cashew.Database;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
@@ -67,9 +68,10 @@ public class PollSummarizer implements Runnable {
             resultsEmbed.setTimestamp(pollEnd);
 
             pollEmbedMessage.editMessageEmbeds(resultsEmbed.build()).queue();
-        } catch (NullPointerException ignored) {} finally {
-            Cashew.pollManager.deletePoll(this.id);
-        }
+        } catch (NullPointerException ignored) {}
+        Database database = Database.getInstance();
+        if(!database.deletePoll(this.id)) LOGGER.warn("Failed to remove Poll " + this.id + " from the database!");
+        Cashew.pollManager.deletePoll(this.id);
     }
 
     public int getId() {

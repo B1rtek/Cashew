@@ -1233,4 +1233,16 @@ public final class Database {
             return null;
         }
     }
+
+    public boolean deletePoll(int id) {
+        try {
+            PreparedStatement preparedStatement = pollsConnection.prepareStatement("DELETE FROM Polls WHERE _id = ?");
+            preparedStatement.setInt(1, id);
+            int rowsDeleted = preparedStatement.executeUpdate();
+            return rowsDeleted != 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
