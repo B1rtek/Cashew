@@ -71,4 +71,16 @@ public class PollSummarizer implements Runnable {
             Cashew.pollManager.deletePoll(this.id);
         }
     }
+
+    public int getId() {
+        return this.id;
+    }
+
+    public String getEndTime() {
+        return this.pollEndingTime;
+    }
+
+    public void setJdaInstance(JDA jda) {
+        jdaInstance = jda;
+    }
 }

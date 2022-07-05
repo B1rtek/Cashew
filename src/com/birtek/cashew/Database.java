@@ -28,7 +28,7 @@ public final class Database {
     public static final String CASESIM_CAPSULES_DB = "jdbc:sqlite:databases/data/casesimCapsules.db";
     public static final String BIRTHDAY_REMINDSRS_DB = "jdbc:sqlite:databases/userData/birthdayReminders.db";
     public static final String REMINDERS_DB = "jdbc:sqlite:databases/userData/reminders.db";
-
+    public static final String POLLS_DB = "jdbc:sqlite:databases/userData/polls.db";
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
     private Connection boBurnhamConnection;
@@ -44,6 +44,7 @@ public final class Database {
     private Connection casesimCapsulesConnection;
     private Connection birthdayRemindersConnection;
     private Connection remindersConnection;
+    private Connection pollsConnection;
 
     private Database() {
 
@@ -70,6 +71,7 @@ public final class Database {
             casesimCapsulesConnection = DriverManager.getConnection(CASESIM_CAPSULES_DB);
             birthdayRemindersConnection = DriverManager.getConnection(BIRTHDAY_REMINDSRS_DB);
             remindersConnection = DriverManager.getConnection(REMINDERS_DB);
+            pollsConnection = DriverManager.getConnection(POLLS_DB);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the databases");
             e.printStackTrace();
@@ -1194,6 +1196,21 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             return -1;
+        }
+    }
+
+    public ArrayList<PollSummarizer> getAllPolls() {
+        try {
+            PreparedStatement preparedStatement = pollsConnection.prepareStatement("SELECT * FROM Polls");
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<PollSummarizer> polls = new ArrayList<>();
+            while(results.next()) {
+                polls.add(new PollSummarizer(results.getInt(1), results.getString(2), results.getString(3), results.getString(4)));
+            }
+            return polls;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
