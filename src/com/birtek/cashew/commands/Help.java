@@ -145,7 +145,7 @@ public class Help extends BaseCommand {
         helpEmbed.setAuthor("🥜 Cashew's commands 🥜");
         helpEmbed.setThumbnail(cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
-        helpEmbed.addField("\uD83D\uDD27 Utilities", "`/reminder`, `/feedback`", false);
+        helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`", false);
         helpEmbed.addField("😂 Fun stuff", "`bestneko`, `/birthday`, `boburnham`, `/casesim`, `dadjoke`, `/gifts`, `insp`, `kromer`, `korwin`, `nekoichi`, `ping`, `socialcredit`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
@@ -167,6 +167,7 @@ public class Help extends BaseCommand {
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler show <id(int)|\"all\">`", "Shows the timed message with the spcified id/all scheduled messages on this server.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler delete <id(int)|\"all\">`", "Removes the timed message with the specified id/all of them.", false);
+        helpEmbed.addField("`/poll <title> <option1> <option2> [option3..5] [timetovote] [unit]`", "Creates a poll. Poll can have between two and five options inclusive. By default polls have time to vote set to 24 hours, this can be changed by setting the `timetovote` and `unit` options.", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed.build();
     }

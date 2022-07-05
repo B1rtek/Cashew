@@ -8,6 +8,7 @@ import com.birtek.cashew.messagereactions.Counter;
 import com.birtek.cashew.messagereactions.OwosEtc;
 import com.birtek.cashew.messagereactions.ReactToMaple;
 import com.birtek.cashew.timings.BirthdayRemindersManager;
+import com.birtek.cashew.timings.PollManager;
 import com.birtek.cashew.timings.RemindersManager;
 import com.birtek.cashew.timings.ScheduledMessagesManager;
 import net.dv8tion.jda.api.JDA;
@@ -34,8 +35,8 @@ public class Cashew {
     public static String PI_SERVER_ID = "848907956379582484";
     public static ScheduledMessagesManager scheduledMessagesManager;
     public static BirthdayRemindersManager birthdayRemindersManager;
-
     public static RemindersManager remindersManager;
+    public static PollManager pollManager;
 
     public static void main(String[] args) throws LoginException {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
@@ -44,7 +45,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), /*new OpenCase(), new OpenCollection(),*/ new TimedMessageCommand(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
                         new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
@@ -153,11 +154,22 @@ public class Cashew {
                                         .addOption(INTEGER, "id", "ID of the reminder to delete", true)
                         ),
                 Commands.slash("feedback", "Send feedback to Cashew's creator!")
-                        .addOption(STRING, "content", "Content of your feedback message", true, false)
+                        .addOption(STRING, "content", "Content of your feedback message", true, false),
+                Commands.slash("poll", "Create a poll")
+                        .addOption(STRING, "title", "Title of the poll", true, false)
+                        .addOption(STRING, "option1", "Option 1 of the poll", true, false)
+                        .addOption(STRING, "option2", "Option 2 of the poll", true, false)
+                        .addOption(STRING, "option3", "Option 3 of the poll", false, false)
+                        .addOption(STRING, "option4", "Option 4 of the poll", false, false)
+                        .addOption(STRING, "option5", "Option 5 of the poll", false, false)
+                        .addOption(INTEGER, "timetovote", "Time after which the poll will conclude, by default 24 hours", false, false)
+                        .addOption(STRING, "unit", "Unit of the time to vote, hours by default", false, true)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
         remindersManager = new RemindersManager();
         remindersManager.setJDA(jda);
+        pollManager = new PollManager();
+        pollManager.start(jda);
     }
 }

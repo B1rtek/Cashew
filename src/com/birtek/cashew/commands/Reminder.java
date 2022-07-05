@@ -18,27 +18,6 @@ import java.util.Objects;
 
 public class Reminder extends BaseCommand {
 
-    ArrayList<String> timeUnits = new ArrayList<>() {
-        {
-            add("seconds");
-            add("minutes");
-            add("hours");
-            add("days");
-        }
-    };
-
-    private String calculateTargetTime(int time, String unit) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
-        switch (unit) {
-            case "seconds" -> now = now.plusSeconds(time);
-            case "minutes" -> now = now.plusMinutes(time);
-            case "hours" -> now = now.plusHours(time);
-            case "days" -> now = now.plusDays(time);
-        }
-        return now.format(dateTimeFormatter);
-    }
-
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("reminder")) {
