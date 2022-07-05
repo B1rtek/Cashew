@@ -1,1 +1,1 @@
-worker: java -jar build/libs/CashewDeploy-2.17-all.jar
+worker: java -jar build/libs/CashewDeploy-2.18-all.jar
