@@ -4,6 +4,7 @@ import com.birtek.cashew.Database;
 import com.birtek.cashew.timings.PollSummarizer;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
@@ -62,22 +63,29 @@ public class Poll extends BaseCommand {
                 pollEmbed.addField(optionEmoji.get(i).getName(), options.get(i), false);
             }
             pollEmbed.setFooter("Ends at");
-            pollEmbed.setTimestamp(Instant.now());
-            String[] messageID = new String[1];
+            pollEmbed.setTimestamp(calculateInstantTargetTime(time, unit));
             event.getChannel().sendMessageEmbeds(pollEmbed.build()).queue(pollMessage -> {
                 for(int i=0; i<options.size(); i++) {
                     pollMessage.addReaction(optionEmoji.get(i)).queue();
                 }
-                messageID[0] = pollMessage.getId();
+                PollSummarizer poll = new PollSummarizer(0, event.getChannel().getId(), pollMessage.getId(), timeString);
+                Database database = Database.getInstance();
+                poll = database.addPoll(poll);
+                if(poll != null) {
+                    event.reply("Poll created!").setEphemeral(true).queue();
+                } else {
+                    event.reply("Something went wrong while setting up the poll").setEphemeral(true).queue();
+                    event.getChannel().deleteMessageById(pollMessage.getId()).queue();
+                }
             });
-            PollSummarizer poll = new PollSummarizer(0, event.getChannel().getId(), messageID[0], timeString);
-            Database database = Database.getInstance();
-            poll = database.addPoll(poll);
-            if(poll != null) {
-                event.reply("Poll created!").setEphemeral(true).queue();
-            } else {
-                event.reply("Something went wrong while setting up the poll").setEphemeral(true).queue();
-                event.getChannel().deleteMessageById(messageID[0]).queue();
+        }
+    }
+
+    @Override
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+        if(event.getName().equals("poll")) {
+            if(event.getFocusedOption().getName().equals("unit")) {
+                event.replyChoiceStrings(autocompleteFromList(timeUnits, event.getOption("unit", "", OptionMapping::getAsString))).queue();
             }
         }
     }

@@ -22,7 +22,7 @@ public class PollSummarizer implements Runnable {
     private final String messageID, channelID, pollEndingTime;
     private static JDA jdaInstance;
 
-    public PollSummarizer(int id, String messageID, String channelID, String pollEndingTime) {
+    public PollSummarizer(int id, String channelID, String messageID, String pollEndingTime) {
         this.id = id;
         this.messageID = messageID;
         this.pollEndingTime = pollEndingTime;
@@ -30,14 +30,14 @@ public class PollSummarizer implements Runnable {
     }
 
     private static MessageReaction getReactionByEmoji(List<MessageReaction> reactions, String emoji) {
-        for(MessageReaction reaction: reactions) {
-            if(reaction.getEmoji().equals(Emoji.fromUnicode(emoji))) return reaction;
+        for (MessageReaction reaction : reactions) {
+            if (reaction.getEmoji().equals(Emoji.fromUnicode(emoji))) return reaction;
         }
         return null;
     }
 
     private static String calculatePercentage(int votes, int totalVotes) {
-        return Math.round((float)votes/(float)totalVotes * 10000)/100.0 + "%";
+        return Math.round((float) votes / (float) totalVotes * 10000) / 100.0 + "%";
     }
 
     @Override
@@ -48,29 +48,34 @@ public class PollSummarizer implements Runnable {
             int totalVotes = 0;
             ArrayList<Pair<Integer, String>> votes = new ArrayList<>();
             List<MessageReaction> reactions = pollEmbedMessage.getReactions();
-            for(MessageEmbed.Field field: pollEmbed.getFields()) {
+            for (MessageEmbed.Field field : pollEmbed.getFields()) {
                 MessageReaction reaction = getReactionByEmoji(reactions, field.getName());
-                if(reaction != null) {
-                    votes.add(Pair.of(reaction.getCount()-1, field.getValue()));
-                    totalVotes += reaction.getCount()-1;
+                if (reaction != null) {
+                    votes.add(Pair.of(reaction.getCount() - 1, field.getValue()));
+                    totalVotes += reaction.getCount() - 1;
                 }
             }
             votes.sort((o1, o2) -> o2.getLeft().compareTo(o1.getLeft()));
             Instant pollEnd = Objects.requireNonNull(pollEmbed.getTimestamp()).toInstant();
 
             EmbedBuilder resultsEmbed = new EmbedBuilder();
-            resultsEmbed.setTitle("Poll results");
-            resultsEmbed.setDescription(pollEmbed.getDescription());
-            for(Pair<Integer, String> vote: votes) {
-                resultsEmbed.addField(vote.getLeft() + " votes, " + calculatePercentage(vote.getLeft(), totalVotes), vote.getRight(), false);
+            resultsEmbed.setTitle(pollEmbed.getTitle());
+            if(totalVotes != 0) {
+                resultsEmbed.setDescription("Final results");
+                for (Pair<Integer, String> vote : votes) {
+                    resultsEmbed.addField(vote.getLeft() + " vote" + (vote.getLeft() != 1 ? "s" : "") + ", " + calculatePercentage(vote.getLeft(), totalVotes), vote.getRight(), false);
+                }
+            } else {
+                resultsEmbed.setDescription("No one voted!");
             }
             resultsEmbed.setFooter("Ended at");
             resultsEmbed.setTimestamp(pollEnd);
 
             pollEmbedMessage.editMessageEmbeds(resultsEmbed.build()).queue();
-        } catch (NullPointerException ignored) {}
+        } catch (NullPointerException ignored) {
+        }
         Database database = Database.getInstance();
-        if(!database.deletePoll(this.id)) LOGGER.warn("Failed to remove Poll " + this.id + " from the database!");
+        if (!database.deletePoll(this.id)) LOGGER.warn("Failed to remove Poll " + this.id + " from the database!");
         Cashew.pollManager.deletePoll(this.id);
     }
 

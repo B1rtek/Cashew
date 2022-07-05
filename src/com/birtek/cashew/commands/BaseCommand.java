@@ -22,6 +22,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URLConnection;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -33,7 +34,7 @@ public class BaseCommand extends ListenerAdapter {
     private static Font leaderboardFont;
 
     static {
-        System.setProperty("awt.useSystemAAFontSettings","lcd");
+        System.setProperty("awt.useSystemAAFontSettings", "lcd");
         try {
             leaderboardFont = Font.createFont(Font.TRUETYPE_FONT, new File("fonts/NotoSansDisplay-Regular.ttf")).deriveFont(Font.PLAIN, 24);
         } catch (FontFormatException | IOException e) {
@@ -72,6 +73,17 @@ public class BaseCommand extends ListenerAdapter {
             case "days" -> now = now.plusDays(time);
         }
         return now.format(dateTimeFormatter);
+    }
+
+    protected Instant calculateInstantTargetTime(int time, String unit) {
+        Instant now = Instant.now();
+        switch (unit) {
+            case "seconds" -> now = now.plusSeconds(time);
+            case "minutes" -> now = now.plusSeconds(60L * time);
+            case "hours" -> now = now.plusSeconds(3600L * time);
+            case "days" -> now = now.plusSeconds(24L * 3600 * time);
+        }
+        return now;
     }
 
     public static boolean checkPermissions(MessageReceivedEvent event, Permission[] neededPermissions) {
@@ -184,10 +196,10 @@ public class BaseCommand extends ListenerAdapter {
             JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
             //Get the status for the current row.
-            if(row >= 0) {
-                int targetR = gradientColor.getRed() + (255 - gradientColor.getRed())/10*(10-row);
-                int targetG = gradientColor.getGreen() + (255 - gradientColor.getGreen())/10*(10-row);
-                int targetB = gradientColor.getBlue() + (255 - gradientColor.getBlue())/10*(10-row);
+            if (row >= 0) {
+                int targetR = gradientColor.getRed() + (255 - gradientColor.getRed()) / 10 * (10 - row);
+                int targetG = gradientColor.getGreen() + (255 - gradientColor.getGreen()) / 10 * (10 - row);
+                int targetB = gradientColor.getBlue() + (255 - gradientColor.getBlue()) / 10 * (10 - row);
                 l.setBackground(new Color(targetR, targetG, targetB));
             } else l.setBackground(Color.WHITE);
 
@@ -203,20 +215,22 @@ public class BaseCommand extends ListenerAdapter {
         Border b;
 
         final Color gradientColor;
-        public LeaderboardHeaderRenderer(TableCellRenderer r, Color gradientColor){
+
+        public LeaderboardHeaderRenderer(TableCellRenderer r, Color gradientColor) {
             render = r;
             this.gradientColor = gradientColor;
 
             //It looks funky to have a different color on each side - but this is what you asked
             //You can comment out borders if you want too. (example try commenting out top and left borders)
             b = BorderFactory.createCompoundBorder();
-            b = BorderFactory.createCompoundBorder(b, BorderFactory.createMatteBorder(0,0,2,0, gradientColor));
+            b = BorderFactory.createCompoundBorder(b, BorderFactory.createMatteBorder(0, 0, 2, 0, gradientColor));
         }
+
         @Override
         public Component getTableCellRendererComponent(JTable table,
                                                        Object value, boolean isSelected, boolean hasFocus, int row,
                                                        int column) {
-            JComponent result = (JComponent)render.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JComponent result = (JComponent) render.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             result.setBorder(b);
             return result;
         }
@@ -224,7 +238,7 @@ public class BaseCommand extends ListenerAdapter {
 
     protected InputStream generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID, Color themeColor) {
         String[][] tableData = new String[leaderboardRecords.size()][3];
-        for(int i=0; i<leaderboardRecords.size(); i++) {
+        for (int i = 0; i < leaderboardRecords.size(); i++) {
             tableData[i][0] = String.valueOf(leaderboardRecords.get(i).place());
             String userName = leaderboardRecords.get(i).userID();
             try {
@@ -232,7 +246,8 @@ public class BaseCommand extends ListenerAdapter {
                 assert server != null;
                 Member member = server.retrieveMemberById(leaderboardRecords.get(i).userID()).complete();
                 userName = member.getEffectiveName();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             tableData[i][1] = userName;
             tableData[i][2] = String.valueOf(leaderboardRecords.get(i).count());
         }
@@ -245,17 +260,17 @@ public class BaseCommand extends ListenerAdapter {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         ge.registerFont(leaderboardFont);
         table.setFont(leaderboardFont);
-        for(int i=0; i<table.getColumnCount(); i++) {
+        for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(new LeaderboardCellRenderer(themeColor));
         }
         // https://stackoverflow.com/questions/11609900/how-to-make-the-background-of-a-jtable-transparent
         table.setOpaque(false);
-        ((DefaultTableCellRenderer)table.getDefaultRenderer(Object.class)).setOpaque(false);
+        ((DefaultTableCellRenderer) table.getDefaultRenderer(Object.class)).setOpaque(false);
         table.setGridColor(new Color(255, 255, 255, 0));
         table.setShowGrid(false);
         table.setShowVerticalLines(false);
         table.setShowHorizontalLines(false);
-        table.setIntercellSpacing(new Dimension(0,0));
+        table.setIntercellSpacing(new Dimension(0, 0));
         table.getTableHeader().setDefaultRenderer(new LeaderboardHeaderRenderer(table.getTableHeader().getDefaultRenderer(), themeColor));
         // https://stackoverflow.com/questions/12477522/jframe-to-image-without-showing-the-jframe
         table.setSize(table.getPreferredSize());

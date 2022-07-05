@@ -50,13 +50,13 @@ public class PollManager {
 
     private void schedulePollSummarizers() {
         for(PollSummarizer poll: polls.values()) {
-            poll.setJdaInstance(jdaInstance);
             ScheduledFuture<?> pollFuture = schedulePollSummarizer(poll);
             pollsFutures.put(poll.getId(), pollFuture);
         }
     }
 
     private ScheduledFuture<?> schedulePollSummarizer(PollSummarizer poll) {
+        poll.setJdaInstance(jdaInstance);
         int initialDelay = calculateInitialDelay(poll.getEndTime());
         return scheduler.schedule(poll, initialDelay, TimeUnit.SECONDS);
     }
