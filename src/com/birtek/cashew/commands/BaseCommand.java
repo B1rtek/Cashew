@@ -22,6 +22,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URLConnection;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class BaseCommand extends ListenerAdapter {
@@ -49,6 +52,27 @@ public class BaseCommand extends ListenerAdapter {
     public Permission[] manageServerPermission = {
             Permission.MANAGE_SERVER
     };
+
+    protected ArrayList<String> timeUnits = new ArrayList<>() {
+        {
+            add("seconds");
+            add("minutes");
+            add("hours");
+            add("days");
+        }
+    };
+
+    protected String calculateTargetTime(int time, String unit) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Europe/Warsaw"));
+        switch (unit) {
+            case "seconds" -> now = now.plusSeconds(time);
+            case "minutes" -> now = now.plusMinutes(time);
+            case "hours" -> now = now.plusHours(time);
+            case "days" -> now = now.plusDays(time);
+        }
+        return now.format(dateTimeFormatter);
+    }
 
     public static boolean checkPermissions(MessageReceivedEvent event, Permission[] neededPermissions) {
         if (event.isWebhookMessage()) {

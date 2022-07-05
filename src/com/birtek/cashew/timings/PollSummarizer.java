@@ -17,7 +17,7 @@ public class PollSummarizer implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PollSummarizer.class);
 
-    private final int id;
+    private int id;
     private final String messageID, channelID, pollEndingTime;
     private static JDA jdaInstance;
 
@@ -76,8 +76,20 @@ public class PollSummarizer implements Runnable {
         return this.id;
     }
 
+    public String getMessageID() {
+        return messageID;
+    }
+
+    public String getChannelID() {
+        return channelID;
+    }
+
     public String getEndTime() {
         return this.pollEndingTime;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setJdaInstance(JDA jda) {

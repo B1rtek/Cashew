@@ -1,18 +1,17 @@
 package com.birtek.cashew.commands;
 
+import com.birtek.cashew.Database;
+import com.birtek.cashew.timings.PollSummarizer;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import net.dv8tion.jda.api.requests.RestAction;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 public class Poll extends BaseCommand {
 
@@ -37,6 +36,17 @@ public class Poll extends BaseCommand {
                 event.reply("Poll must have a title").setEphemeral(true).queue();
                 return;
             }
+            int time = event.getOption("timetovote", 24, OptionMapping::getAsInt);
+            if(time == 0) {
+                event.reply("Time to vote must not be zero").setEphemeral(true).queue();
+                return;
+            }
+            String unit = event.getOption("unit", "hours", OptionMapping::getAsString);
+            if(!timeUnits.contains(unit)) {
+                event.reply("Invalid time unit specified").setEphemeral(true).queue();
+                return;
+            }
+            String timeString = calculateTargetTime(time, unit);
             ArrayList<String> options = new ArrayList<>();
             for(int i=1; i<=5; i++) {
                 String optionName = "option"+i;
@@ -53,12 +63,22 @@ public class Poll extends BaseCommand {
             }
             pollEmbed.setFooter("Ends at");
             pollEmbed.setTimestamp(Instant.now());
-            event.reply("Poll created!").setEphemeral(true).queue();
+            String[] messageID = new String[1];
             event.getChannel().sendMessageEmbeds(pollEmbed.build()).queue(pollMessage -> {
                 for(int i=0; i<options.size(); i++) {
                     pollMessage.addReaction(optionEmoji.get(i)).queue();
                 }
+                messageID[0] = pollMessage.getId();
             });
+            PollSummarizer poll = new PollSummarizer(0, event.getChannel().getId(), messageID[0], timeString);
+            Database database = Database.getInstance();
+            poll = database.addPoll(poll);
+            if(poll != null) {
+                event.reply("Poll created!").setEphemeral(true).queue();
+            } else {
+                event.reply("Something went wrong while setting up the poll").setEphemeral(true).queue();
+                event.getChannel().deleteMessageById(messageID[0]).queue();
+            }
         }
     }
 }

@@ -1213,4 +1213,24 @@ public final class Database {
             return null;
         }
     }
+
+    public PollSummarizer addPoll(PollSummarizer poll) {
+        try {
+            PreparedStatement preparedStatement = pollsConnection.prepareStatement("INSERT INTO Polls(channelID, messageID, endTime) VALUES(?, ?, ?)");
+            preparedStatement.setString(1, poll.getChannelID());
+            preparedStatement.setString(2, poll.getMessageID());
+            preparedStatement.setString(3, poll.getEndTime());
+            preparedStatement.execute();
+            ResultSet id = preparedStatement.getGeneratedKeys();
+            if(id.next()) {
+                poll.setId(id.getInt(1));
+                Cashew.pollManager.addPoll(poll);
+                return poll;
+            }
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
