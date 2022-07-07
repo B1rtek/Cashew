@@ -110,6 +110,15 @@ public class BirthdayRemindersManager {
 
     public void updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         birthdayReminderDefaults.put(defaults.serverID(), defaults);
+        Database database = Database.getInstance();
+        ArrayList<BirthdayReminder> affectedReminders = database.getBirthdayRemindersFromServer(defaults.serverID());
+        if(affectedReminders == null) {
+            LOGGER.warn("Failed to obtain birthday reminders for server " + defaults.serverID());
+        } else {
+            for(BirthdayReminder reminder: affectedReminders) {
+                updateBirthdayReminder(reminder);
+            }
+        }
     }
 
     public String getDefaultChannel(String serverID) {
