@@ -1109,6 +1109,22 @@ public final class Database {
         }
     }
 
+    public ArrayList<BirthdayReminder> getBirthdayRemindersFromServer(String serverID) {
+        try {
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM Reminders WHERE serverID = ?");
+            preparedStatement.setString(1, serverID);
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<BirthdayReminder> reminders = new ArrayList<>();
+            while (results.next()) {
+                reminders.add(new BirthdayReminder(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getString(5), results.getString(6)));
+            }
+            return reminders;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public ReminderRunnable addReminder(ReminderRunnable reminder) {
         try {
             PreparedStatement preparedStatement = remindersConnection.prepareStatement("INSERT INTO Reminders(content, timedate, userID, ping) VALUES(?, ?, ?, ?)");
