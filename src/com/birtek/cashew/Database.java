@@ -414,7 +414,7 @@ public final class Database {
 
     public int addTimedMessage(String messageContent, String executionTime, String repetitionInterval, String destinationChannelID, String serverID) {
         try {
-            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("INSERT INTO scheduledmessages(messagecontent, executiontime, repetitioninterval, destinationchannelid, serverid) VALUES(?, ?, ?, ?, ?);");
+            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("INSERT INTO scheduledmessages(messagecontent, executiontime, repetitioninterval, destinationchannelid, serverid) VALUES(?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
             prepStmt.setString(1, messageContent);
             prepStmt.setString(2, executionTime);
             prepStmt.setString(3, repetitionInterval);
@@ -985,7 +985,7 @@ public final class Database {
 
     private BirthdayReminder insertBirthdayReminder(BirthdayReminder reminder) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO birthdayreminders(message, dateandtime, channelid, serverid, userid) VALUES(?, ?, ?, ?, ?)");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO birthdayreminders(message, dateandtime, channelid, serverid, userid) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, reminder.getMessage());
             preparedStatement.setString(2, reminder.getDateAndTime());
             preparedStatement.setString(3, reminder.getChannelID());
@@ -1142,7 +1142,7 @@ public final class Database {
 
     public ReminderRunnable addReminder(ReminderRunnable reminder) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("INSERT INTO reminders(content, timedate, userid, ping) VALUES(?, ?, ?, ?)");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("INSERT INTO reminders(content, timedate, userid, ping) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, reminder.getContent());
             preparedStatement.setString(2, reminder.getDateTime());
             preparedStatement.setString(3, reminder.getUserID());
@@ -1247,7 +1247,7 @@ public final class Database {
 
     public PollSummarizer addPoll(PollSummarizer poll) {
         try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("INSERT INTO polls(channelid, messageid, endtime) VALUES(?, ?, ?)");
+            PreparedStatement preparedStatement = pollsConnection.prepareStatement("INSERT INTO polls(channelid, messageid, endtime) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, poll.getChannelID());
             preparedStatement.setString(2, poll.getMessageID());
             preparedStatement.setString(3, poll.getEndTime());
