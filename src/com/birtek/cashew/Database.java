@@ -635,7 +635,7 @@ public final class Database {
         try {
             PreparedStatement prepStmt;
             if (giftID != 0) {
-                prepStmt = giftHistoryConnection.prepareStatement("SELECT amountgifted, amountreceived, lastgifted FROM gifthistory WHERE ((serverid = ? AND useridD = ?) AND giftid = ?)");
+                prepStmt = giftHistoryConnection.prepareStatement("SELECT amountgifted, amountreceived, lastgifted FROM gifthistory WHERE ((serverid = ? AND userid = ?) AND giftid = ?)");
                 prepStmt.setString(1, serverID);
                 prepStmt.setString(2, userID);
                 prepStmt.setInt(3, giftID);
@@ -687,13 +687,13 @@ public final class Database {
             ArrayList<LeaderboardRecord> leaderboardRecords = new ArrayList<>();
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userid, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) where pos between (?-1)*10+1 and (?-1)*10+10");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userid, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) as subqr where pos between (?-1)*10+1 and (?-1)*10+10");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
                 preparedStatement.setInt(3, page);
                 preparedStatement.setInt(4, page);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userid, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) where pos between (?-1)*10+1 and (?-1)*10+10 and total > 0");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userid, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where pos between (?-1)*10+1 and (?-1)*10+10 and total > 0");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, page);
                 preparedStatement.setInt(3, page);
@@ -719,12 +719,12 @@ public final class Database {
         try {
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) where userid = ?");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) as subqr where userid = ?");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
                 preparedStatement.setString(3, userID);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) where userid = ? AND total > 0");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where userid = ? AND total > 0");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setString(2, userID);
             }
@@ -754,7 +754,7 @@ public final class Database {
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) where total > 0");
+                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where total > 0");
                 preparedStatement.setString(1, serverID);
             }
             ResultSet results = preparedStatement.executeQuery();
