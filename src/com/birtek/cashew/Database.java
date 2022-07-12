@@ -589,7 +589,7 @@ public final class Database {
 
     public ArrayList<String> getAllActiveCountingChannels() {
         try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT channelid FROM counting WHERE activity = 1");
+            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT channelid FROM counting WHERE activity = true");
             ResultSet results = preparedStatement.executeQuery();
             return createArrayListFromResultSet(results);
         } catch (SQLException e) {
@@ -1070,7 +1070,7 @@ public final class Database {
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO defaultbirthdayreminderchannels(serverid, channelid, override) VALUES(?, ?, ?)");
             preparedStatement.setString(1, defaults.serverID());
             preparedStatement.setString(2, defaults.channelID());
-            preparedStatement.setBoolean(3, defaults.override());
+            preparedStatement.setInt(3, defaults.override()?1:0);
             preparedStatement.execute();
             return true;
         } catch (SQLException e) {
@@ -1083,7 +1083,7 @@ public final class Database {
         try {
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE defaultbirthdayreminderchannels SET channelid = ?, override = ? WHERE serverid = ?");
             preparedStatement.setString(1, defaults.channelID());
-            preparedStatement.setBoolean(2, defaults.override());
+            preparedStatement.setInt(2, defaults.override()?1:0);
             preparedStatement.setString(3, defaults.serverID());
             preparedStatement.executeUpdate();
             return true;
