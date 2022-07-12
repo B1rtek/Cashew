@@ -15,6 +15,7 @@ repositories {
 
 dependencies {
     implementation group:'org.xerial', name:'sqlite-jdbc', version:'3.36.0.3'
+    implementation 'org.postgresql:postgresql:42.4.0'
     implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-alpha.13'
     implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
     implementation('ch.qos.logback:logback-classic:1.2.11')
