@@ -74,7 +74,7 @@ public final class Database {
         try {
             String postgresDBUrl = "jdbc:" + System.getenv("DATABASE_URL");
             Properties props = new Properties();
-            props.setProperty("user","postgres");
+            props.setProperty("user",System.getenv("DATABASE_USER"));
             props.setProperty("password",System.getenv("DATABASE_PASSWD"));
             props.setProperty("ssl","false");
             channelActivityConnection = DriverManager.getConnection(postgresDBUrl, props);
