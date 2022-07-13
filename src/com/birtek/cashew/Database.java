@@ -371,10 +371,10 @@ public final class Database {
         try {
             PreparedStatement prepStmtQuery;
             if (selection.startsWith(">")) {
-                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM scheduledmessages WHERE _id > ? AND serverid = ?");
+                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM scheduledmessages WHERE _id > ? AND serverid = ? GROUP BY _id");
                 prepStmtQuery.setInt(1, 0);
             } else if (selection.startsWith("=")) {
-                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM scheduledmessages WHERE _id = ? AND serverid = ?");
+                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM scheduledmessages WHERE _id = ? AND serverid = ? GROUP BY _id");
                 prepStmtQuery.setInt(1, Integer.parseInt(selection.substring(1)));
             } else {
                 return -1;
