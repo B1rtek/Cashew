@@ -13,7 +13,8 @@ public final class Database {
 
     private static volatile Database instance;
 
-    public static final String DRIVER = "org.sqlite.JDBC";
+    public static final String SQLITE_DRIVER = "org.sqlite.JDBC";
+    public static final String POSTGRES_DRIVER = "org.sqlite.JDBC";
     public static final String CHANNEL_ACTIVITY_DB = "jdbc:sqlite:databases/userData/channelActivity.db";
     public static final String BO_BURNHAM_DB = "jdbc:sqlite:databases/data/boBurnhamQuotes.db";
     public static final String CASE_OPENING_DB = "jdbc:sqlite:databases/data/caseOpening.db";
@@ -50,9 +51,9 @@ public final class Database {
 
         // SQLite
         try {
-            Class.forName(Database.DRIVER);
+            Class.forName(Database.POSTGRES_DRIVER);
         } catch (ClassNotFoundException e) {
-            System.err.println("Missing JDBC driver");
+            System.err.println("Missing SQLite JDBC driver");
             e.printStackTrace();
         }
 
@@ -66,6 +67,14 @@ public final class Database {
             casesimCapsulesConnection = DriverManager.getConnection(CASESIM_CAPSULES_DB);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the SQLite3 databases");
+            e.printStackTrace();
+        }
+
+        // PostgreSQL
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Missing PostgreSQL JDBC driver");
             e.printStackTrace();
         }
 
