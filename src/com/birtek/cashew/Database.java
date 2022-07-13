@@ -8,7 +8,6 @@ import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 public final class Database {
 
@@ -72,20 +71,16 @@ public final class Database {
 
         // Postgres
         try {
-            String postgresDBUrl = "jdbc:" + System.getenv("DATABASE_URL");
-            Properties props = new Properties();
-            props.setProperty("user",System.getenv("DATABASE_USER"));
-            props.setProperty("password",System.getenv("DATABASE_PASSWD"));
-            props.setProperty("ssl","false");
-            channelActivityConnection = DriverManager.getConnection(postgresDBUrl, props);
+            String postgresDBUrl = System.getenv("JDBC_DATABASE_URL");
+            channelActivityConnection = DriverManager.getConnection(postgresDBUrl);
             channelActivityStatement = channelActivityConnection.createStatement();
-            timedMessagesConnection = DriverManager.getConnection(postgresDBUrl, props);
-            socialCreditConnection = DriverManager.getConnection(postgresDBUrl, props);
-            countingConnection = DriverManager.getConnection(postgresDBUrl, props);
-            giftHistoryConnection = DriverManager.getConnection(postgresDBUrl, props);
-            birthdayRemindersConnection = DriverManager.getConnection(postgresDBUrl, props);
-            remindersConnection = DriverManager.getConnection(postgresDBUrl, props);
-            pollsConnection = DriverManager.getConnection(postgresDBUrl, props);
+            timedMessagesConnection = DriverManager.getConnection(postgresDBUrl);
+            socialCreditConnection = DriverManager.getConnection(postgresDBUrl);
+            countingConnection = DriverManager.getConnection(postgresDBUrl);
+            giftHistoryConnection = DriverManager.getConnection(postgresDBUrl);
+            birthdayRemindersConnection = DriverManager.getConnection(postgresDBUrl);
+            remindersConnection = DriverManager.getConnection(postgresDBUrl);
+            pollsConnection = DriverManager.getConnection(postgresDBUrl);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the Postgres databases");
             e.printStackTrace();
