@@ -8,6 +8,7 @@ import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public final class Database {
 
@@ -48,6 +49,7 @@ public final class Database {
 
     private Database() {
 
+        // SQLite
         try {
             Class.forName(Database.DRIVER);
         } catch (ClassNotFoundException e) {
@@ -56,26 +58,39 @@ public final class Database {
         }
 
         try {
-            channelActivityConnection = DriverManager.getConnection(CHANNEL_ACTIVITY_DB);
-            channelActivityStatement = channelActivityConnection.createStatement();
             boBurnhamConnection = DriverManager.getConnection(BO_BURNHAM_DB);
             caseOpeningConnection = DriverManager.getConnection(CASE_OPENING_DB);
             collectionOpeningConnection = DriverManager.getConnection(COLLECTION_OPENING_DB);
-            timedMessagesConnection = DriverManager.getConnection(TIMED_MESSAGES_DB);
-            socialCreditConnection = DriverManager.getConnection(SOCIALCREDIT_DB);
-            countingConnection = DriverManager.getConnection(COUNTING_DB);
             giftsConnection = DriverManager.getConnection(GIFTS_DB);
-            giftHistoryConnection = DriverManager.getConnection(GIFT_HISTORY_DB);
             casesimCasesConnection = DriverManager.getConnection(CASESIM_CASES_DB);
             casesimCollectionsConnection = DriverManager.getConnection(CASESIM_COLLECTIONS_DB);
             casesimCapsulesConnection = DriverManager.getConnection(CASESIM_CAPSULES_DB);
-            birthdayRemindersConnection = DriverManager.getConnection(BIRTHDAY_REMINDSRS_DB);
-            remindersConnection = DriverManager.getConnection(REMINDERS_DB);
-            pollsConnection = DriverManager.getConnection(POLLS_DB);
         } catch (SQLException e) {
-            System.err.println("There was a problem while establishing a connection with the databases");
+            System.err.println("There was a problem while establishing a connection with the SQLite3 databases");
             e.printStackTrace();
         }
+
+        // Postgres
+        try {
+            String postgresDBUrl = "jdbc:" + System.getenv("DATABASE_URL");
+            Properties props = new Properties();
+            props.setProperty("user","postgres");
+            props.setProperty("password",System.getenv("DATABASE_PASSWD"));
+            props.setProperty("ssl","false");
+            channelActivityConnection = DriverManager.getConnection(postgresDBUrl, props);
+            channelActivityStatement = channelActivityConnection.createStatement();
+            timedMessagesConnection = DriverManager.getConnection(postgresDBUrl, props);
+            socialCreditConnection = DriverManager.getConnection(postgresDBUrl, props);
+            countingConnection = DriverManager.getConnection(postgresDBUrl, props);
+            giftHistoryConnection = DriverManager.getConnection(postgresDBUrl, props);
+            birthdayRemindersConnection = DriverManager.getConnection(postgresDBUrl, props);
+            remindersConnection = DriverManager.getConnection(postgresDBUrl, props);
+            pollsConnection = DriverManager.getConnection(postgresDBUrl, props);
+        } catch (SQLException e) {
+            System.err.println("There was a problem while establishing a connection with the Postgres databases");
+            e.printStackTrace();
+        }
+
 
         createTables();
     }
@@ -94,7 +109,7 @@ public final class Database {
     }
 
     private void createTables() {
-        String createTestTable = "CREATE TABLE IF NOT EXISTS ChannelActivity(_id INTEGER PRIMARY KEY AUTOINCREMENT, channelID TEXT, activity INTEGER)";
+        String createTestTable = "CREATE TABLE IF NOT EXISTS channelactivity(_id serial PRIMARY KEY, channelid TEXT, activity INTEGER)";
         try {
             channelActivityStatement.execute(createTestTable);
 
@@ -106,7 +121,7 @@ public final class Database {
 
     public void channelActivityInsert(String channelID, int activitySetting) {
         try {
-            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("INSERT INTO ChannelActivity(channelID, activity) VALUES(?, ?);");
+            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("INSERT INTO channelactivity(channelid, activity) VALUES(?, ?);");
             prepStmt.setString(1, channelID);
             prepStmt.setInt(2, activitySetting);
             prepStmt.execute();
@@ -118,7 +133,7 @@ public final class Database {
 
     public ResultSet channelActivitySelect(String channelID) {
         try {
-            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("SELECT activity FROM ChannelActivity WHERE channelID = ?");
+            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("SELECT activity FROM channelactivity WHERE channelid = ?");
             prepStmt.setString(1, channelID);
             return prepStmt.executeQuery();
         } catch (SQLException e) {
@@ -130,7 +145,7 @@ public final class Database {
 
     public boolean channelActivityUpdate(String channelID, int activitySetting) {
         try {
-            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("UPDATE ChannelActivity SET activity = ? WHERE channelID = ?");
+            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("UPDATE channelactivity SET activity = ? WHERE channelid = ?");
             prepStmt.setInt(1, activitySetting);
             prepStmt.setString(2, channelID);
             if (prepStmt.executeUpdate() != 1) {
@@ -335,10 +350,10 @@ public final class Database {
         try {
             PreparedStatement prepStmt;
             if (selection.startsWith(">")) {
-                prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, executionTime, destinationChannelID, messageContent FROM Messages WHERE _id > ? AND serverID = ?");
+                prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, executiontime, destinationchannelid, messagecontent FROM scheduledmessages WHERE _id > ? AND serverid = ?");
                 prepStmt.setInt(1, 0);
             } else if (selection.startsWith("=")) {
-                prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, executionTime, destinationChannelID, messageContent FROM Messages WHERE _id = ? AND serverID = ?");
+                prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, executiontime, destinationchannelid, messagecontent FROM scheduledmessages WHERE _id = ? AND serverid = ?");
                 prepStmt.setInt(1, Integer.parseInt(selection.substring(1)));
             } else {
                 return null;
@@ -356,10 +371,10 @@ public final class Database {
         try {
             PreparedStatement prepStmtQuery;
             if (selection.startsWith(">")) {
-                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM Messages WHERE _id > ? AND serverID = ?");
+                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM scheduledmessages WHERE _id > ? AND serverid = ? GROUP BY _id");
                 prepStmtQuery.setInt(1, 0);
             } else if (selection.startsWith("=")) {
-                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM Messages WHERE _id = ? AND serverID = ?");
+                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM scheduledmessages WHERE _id = ? AND serverid = ? GROUP BY _id");
                 prepStmtQuery.setInt(1, Integer.parseInt(selection.substring(1)));
             } else {
                 return -1;
@@ -375,10 +390,10 @@ public final class Database {
             }
             PreparedStatement prepStmtDelete;
             if (selection.startsWith(">")) {
-                prepStmtDelete = timedMessagesConnection.prepareStatement("DELETE FROM Messages WHERE _id > ? AND serverID = ?");
+                prepStmtDelete = timedMessagesConnection.prepareStatement("DELETE FROM scheduledmessages WHERE _id > ? AND serverid = ?");
                 prepStmtDelete.setInt(1, 0);
             } else {
-                prepStmtDelete = timedMessagesConnection.prepareStatement("DELETE FROM Messages WHERE _id = ? AND serverID = ?");
+                prepStmtDelete = timedMessagesConnection.prepareStatement("DELETE FROM scheduledmessages WHERE _id = ? AND serverid = ?");
                 prepStmtDelete.setInt(1, Integer.parseInt(selection.substring(1)));
             }
             prepStmtDelete.setString(2, serverID);
@@ -399,7 +414,7 @@ public final class Database {
 
     public int addTimedMessage(String messageContent, String executionTime, String repetitionInterval, String destinationChannelID, String serverID) {
         try {
-            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("INSERT INTO Messages(messageContent, executionTime, repetitionInterval, destinationChannelID, serverID) VALUES(?, ?, ?, ?, ?);");
+            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("INSERT INTO scheduledmessages(messagecontent, executiontime, repetitioninterval, destinationchannelid, serverid) VALUES(?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
             prepStmt.setString(1, messageContent);
             prepStmt.setString(2, executionTime);
             prepStmt.setString(3, repetitionInterval);
@@ -424,7 +439,7 @@ public final class Database {
 
     public ArrayList<TimedMessage> getTimedMessages() {
         try {
-            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT messageContent, executionTime, destinationChannelID FROM Messages");
+            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT messagecontent, executiontime, destinationchannelid FROM scheduledmessages");
             ResultSet timedMessages = prepStmt.executeQuery();
             ArrayList<TimedMessage> timedMessagesArrayList = new ArrayList<>();
             if (timedMessages != null) {
@@ -442,7 +457,7 @@ public final class Database {
 
     public ArrayList<ScheduledMessage> getScheduledMessages() {
         try {
-            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, messageContent, executionTime, destinationChannelID FROM Messages");
+            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages");
             ResultSet scheduledMessages = prepStmt.executeQuery();
             ArrayList<ScheduledMessage> scheduledMessageArrayList = new ArrayList<>();
             if (scheduledMessages != null) {
@@ -460,7 +475,7 @@ public final class Database {
 
     public long getSocialCredit(String userID, String serverID) {
         try {
-            PreparedStatement prepStmt = socialCreditConnection.prepareStatement("SELECT credit FROM SocialCredit WHERE serverID = ? AND userID = ?");
+            PreparedStatement prepStmt = socialCreditConnection.prepareStatement("SELECT credit FROM socialcredit WHERE serverid = ? AND userid = ?");
             prepStmt.setString(1, serverID);
             prepStmt.setString(2, userID);
             ResultSet socialCredit = prepStmt.executeQuery();
@@ -484,7 +499,7 @@ public final class Database {
             if (socialCredit == 648294745) {
                 newSocialCredit(userID, serverID, credit);
             } else {
-                PreparedStatement prepStmt = socialCreditConnection.prepareStatement("UPDATE SocialCredit SET credit = ? WHERE serverID = ? AND userID = ?");
+                PreparedStatement prepStmt = socialCreditConnection.prepareStatement("UPDATE socialcredit SET credit = ? WHERE serverid = ? AND userid = ?");
                 prepStmt.setLong(1, credit + socialCredit);
                 prepStmt.setString(2, serverID);
                 prepStmt.setString(3, userID);
@@ -498,7 +513,7 @@ public final class Database {
 
     public void newSocialCredit(String userID, String serverID, long credit) {
         try {
-            PreparedStatement prepStmt = socialCreditConnection.prepareStatement("INSERT INTO SocialCredit(serverID, userID, credit) VALUES(?, ?, ?);");
+            PreparedStatement prepStmt = socialCreditConnection.prepareStatement("INSERT INTO socialcredit(serverid, userid, credit) VALUES(?, ?, ?);");
             prepStmt.setString(1, serverID);
             prepStmt.setString(2, userID);
             prepStmt.setLong(3, credit);
@@ -511,7 +526,7 @@ public final class Database {
 
     public boolean setCountingStatus(boolean newState, String channelID) {
         try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT Count(*) FROM Counting WHERE channelID = ?");
+            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT Count(*) FROM counting WHERE channelid = ?");
             prepStmt.setString(1, channelID);
             ResultSet result = prepStmt.executeQuery();
             boolean createNewRecord = false;
@@ -522,13 +537,13 @@ public final class Database {
                 }
             }
             if (createNewRecord) {
-                prepStmt = countingConnection.prepareStatement("INSERT INTO Counting(channelID, activity, current, typosLeft) VALUES(? ,?, ?, ?)");
+                prepStmt = countingConnection.prepareStatement("INSERT INTO counting(channelid, activity, current, typosleft) VALUES(? ,?, ?, ?)");
                 prepStmt.setString(1, channelID);
                 prepStmt.setBoolean(2, newState);
                 prepStmt.setInt(3, 0);
                 prepStmt.setInt(4, 3);
             } else {
-                prepStmt = countingConnection.prepareStatement("UPDATE Counting SET activity = ? WHERE channelID = ?");
+                prepStmt = countingConnection.prepareStatement("UPDATE counting SET activity = ? WHERE channelid = ?");
                 prepStmt.setBoolean(1, newState);
                 prepStmt.setString(2, channelID);
             }
@@ -543,7 +558,7 @@ public final class Database {
 
     public CountingInfo getCountingData(String channelID) {
         try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userID, current, messageID, typosLeft FROM Counting WHERE channelID = ?");
+            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userid, current, messageid, typosleft FROM counting WHERE channelid = ?");
             prepStmt.setString(1, channelID);
             ResultSet result = prepStmt.executeQuery();
             if (result.next()) {
@@ -559,7 +574,7 @@ public final class Database {
 
     public void setCount(CountingInfo countingInfo, String channelID) {
         try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("UPDATE Counting SET current = ?, userID = ?, messageID = ?, typosLeft = ? WHERE channelID = ?");
+            PreparedStatement prepStmt = countingConnection.prepareStatement("UPDATE counting SET current = ?, userid = ?, messageid = ?, typosleft = ? WHERE channelid = ?");
             prepStmt.setInt(1, countingInfo.value());
             prepStmt.setString(2, countingInfo.userID());
             prepStmt.setString(3, countingInfo.messageID());
@@ -574,7 +589,7 @@ public final class Database {
 
     public ArrayList<String> getAllActiveCountingChannels() {
         try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT channelID FROM Counting WHERE activity = 1");
+            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT channelid FROM counting WHERE activity = true");
             ResultSet results = preparedStatement.executeQuery();
             return createArrayListFromResultSet(results);
         } catch (SQLException e) {
@@ -603,7 +618,7 @@ public final class Database {
 
     private void insertNewGiftStats(GiftStats stats, int giftID, String userID, String serverID) {
         try {
-            PreparedStatement prepStmt = giftHistoryConnection.prepareStatement("INSERT INTO GiftHistory(giftID, userID, serverID, amountGifted, amountReceived, lastGifted) VALUES(?, ?, ?, ?, ?, ?)");
+            PreparedStatement prepStmt = giftHistoryConnection.prepareStatement("INSERT INTO gifthistory(giftid, userid, serverid, amountgifted, amountreceived, lastgifted) VALUES(?, ?, ?, ?, ?, ?)");
             prepStmt.setInt(1, giftID);
             prepStmt.setString(2, userID);
             prepStmt.setString(3, serverID);
@@ -620,12 +635,12 @@ public final class Database {
         try {
             PreparedStatement prepStmt;
             if (giftID != 0) {
-                prepStmt = giftHistoryConnection.prepareStatement("SELECT amountGifted, amountReceived, lastGifted FROM GiftHistory WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
+                prepStmt = giftHistoryConnection.prepareStatement("SELECT amountgifted, amountreceived, lastgifted FROM gifthistory WHERE ((serverid = ? AND userid = ?) AND giftid = ?)");
                 prepStmt.setString(1, serverID);
                 prepStmt.setString(2, userID);
                 prepStmt.setInt(3, giftID);
             } else {
-                prepStmt = giftHistoryConnection.prepareStatement("SELECT SUM(amountGifted), SUM(amountReceived), AVG(lastGifted) FROM GiftHistory WHERE (serverID = ? AND userID = ?)");
+                prepStmt = giftHistoryConnection.prepareStatement("SELECT SUM(amountgifted), SUM(amountreceived), AVG(lastgifted) FROM gifthistory WHERE (serverid = ? AND userid = ?)");
                 prepStmt.setString(1, serverID);
                 prepStmt.setString(2, userID);
             }
@@ -648,7 +663,7 @@ public final class Database {
 
     public void updateUserGiftStats(GiftStats stats, int giftID, String userID, String serverID) {
         try {
-            PreparedStatement prepStmt = giftHistoryConnection.prepareStatement("UPDATE GiftHistory SET amountGifted = ?, amountReceived = ?, lastGifted = ? WHERE ((serverID = ? AND userID = ?) AND giftID = ?)");
+            PreparedStatement prepStmt = giftHistoryConnection.prepareStatement("UPDATE gifthistory SET amountgifted = ?, amountreceived = ?, lastgifted = ? WHERE ((serverid = ? AND userid = ?) AND giftid = ?)");
             prepStmt.setInt(1, stats.getAmountGifted());
             prepStmt.setInt(2, stats.getAmountReceived());
             prepStmt.setLong(3, stats.getLastGifted());
@@ -664,21 +679,21 @@ public final class Database {
     public ArrayList<LeaderboardRecord> getGiftsLeaderboardPage(Gifts.GiftsLeaderboardType type, int page, String serverID, int giftID) {
         String selectedColumn;
         if (type == Gifts.GiftsLeaderboardType.MOST_GIFTED) {
-            selectedColumn = "amountGifted";
+            selectedColumn = "amountgifted";
         } else {
-            selectedColumn = "amountReceived";
+            selectedColumn = "amountreceived";
         }
         try {
             ArrayList<LeaderboardRecord> leaderboardRecords = new ArrayList<>();
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userID, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? AND giftID = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) where pos between (?-1)*10+1 and (?-1)*10+10");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userid, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) as subqr where pos between (?-1)*10+1 and (?-1)*10+10");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
                 preparedStatement.setInt(3, page);
                 preparedStatement.setInt(4, page);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userID, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userID, SUM(" + selectedColumn + ") as total from GiftHistory where serverID = ? group by userID order by total desc) where pos between (?-1)*10+1 and (?-1)*10+10 and total > 0");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userid, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where pos between (?-1)*10+1 and (?-1)*10+10 and total > 0");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, page);
                 preparedStatement.setInt(3, page);
@@ -697,19 +712,19 @@ public final class Database {
     public LeaderboardRecord getGiftsLeaderboardStats(Gifts.GiftsLeaderboardType type, String serverID, int giftID, String userID) {
         String selectedColumn;
         if (type == Gifts.GiftsLeaderboardType.MOST_GIFTED) {
-            selectedColumn = "amountGifted";
+            selectedColumn = "amountgifted";
         } else {
-            selectedColumn = "amountReceived";
+            selectedColumn = "amountreceived";
         }
         try {
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userID, " + selectedColumn + " from GiftHistory where serverID = ? AND giftID = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) where userID = ?");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) as subqr where userid = ?");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
                 preparedStatement.setString(3, userID);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userID, SUM(" + selectedColumn + ") as total from GiftHistory where serverID = ? group by userID order by total desc) where userID = ? AND total > 0");
+                preparedStatement = giftHistoryConnection.prepareStatement("select pos, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where userid = ? AND total > 0");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setString(2, userID);
             }
@@ -727,19 +742,19 @@ public final class Database {
     public int getGiftsLeaderboardPageCount(Gifts.GiftsLeaderboardType type, String serverID, int giftID) {
         String selectedColumn;
         if (type == Gifts.GiftsLeaderboardType.MOST_GIFTED) {
-            selectedColumn = "amountGifted";
+            selectedColumn = "amountgifted";
         } else {
-            selectedColumn = "amountReceived";
+            selectedColumn = "amountreceived";
         }
         try {
             ArrayList<LeaderboardRecord> leaderboardRecords = new ArrayList<>();
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from GiftHistory where serverID = ? AND giftID = ? AND " + selectedColumn + " > 0");
+                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userID, SUM(" + selectedColumn + ") as total from GiftHistory where serverID = ? group by userID order by total desc) where total > 0");
+                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where total > 0");
                 preparedStatement.setString(1, serverID);
             }
             ResultSet results = preparedStatement.executeQuery();
@@ -904,7 +919,7 @@ public final class Database {
 
     public ArrayList<BirthdayReminder> getBirthdayReminders() {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM Reminders");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM birthdayreminders");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminder> reminders = new ArrayList<>();
             while (results.next()) {
@@ -919,7 +934,7 @@ public final class Database {
 
     public ArrayList<BirthdayReminderDefaults> getBirthdayReminderDefaults() {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT serverID, channelID, override FROM DefaultChannels");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT serverid, channelid, override FROM defaultbirthdayreminderchannels");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminderDefaults> defaults = new ArrayList<>();
             while (results.next()) {
@@ -933,7 +948,7 @@ public final class Database {
     }
 
     private int getBirthdayReminderId(String serverID, String userID) throws SQLException {
-        PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT _id FROM Reminders WHERE serverID = ? AND userID = ?");
+        PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT _id FROM birthdayreminders WHERE serverid = ? AND userid = ?");
         preparedStatement.setString(1, serverID);
         preparedStatement.setString(2, userID);
         ResultSet results = preparedStatement.executeQuery();
@@ -970,7 +985,7 @@ public final class Database {
 
     private BirthdayReminder insertBirthdayReminder(BirthdayReminder reminder) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO Reminders(message, dateAndTime, channelID, serverID, userID) VALUES(?, ?, ?, ?, ?)");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO birthdayreminders(message, dateandtime, channelid, serverid, userid) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, reminder.getMessage());
             preparedStatement.setString(2, reminder.getDateAndTime());
             preparedStatement.setString(3, reminder.getChannelID());
@@ -991,7 +1006,7 @@ public final class Database {
 
     private boolean updateBirthdayReminder(BirthdayReminder reminder) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE Reminders SET message = ?, dateAndTime = ?, channelID = ?, serverID = ?, userID = ? WHERE _id = ?");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE birthdayreminders SET message = ?, dateandtime = ?, channelid = ?, serverid = ?, userid = ? WHERE _id = ?");
             preparedStatement.setString(1, reminder.getMessage());
             preparedStatement.setString(2, reminder.getDateAndTime());
             preparedStatement.setString(3, reminder.getChannelID());
@@ -1010,7 +1025,7 @@ public final class Database {
         try {
             int id = getBirthdayReminderId(serverID, userID);
             if (id == 0) return false;
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM Reminders WHERE serverID = ? AND userID = ?");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM birthdayreminders WHERE serverid = ? AND userid = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
             preparedStatement.execute();
@@ -1024,7 +1039,7 @@ public final class Database {
 
     public boolean addBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT _id FROM DefaultChannels WHERE serverID = ?");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT _id FROM defaultbirthdayreminderchannels WHERE serverid = ?");
             preparedStatement.setString(1, defaults.serverID());
             ResultSet results = preparedStatement.executeQuery();
             int id = 0;
@@ -1052,10 +1067,10 @@ public final class Database {
 
     private boolean insertBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO DefaultChannels(serverID, channelID, override) VALUES(?, ?, ?)");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO defaultbirthdayreminderchannels(serverid, channelid, override) VALUES(?, ?, ?)");
             preparedStatement.setString(1, defaults.serverID());
             preparedStatement.setString(2, defaults.channelID());
-            preparedStatement.setBoolean(3, defaults.override());
+            preparedStatement.setInt(3, defaults.override()?1:0);
             preparedStatement.execute();
             return true;
         } catch (SQLException e) {
@@ -1066,9 +1081,9 @@ public final class Database {
 
     private boolean updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE DefaultChannels SET channelID = ?, override = ? WHERE serverID = ?");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE defaultbirthdayreminderchannels SET channelid = ?, override = ? WHERE serverid = ?");
             preparedStatement.setString(1, defaults.channelID());
-            preparedStatement.setBoolean(2, defaults.override());
+            preparedStatement.setInt(2, defaults.override()?1:0);
             preparedStatement.setString(3, defaults.serverID());
             preparedStatement.executeUpdate();
             return true;
@@ -1080,7 +1095,7 @@ public final class Database {
 
     public BirthdayReminder getBirthdayReminder(String userID, String serverID) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT message, dateAndTime, channelID FROM Reminders WHERE userID = ? AND serverID = ?");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT message, dateandtime, channelid FROM birthdayreminders WHERE userid = ? AND serverid = ?");
             preparedStatement.setString(1, userID);
             preparedStatement.setString(2, serverID);
             ResultSet results = preparedStatement.executeQuery();
@@ -1096,7 +1111,7 @@ public final class Database {
 
     public BirthdayReminderDefaults getBirthdayReminderDefault(String serverID) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT channelID, override FROM DefaultChannels WHERE serverID = ?");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT channelid, override FROM defaultbirthdayreminderchannels WHERE serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -1111,7 +1126,7 @@ public final class Database {
 
     public ArrayList<BirthdayReminder> getBirthdayRemindersFromServer(String serverID) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM Reminders WHERE serverID = ?");
+            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM birthdayreminders WHERE serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminder> reminders = new ArrayList<>();
@@ -1127,11 +1142,11 @@ public final class Database {
 
     public ReminderRunnable addReminder(ReminderRunnable reminder) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("INSERT INTO Reminders(content, timedate, userID, ping) VALUES(?, ?, ?, ?)");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("INSERT INTO reminders(content, timedate, userid, ping) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, reminder.getContent());
             preparedStatement.setString(2, reminder.getDateTime());
             preparedStatement.setString(3, reminder.getUserID());
-            preparedStatement.setBoolean(4, reminder.isPing());
+            preparedStatement.setInt(4, reminder.isPing()?1:0);
             preparedStatement.execute();
             ResultSet id = preparedStatement.getGeneratedKeys();
             if (id.next()) {
@@ -1148,7 +1163,7 @@ public final class Database {
 
     public ArrayList<ReminderRunnable> getReminders(String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping FROM Reminders where userID = ?");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping FROM reminders where userid = ?");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<ReminderRunnable> reminders = new ArrayList<>();
@@ -1164,7 +1179,7 @@ public final class Database {
 
     public ArrayList<ReminderRunnable> getAllReminders() {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping, userID FROM Reminders");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping, userid FROM reminders");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<ReminderRunnable> reminders = new ArrayList<>();
             while (results.next()) {
@@ -1179,7 +1194,7 @@ public final class Database {
 
     public int getRemindersCount(String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM Reminders WHERE userID = ?");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM reminders WHERE userid = ?");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -1194,13 +1209,13 @@ public final class Database {
 
     public int deleteReminder(int id, String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM Reminders where _id = ?");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM reminders where _id = ?");
             preparedStatement.setInt(1, id);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
                 if (results.getInt(1) == 0) return 0;
             } else return -1;
-            preparedStatement = remindersConnection.prepareStatement("DELETE FROM Reminders WHERE _id = ? AND userID = ?");
+            preparedStatement = remindersConnection.prepareStatement("DELETE FROM reminders WHERE _id = ? AND userid = ?");
             preparedStatement.setInt(1, id);
             preparedStatement.setString(2, userID);
             int rowsDeleted = preparedStatement.executeUpdate();
@@ -1217,7 +1232,7 @@ public final class Database {
 
     public ArrayList<PollSummarizer> getAllPolls() {
         try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("SELECT * FROM Polls");
+            PreparedStatement preparedStatement = pollsConnection.prepareStatement("SELECT * FROM polls");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<PollSummarizer> polls = new ArrayList<>();
             while(results.next()) {
@@ -1232,7 +1247,7 @@ public final class Database {
 
     public PollSummarizer addPoll(PollSummarizer poll) {
         try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("INSERT INTO Polls(channelID, messageID, endTime) VALUES(?, ?, ?)");
+            PreparedStatement preparedStatement = pollsConnection.prepareStatement("INSERT INTO polls(channelid, messageid, endtime) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, poll.getChannelID());
             preparedStatement.setString(2, poll.getMessageID());
             preparedStatement.setString(3, poll.getEndTime());
@@ -1252,7 +1267,7 @@ public final class Database {
 
     public boolean deletePoll(int id) {
         try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("DELETE FROM Polls WHERE _id = ?");
+            PreparedStatement preparedStatement = pollsConnection.prepareStatement("DELETE FROM polls WHERE _id = ?");
             preparedStatement.setInt(1, id);
             int rowsDeleted = preparedStatement.executeUpdate();
             return rowsDeleted != 0;
