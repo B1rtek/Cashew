@@ -8,13 +8,13 @@ import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 public final class Database {
 
     private static volatile Database instance;
 
-    public static final String DRIVER = "org.sqlite.JDBC";
+    public static final String SQLITE_DRIVER = "org.sqlite.JDBC";
+    public static final String POSTGRES_DRIVER = "org.sqlite.JDBC";
     public static final String CHANNEL_ACTIVITY_DB = "jdbc:sqlite:databases/userData/channelActivity.db";
     public static final String BO_BURNHAM_DB = "jdbc:sqlite:databases/data/boBurnhamQuotes.db";
     public static final String CASE_OPENING_DB = "jdbc:sqlite:databases/data/caseOpening.db";
@@ -51,9 +51,9 @@ public final class Database {
 
         // SQLite
         try {
-            Class.forName(Database.DRIVER);
+            Class.forName(Database.POSTGRES_DRIVER);
         } catch (ClassNotFoundException e) {
-            System.err.println("Missing JDBC driver");
+            System.err.println("Missing SQLite JDBC driver");
             e.printStackTrace();
         }
 
@@ -70,22 +70,26 @@ public final class Database {
             e.printStackTrace();
         }
 
+        // PostgreSQL
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Missing PostgreSQL JDBC driver");
+            e.printStackTrace();
+        }
+
         // Postgres
         try {
-            String postgresDBUrl = "jdbc:" + System.getenv("DATABASE_URL");
-            Properties props = new Properties();
-            props.setProperty("user","postgres");
-            props.setProperty("password",System.getenv("DATABASE_PASSWD"));
-            props.setProperty("ssl","false");
-            channelActivityConnection = DriverManager.getConnection(postgresDBUrl, props);
+            String postgresDBUrl = System.getenv("JDBC_DATABASE_URL");
+            channelActivityConnection = DriverManager.getConnection(postgresDBUrl);
             channelActivityStatement = channelActivityConnection.createStatement();
-            timedMessagesConnection = DriverManager.getConnection(postgresDBUrl, props);
-            socialCreditConnection = DriverManager.getConnection(postgresDBUrl, props);
-            countingConnection = DriverManager.getConnection(postgresDBUrl, props);
-            giftHistoryConnection = DriverManager.getConnection(postgresDBUrl, props);
-            birthdayRemindersConnection = DriverManager.getConnection(postgresDBUrl, props);
-            remindersConnection = DriverManager.getConnection(postgresDBUrl, props);
-            pollsConnection = DriverManager.getConnection(postgresDBUrl, props);
+            timedMessagesConnection = DriverManager.getConnection(postgresDBUrl);
+            socialCreditConnection = DriverManager.getConnection(postgresDBUrl);
+            countingConnection = DriverManager.getConnection(postgresDBUrl);
+            giftHistoryConnection = DriverManager.getConnection(postgresDBUrl);
+            birthdayRemindersConnection = DriverManager.getConnection(postgresDBUrl);
+            remindersConnection = DriverManager.getConnection(postgresDBUrl);
+            pollsConnection = DriverManager.getConnection(postgresDBUrl);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the Postgres databases");
             e.printStackTrace();
