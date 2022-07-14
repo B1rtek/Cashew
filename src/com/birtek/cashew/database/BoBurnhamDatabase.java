@@ -1,6 +1,5 @@
 package com.birtek.cashew.database;
 
-import com.birtek.cashew.Database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,7 @@ public class BoBurnhamDatabase {
         if (result != null) {
             return result;
         }
-        synchronized (Database.class) {
+        synchronized (BoBurnhamDatabase.class) {
             if (instance == null) {
                 instance = new BoBurnhamDatabase();
             }
@@ -73,7 +72,7 @@ public class BoBurnhamDatabase {
             }
             return null;
         } catch (SQLException e) {
-            LOGGER.warn(e + " thrown at BoBurnhamQuote.getQuote()");
+            LOGGER.warn(e + " thrown at BoBurnhamDatabase.getQuote()");
             return null;
         }
     }

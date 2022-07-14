@@ -16,7 +16,6 @@ public final class Database {
     public static final String SQLITE_DRIVER = "org.sqlite.JDBC";
     public static final String POSTGRES_DRIVER = "org.sqlite.JDBC";
     public static final String CHANNEL_ACTIVITY_DB = "jdbc:sqlite:databases/userData/channelActivity.db";
-    public static final String BO_BURNHAM_DB = "jdbc:sqlite:databases/data/boBurnhamQuotes.db";
     public static final String CASE_OPENING_DB = "jdbc:sqlite:databases/data/caseOpening.db";
     public static final String COLLECTION_OPENING_DB = "jdbc:sqlite:databases/data/collectionOpening.db";
     public static final String TIMED_MESSAGES_DB = "jdbc:sqlite:databases/userData/timedMessages.db";
@@ -32,7 +31,6 @@ public final class Database {
     public static final String POLLS_DB = "jdbc:sqlite:databases/userData/polls.db";
     private Connection channelActivityConnection;
     private Statement channelActivityStatement;
-    private Connection boBurnhamConnection;
     private Connection caseOpeningConnection;
     private Connection collectionOpeningConnection;
     private Connection timedMessagesConnection;
@@ -58,7 +56,6 @@ public final class Database {
         }
 
         try {
-            boBurnhamConnection = DriverManager.getConnection(BO_BURNHAM_DB);
             caseOpeningConnection = DriverManager.getConnection(CASE_OPENING_DB);
             collectionOpeningConnection = DriverManager.getConnection(COLLECTION_OPENING_DB);
             giftsConnection = DriverManager.getConnection(GIFTS_DB);
@@ -188,37 +185,6 @@ public final class Database {
             return false;
         }
         return true;
-    }
-
-    public int getQuoteCount(int nsfw) {
-        try {
-            PreparedStatement prepStmt = boBurnhamConnection.prepareStatement("SELECT Count(*) as il FROM Quotes WHERE nsfw = ?");
-            prepStmt.setInt(1, nsfw);
-            ResultSet results = prepStmt.executeQuery();
-            int count = 0;
-            if (results != null) {
-                while (results.next()) {
-                    count = results.getInt("il");
-                }
-            }
-            return count;
-        } catch (SQLException e) {
-            System.err.println("An error occured while executing the select statement");
-            e.printStackTrace();
-            return 0;
-        }
-    }
-
-    public ResultSet getQuotes(int nsfw) {
-        try {
-            PreparedStatement prepStmt = boBurnhamConnection.prepareStatement("SELECT * FROM Quotes WHERE nsfw = ?");
-            prepStmt.setInt(1, nsfw);
-            return prepStmt.executeQuery();
-        } catch (SQLException e) {
-            System.err.println("An error occured while executing the select statement");
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public ResultSet getCases() {
