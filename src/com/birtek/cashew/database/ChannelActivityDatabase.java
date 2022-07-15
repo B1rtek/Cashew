@@ -106,7 +106,10 @@ public class ChannelActivityDatabase {
             PreparedStatement preparedStatement = channelActivityConnection.prepareStatement("SELECT COUNT(*) FROM channelactivity WHERE channelid = ?");
             preparedStatement.setString(1, channelID);
             ResultSet results = preparedStatement.executeQuery();
-            return results.next();
+            if (results.next()) {
+                return results.getInt(1) == 1;
+            }
+            return false;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at ChannelActivityDatabase.isInDatabase()");
             return false;
