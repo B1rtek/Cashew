@@ -15,7 +15,6 @@ public final class Database {
 
     public static final String SQLITE_DRIVER = "org.sqlite.JDBC";
     public static final String POSTGRES_DRIVER = "org.sqlite.JDBC";
-    public static final String CHANNEL_ACTIVITY_DB = "jdbc:sqlite:databases/userData/channelActivity.db";
     public static final String CASE_OPENING_DB = "jdbc:sqlite:databases/data/caseOpening.db";
     public static final String COLLECTION_OPENING_DB = "jdbc:sqlite:databases/data/collectionOpening.db";
     public static final String TIMED_MESSAGES_DB = "jdbc:sqlite:databases/userData/timedMessages.db";
@@ -29,8 +28,6 @@ public final class Database {
     public static final String BIRTHDAY_REMINDSRS_DB = "jdbc:sqlite:databases/userData/birthdayReminders.db";
     public static final String REMINDERS_DB = "jdbc:sqlite:databases/userData/reminders.db";
     public static final String POLLS_DB = "jdbc:sqlite:databases/userData/polls.db";
-    private Connection channelActivityConnection;
-    private Statement channelActivityStatement;
     private Connection caseOpeningConnection;
     private Connection collectionOpeningConnection;
     private Connection timedMessagesConnection;
@@ -78,8 +75,6 @@ public final class Database {
         // Postgres
         try {
             String postgresDBUrl = System.getenv("JDBC_DATABASE_URL");
-            channelActivityConnection = DriverManager.getConnection(postgresDBUrl);
-            channelActivityStatement = channelActivityConnection.createStatement();
             timedMessagesConnection = DriverManager.getConnection(postgresDBUrl);
             socialCreditConnection = DriverManager.getConnection(postgresDBUrl);
             countingConnection = DriverManager.getConnection(postgresDBUrl);
@@ -91,9 +86,6 @@ public final class Database {
             System.err.println("There was a problem while establishing a connection with the Postgres databases");
             e.printStackTrace();
         }
-
-
-        createTables();
     }
 
     public static Database getInstance() {
@@ -107,84 +99,6 @@ public final class Database {
             }
             return instance;
         }
-    }
-
-    private void createTables() {
-        String createTestTable = "CREATE TABLE IF NOT EXISTS channelactivity(_id serial PRIMARY KEY, channelid TEXT, activity INTEGER)";
-        try {
-            channelActivityStatement.execute(createTestTable);
-
-        } catch (SQLException e) {
-            System.err.println("An error occurred while creating the tables");
-            e.printStackTrace();
-        }
-    }
-
-    public void channelActivityInsert(String channelID, int activitySetting) {
-        try {
-            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("INSERT INTO channelactivity(channelid, activity) VALUES(?, ?);");
-            prepStmt.setString(1, channelID);
-            prepStmt.setInt(2, activitySetting);
-            prepStmt.execute();
-        } catch (SQLException e) {
-            System.err.println("An error occured while inserting the values");
-            e.printStackTrace();
-        }
-    }
-
-    public ResultSet channelActivitySelect(String channelID) {
-        try {
-            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("SELECT activity FROM channelactivity WHERE channelid = ?");
-            prepStmt.setString(1, channelID);
-            return prepStmt.executeQuery();
-        } catch (SQLException e) {
-            System.err.println("An error occured while executing the select statement");
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public boolean channelActivityUpdate(String channelID, int activitySetting) {
-        try {
-            PreparedStatement prepStmt = channelActivityConnection.prepareStatement("UPDATE channelactivity SET activity = ? WHERE channelid = ?");
-            prepStmt.setInt(1, activitySetting);
-            prepStmt.setString(2, channelID);
-            if (prepStmt.executeUpdate() != 1) {
-                return false;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while updating the values");
-            return false;
-        }
-        return true;
-    }
-
-    public boolean updateChannelActivity(String channelID, int activitySetting) throws SQLException {
-        if ((activitySetting < 0) || (activitySetting > 2)) {
-            return false;
-        }
-        try {
-            int size = 0;
-            ResultSet checkIfRecordExists = instance.channelActivitySelect(channelID);
-            if (checkIfRecordExists != null) {
-                while (checkIfRecordExists.next()) {
-                    size++;
-                }
-            }
-            if (size == 0) { //create new record
-                instance.channelActivityInsert(channelID, activitySetting);
-            } else { //apply new setting
-                boolean result = instance.channelActivityUpdate(channelID, activitySetting);
-                if (!result) {
-                    System.err.println("An error occured while executing the update statement in the ChannelActivity table.");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
     }
 
     public ResultSet getCases() {
