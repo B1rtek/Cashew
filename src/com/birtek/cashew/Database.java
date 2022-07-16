@@ -9,6 +9,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The old Database class, contains only old pieces of code that are no longer used
+ */
 public final class Database {
 
     private static volatile Database instance;

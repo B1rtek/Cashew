@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 
 public class ScheduledMessage implements Runnable {
 
-    private final int id;
+    private int id;
     private final String messageContent;
     private final String executionTime;
     private final String destinationChannelID;
@@ -29,8 +29,20 @@ public class ScheduledMessage implements Runnable {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getExecutionTime() {
         return executionTime;
+    }
+
+    public String getMessageContent() {
+        return messageContent;
+    }
+
+    public String getDestinationChannelID() {
+        return destinationChannelID;
     }
 
     public void setJDA(JDA jdaInstance) {

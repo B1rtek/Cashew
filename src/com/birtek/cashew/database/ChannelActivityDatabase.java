@@ -35,7 +35,6 @@ public class ChannelActivityDatabase {
             e.printStackTrace();
             System.exit(1);
         }
-
     }
 
     /**
