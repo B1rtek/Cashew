@@ -233,97 +233,6 @@ public final class Database {
         }
     }
 
-    public ResultSet showTimedMessages(String selection, String serverID) {
-        try {
-            PreparedStatement prepStmt;
-            if (selection.startsWith(">")) {
-                prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, executiontime, destinationchannelid, messagecontent FROM scheduledmessages WHERE _id > ? AND serverid = ?");
-                prepStmt.setInt(1, 0);
-            } else if (selection.startsWith("=")) {
-                prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, executiontime, destinationchannelid, messagecontent FROM scheduledmessages WHERE _id = ? AND serverid = ?");
-                prepStmt.setInt(1, Integer.parseInt(selection.substring(1)));
-            } else {
-                return null;
-            }
-            prepStmt.setString(2, serverID);
-            return prepStmt.executeQuery();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while querying the Messages table.");
-            return null;
-        }
-    }
-
-    public int deleteTimedMessages(String selection, String serverID) {
-        try {
-            PreparedStatement prepStmtQuery;
-            if (selection.startsWith(">")) {
-                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM scheduledmessages WHERE _id > ? AND serverid = ? GROUP BY _id");
-                prepStmtQuery.setInt(1, 0);
-            } else if (selection.startsWith("=")) {
-                prepStmtQuery = timedMessagesConnection.prepareStatement("SELECT Count(*), _id FROM scheduledmessages WHERE _id = ? AND serverid = ? GROUP BY _id");
-                prepStmtQuery.setInt(1, Integer.parseInt(selection.substring(1)));
-            } else {
-                return -1;
-            }
-            prepStmtQuery.setString(2, serverID);
-            ResultSet preQuery = prepStmtQuery.executeQuery();
-            ArrayList<Integer> idsToDelete = new ArrayList<>();
-            while (preQuery.next()) {
-                if (preQuery.getInt(1) == 0) {
-                    return -1;
-                }
-                idsToDelete.add(preQuery.getInt(2));
-            }
-            PreparedStatement prepStmtDelete;
-            if (selection.startsWith(">")) {
-                prepStmtDelete = timedMessagesConnection.prepareStatement("DELETE FROM scheduledmessages WHERE _id > ? AND serverid = ?");
-                prepStmtDelete.setInt(1, 0);
-            } else {
-                prepStmtDelete = timedMessagesConnection.prepareStatement("DELETE FROM scheduledmessages WHERE _id = ? AND serverid = ?");
-                prepStmtDelete.setInt(1, Integer.parseInt(selection.substring(1)));
-            }
-            prepStmtDelete.setString(2, serverID);
-            if (prepStmtDelete.executeUpdate() == 0) {
-                System.err.println("An error occured while deleting stuff from the Messages table.");
-                return -1;
-            }
-            for (int id : idsToDelete) {
-                Cashew.scheduledMessagesManager.deleteScheduledMessage(id);
-            }
-            return 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while modifying the Messages table.");
-            return 1;
-        }
-    }
-
-    public int addTimedMessage(String messageContent, String executionTime, String repetitionInterval, String destinationChannelID, String serverID) {
-        try {
-            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("INSERT INTO scheduledmessages(messagecontent, executiontime, repetitioninterval, destinationchannelid, serverid) VALUES(?, ?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
-            prepStmt.setString(1, messageContent);
-            prepStmt.setString(2, executionTime);
-            prepStmt.setString(3, repetitionInterval);
-            prepStmt.setString(4, destinationChannelID);
-            prepStmt.setString(5, serverID);
-            prepStmt.execute();
-            ResultSet insertID = prepStmt.getGeneratedKeys();
-            int returnedInsertID = 0;
-            if (insertID.next()) {
-                returnedInsertID = (int) insertID.getLong(1);
-            }
-            if (returnedInsertID != 0) {
-                Cashew.scheduledMessagesManager.addScheduledMessage(new ScheduledMessage(returnedInsertID, messageContent, executionTime, destinationChannelID));
-                return returnedInsertID;
-            } else return 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while modifying the Messages table.");
-            return 0;
-        }
-    }
-
     public ArrayList<TimedMessage> getTimedMessages() {
         try {
             PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT messagecontent, executiontime, destinationchannelid FROM scheduledmessages");
@@ -335,24 +244,6 @@ public final class Database {
                 }
             }
             return timedMessagesArrayList;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while querying the Messages table.");
-            return null;
-        }
-    }
-
-    public ArrayList<ScheduledMessage> getScheduledMessages() {
-        try {
-            PreparedStatement prepStmt = timedMessagesConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages");
-            ResultSet scheduledMessages = prepStmt.executeQuery();
-            ArrayList<ScheduledMessage> scheduledMessageArrayList = new ArrayList<>();
-            if (scheduledMessages != null) {
-                while (scheduledMessages.next()) {
-                    scheduledMessageArrayList.add(new ScheduledMessage(scheduledMessages.getInt(1), scheduledMessages.getString(2), scheduledMessages.getString(3), scheduledMessages.getString(4)));
-                }
-            }
-            return scheduledMessageArrayList;
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while querying the Messages table.");
