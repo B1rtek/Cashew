@@ -1,6 +1,6 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.ScheduledMessagesDatabase;
 import net.dv8tion.jda.api.JDA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +29,8 @@ public class ScheduledMessagesManager {
     }
 
     private void getMessages() {
-        Database database = Database.getInstance();
-        ArrayList<ScheduledMessage> scheduledMessageArrayList = database.getScheduledMessages();
+        ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
+        ArrayList<ScheduledMessage> scheduledMessageArrayList = database.getAllScheduledMessages();
         if (scheduledMessageArrayList == null || scheduledMessageArrayList.isEmpty()) {
             LOGGER.error("Failed to obtain the list of scheduled messages!");
             return;
