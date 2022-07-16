@@ -44,7 +44,7 @@ public class TimedMessageCommand extends BaseCommand {
             int rowCount = 0;
             for (ScheduledMessage scheduledMessage : scheduledMessages) {
                 rowCount++;
-                StringBuilder id = new StringBuilder(scheduledMessage.getId());
+                StringBuilder id = new StringBuilder(String.valueOf(scheduledMessage.getId()));
                 id.setLength(10);
                 String stringId = id.toString().replace('\u0000', ' ');
                 table.append(stringId).append("|");
