@@ -251,57 +251,6 @@ public final class Database {
         }
     }
 
-    public long getSocialCredit(String userID, String serverID) {
-        try {
-            PreparedStatement prepStmt = socialCreditConnection.prepareStatement("SELECT credit FROM socialcredit WHERE serverid = ? AND userid = ?");
-            prepStmt.setString(1, serverID);
-            prepStmt.setString(2, userID);
-            ResultSet socialCredit = prepStmt.executeQuery();
-            if (socialCredit != null) {
-                if (socialCredit.next()) {
-                    return socialCredit.getLong(1);
-                }
-                return 648294745;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while querying the SocialCredit table.");
-            return 0;
-        }
-        return 0;
-    }
-
-    public void addSocialCredit(String userID, String serverID, long credit) {
-        try {
-            long socialCredit = getSocialCredit(userID, serverID);
-            if (socialCredit == 648294745) {
-                newSocialCredit(userID, serverID, credit);
-            } else {
-                PreparedStatement prepStmt = socialCreditConnection.prepareStatement("UPDATE socialcredit SET credit = ? WHERE serverid = ? AND userid = ?");
-                prepStmt.setLong(1, credit + socialCredit);
-                prepStmt.setString(2, serverID);
-                prepStmt.setString(3, userID);
-                prepStmt.executeUpdate();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while querying the SocialCredit table.");
-        }
-    }
-
-    public void newSocialCredit(String userID, String serverID, long credit) {
-        try {
-            PreparedStatement prepStmt = socialCreditConnection.prepareStatement("INSERT INTO socialcredit(serverid, userid, credit) VALUES(?, ?, ?);");
-            prepStmt.setString(1, serverID);
-            prepStmt.setString(2, userID);
-            prepStmt.setLong(3, credit);
-            prepStmt.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while inserting into the SocialCredit table.");
-        }
-    }
-
     public boolean setCountingStatus(boolean newState, String channelID) {
         try {
             PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT Count(*) FROM counting WHERE channelid = ?");
