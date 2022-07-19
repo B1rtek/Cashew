@@ -1,6 +1,7 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Database;
+import com.birtek.cashew.database.GiftsDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -39,8 +40,12 @@ public class Gifts extends BaseCommand {
     HashSet<Integer> processedIDs = new HashSet<>();
 
     public Gifts() {
-        Database database = Database.getInstance();
+        GiftsDatabase database = GiftsDatabase.getInstance();
         availableGifts = database.getAvailableGifts();
+        if(availableGifts == null) {
+            LOGGER.error("GiftsDatabase.getAvailableGifts() returned null! No gifts are known!");
+            availableGifts = new ArrayList<>();
+        }
     }
 
     MessageEmbed generateGiftErrorEmbed(String message) {
