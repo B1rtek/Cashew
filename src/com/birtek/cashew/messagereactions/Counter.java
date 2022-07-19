@@ -1,6 +1,6 @@
 package com.birtek.cashew.messagereactions;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.CountingDatabase;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -20,9 +20,9 @@ public class Counter extends BaseReaction {
     private final HashMap<String, Boolean> correctedAfterOffline = new HashMap<>();
 
     public Counter() {
-        Database database = Database.getInstance();
+        CountingDatabase database = CountingDatabase.getInstance();
         ArrayList<String> countingChannels = database.getAllActiveCountingChannels();
-        if (countingChannels != null && !countingChannels.isEmpty()) {
+        if (countingChannels != null) {
             for (String channel : countingChannels) {
                 correctedAfterOffline.put(channel, false);
             }
@@ -230,9 +230,9 @@ public class Counter extends BaseReaction {
         message.reply("<@!" + message.getAuthor().getId() + "> screwed up by writing ` " + toOutput + " `! The next number should have been ` " + (current + 1) + " `! Counter has been reset!").queue();
     }
 
-    private void updateCountingDatabase(CountingInfo newInfo, String channelID) {
-        Database database = Database.getInstance();
-        database.setCount(newInfo, channelID);
+    private boolean updateCountingDatabase(CountingInfo newInfo, String channelID) {
+        CountingDatabase database = CountingDatabase.getInstance();
+        return database.setCount(newInfo, channelID);
     }
 
     private record OfflineCountCorrectionResult(String lastAnalyzedMessageID, boolean successful) {}
@@ -272,20 +272,26 @@ public class Counter extends BaseReaction {
                     case CORRECT -> handleCorrectCount(messageFromHistory, analysisResult.result());
                     case INCORRECT -> {
                         handleIncorrectCount(messageFromHistory, analysisResult.result(), currentCount);
-                        updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId());
-                        try {
-                            countCheckingMessage[0].addReaction(Emoji.fromUnicode("✅")).queue();
-                        } catch (Exception ignored) {}
-                        return new OfflineCountCorrectionResult("", true);
-                    }
-                    case TYPO -> {
-                        if (!handleTypo(messageFromHistory, analysisResult.result(), currentTypos)) {
-                            handleIncorrectCount(messageFromHistory, analysisResult.result(), currentCount);
-                            updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId());
+                        if(updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId())) {
                             try {
                                 countCheckingMessage[0].addReaction(Emoji.fromUnicode("✅")).queue();
                             } catch (Exception ignored) {}
                             return new OfflineCountCorrectionResult("", true);
+                        } else {
+                            return null;
+                        }
+                    }
+                    case TYPO -> {
+                        if (!handleTypo(messageFromHistory, analysisResult.result(), currentTypos)) {
+                            handleIncorrectCount(messageFromHistory, analysisResult.result(), currentCount);
+                            if(updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), channel.getId())) {
+                                try {
+                                    countCheckingMessage[0].addReaction(Emoji.fromUnicode("✅")).queue();
+                                } catch (Exception ignored) {}
+                                return new OfflineCountCorrectionResult("", true);
+                            } else {
+                                return null;
+                            }
                         }
                         --currentTypos;
                     }
@@ -301,11 +307,14 @@ public class Counter extends BaseReaction {
                 lastCountMessageID = messageHistory.get(0).getId();
                 continue;
             }
-            updateCountingDatabase(new CountingInfo(true, messageHistory.get(0).getAuthor().getId(), currentCount, messageHistory.get(0).getId(), currentTypos), channel.getId());
-            try {
-                countCheckingMessage[0].addReaction(Emoji.fromUnicode("✅")).queueAfter(3, TimeUnit.SECONDS);
-            } catch (Exception ignored) {}
-            return new OfflineCountCorrectionResult(messageHistory.get(0).getId(), true);
+            if(updateCountingDatabase(new CountingInfo(true, messageHistory.get(0).getAuthor().getId(), currentCount, messageHistory.get(0).getId(), currentTypos), channel.getId())) {
+                try {
+                    countCheckingMessage[0].addReaction(Emoji.fromUnicode("✅")).queueAfter(3, TimeUnit.SECONDS);
+                } catch (Exception ignored) {}
+                return new OfflineCountCorrectionResult(messageHistory.get(0).getId(), true);
+            } else {
+                return null;
+            }
         }
     }
 
@@ -318,9 +327,9 @@ public class Counter extends BaseReaction {
         if (message.isEmpty()) {
             return;
         }
-        Database database = Database.getInstance();
+        CountingDatabase database = CountingDatabase.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
-        if (countingData.active() && (!Objects.equals(countingData.userID(), event.getAuthor().getId()) || !correctedAfterOffline.get(event.getChannel().getId()))) {
+        if (countingData != null && countingData.active() && (!Objects.equals(countingData.userID(), event.getAuthor().getId()) || !correctedAfterOffline.get(event.getChannel().getId()))) {
             message = prepareMessage(message);
             MessageAnalysisResult analysisResult = analyzeMessage(message, countingData.value());
             switch (analysisResult.type()) {
@@ -342,7 +351,7 @@ public class Counter extends BaseReaction {
                         updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), event.getChannel().getId());
                     } else {
                         OfflineCountCorrectionResult correctionResult = correctOfflineCount(event.getChannel(), countingData, event.getMessage().getId());
-                        if(correctionResult.successful()) {
+                        if(correctionResult != null && correctionResult.successful()) {
                             if(!Objects.equals(correctionResult.lastAnalyzedMessageID(), event.getMessage().getId()) && !correctionResult.lastAnalyzedMessageID().isEmpty()) { // too much history - cashew will just believe that the count was correct
                                 handleBelievedOfflineCount(event.getMessage(), analysisResult.result());
                                 updateCountingDatabase(new CountingInfo(true, event.getMessage().getAuthor().getId(), (int)analysisResult.result(), event.getMessageId(), countingData.typosLeft()), event.getChannel().getId());
@@ -356,7 +365,7 @@ public class Counter extends BaseReaction {
                         return;
                     } else if(!correctedAfterOffline.get(event.getChannel().getId())) {
                         OfflineCountCorrectionResult correctionResult = correctOfflineCount(event.getChannel(), countingData, event.getMessage().getId());
-                        if(correctionResult.successful()) correctedAfterOffline.put(event.getChannel().getId(), true);
+                        if(correctionResult != null && correctionResult.successful()) correctedAfterOffline.put(event.getChannel().getId(), true);
                         return;
                     }
                     if (!handleTypo(event.getMessage(), analysisResult.result(), countingData.typosLeft())) {
