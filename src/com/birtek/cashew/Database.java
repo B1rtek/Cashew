@@ -1,7 +1,6 @@
 package com.birtek.cashew;
 
 import com.birtek.cashew.commands.*;
-import com.birtek.cashew.messagereactions.CountingInfo;
 import com.birtek.cashew.timings.*;
 
 import java.awt.*;
@@ -247,80 +246,6 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("An error occured while querying the Messages table.");
-            return null;
-        }
-    }
-
-    public boolean setCountingStatus(boolean newState, String channelID) {
-        try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT Count(*) FROM counting WHERE channelid = ?");
-            prepStmt.setString(1, channelID);
-            ResultSet result = prepStmt.executeQuery();
-            boolean createNewRecord = false;
-            while (result.next()) {
-                if (result.getInt(1) == 0) {
-                    createNewRecord = true;
-                    break;
-                }
-            }
-            if (createNewRecord) {
-                prepStmt = countingConnection.prepareStatement("INSERT INTO counting(channelid, activity, current, typosleft) VALUES(? ,?, ?, ?)");
-                prepStmt.setString(1, channelID);
-                prepStmt.setBoolean(2, newState);
-                prepStmt.setInt(3, 0);
-                prepStmt.setInt(4, 3);
-            } else {
-                prepStmt = countingConnection.prepareStatement("UPDATE counting SET activity = ? WHERE channelid = ?");
-                prepStmt.setBoolean(1, newState);
-                prepStmt.setString(2, channelID);
-            }
-            prepStmt.execute();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while querying into the Counting table.");
-            return false;
-        }
-    }
-
-    public CountingInfo getCountingData(String channelID) {
-        try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("SELECT activity, userid, current, messageid, typosleft FROM counting WHERE channelid = ?");
-            prepStmt.setString(1, channelID);
-            ResultSet result = prepStmt.executeQuery();
-            if (result.next()) {
-                return new CountingInfo(result.getBoolean(1), result.getString(2), result.getInt(3), result.getString(4), result.getInt(5));
-            }
-            return new CountingInfo(false, " ", 0, " ", 3);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while querying into the Counting table.");
-            return new CountingInfo(false, " ", 0, " ", 3);
-        }
-    }
-
-    public void setCount(CountingInfo countingInfo, String channelID) {
-        try {
-            PreparedStatement prepStmt = countingConnection.prepareStatement("UPDATE counting SET current = ?, userid = ?, messageid = ?, typosleft = ? WHERE channelid = ?");
-            prepStmt.setInt(1, countingInfo.value());
-            prepStmt.setString(2, countingInfo.userID());
-            prepStmt.setString(3, countingInfo.messageID());
-            prepStmt.setInt(4, countingInfo.typosLeft());
-            prepStmt.setString(5, channelID);
-            prepStmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("An error occured while inserting into the Counting table.");
-        }
-    }
-
-    public ArrayList<String> getAllActiveCountingChannels() {
-        try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT channelid FROM counting WHERE activity = true");
-            ResultSet results = preparedStatement.executeQuery();
-            return createArrayListFromResultSet(results);
-        } catch (SQLException e) {
-            e.printStackTrace();
             return null;
         }
     }
