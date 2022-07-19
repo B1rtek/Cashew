@@ -31,6 +31,11 @@ public class Counter extends BaseReaction {
         }
     }
 
+    private boolean wasCorrected(String channelID) {
+        if(correctedAfterOffline.get(channelID) == null) return true;
+        else return correctedAfterOffline.get(channelID);
+    }
+
     private boolean checkIfTypo(String message, double target) {
         // generate all possible typos
         ArrayList<String> typos = new ArrayList<>();
@@ -329,7 +334,7 @@ public class Counter extends BaseReaction {
         }
         CountingDatabase database = CountingDatabase.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
-        if (countingData != null && countingData.active() && (!Objects.equals(countingData.userID(), event.getAuthor().getId()) || !correctedAfterOffline.get(event.getChannel().getId()))) {
+        if (countingData != null && countingData.active() && (!Objects.equals(countingData.userID(), event.getAuthor().getId()) || !wasCorrected(event.getChannel().getId()))) {
             message = prepareMessage(message);
             MessageAnalysisResult analysisResult = analyzeMessage(message, countingData.value());
             switch (analysisResult.type()) {
@@ -338,7 +343,7 @@ public class Counter extends BaseReaction {
                 }
                 case DIV0 -> event.getMessage().reply("This is illegal bruh").mentionRepliedUser(false).queue();
                 case CORRECT -> {
-                    if(!correctedAfterOffline.get(event.getChannel().getId()) && Objects.equals(countingData.userID(), event.getAuthor().getId())) {
+                    if(!wasCorrected(event.getChannel().getId()) && Objects.equals(countingData.userID(), event.getAuthor().getId())) {
                         return;
                     }
                     correctedAfterOffline.put(event.getChannel().getId(), true);
@@ -346,7 +351,7 @@ public class Counter extends BaseReaction {
                     updateCountingDatabase(new CountingInfo(true, event.getAuthor().getId(), (int) analysisResult.result(), event.getMessageId(), countingData.typosLeft()), event.getChannel().getId());
                 }
                 case INCORRECT -> {
-                    if (correctedAfterOffline.get(event.getChannel().getId())) {
+                    if (wasCorrected(event.getChannel().getId())) {
                         handleIncorrectCount(event.getMessage(), analysisResult.result(), countingData.value());
                         updateCountingDatabase(new CountingInfo(true, " ", 0, " ", 3), event.getChannel().getId());
                     } else {
@@ -361,9 +366,9 @@ public class Counter extends BaseReaction {
                     }
                 }
                 case TYPO -> {
-                    if(!correctedAfterOffline.get(event.getChannel().getId()) && Objects.equals(countingData.userID(), event.getAuthor().getId())) {
+                    if(!wasCorrected(event.getChannel().getId()) && Objects.equals(countingData.userID(), event.getAuthor().getId())) {
                         return;
-                    } else if(!correctedAfterOffline.get(event.getChannel().getId())) {
+                    } else if(!wasCorrected(event.getChannel().getId())) {
                         OfflineCountCorrectionResult correctionResult = correctOfflineCount(event.getChannel(), countingData, event.getMessage().getId());
                         if(correctionResult != null && correctionResult.successful()) correctedAfterOffline.put(event.getChannel().getId(), true);
                         return;
