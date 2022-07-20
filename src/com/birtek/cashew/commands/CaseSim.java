@@ -2,6 +2,7 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Database;
 import com.birtek.cashew.database.CasesimCasesDatabase;
+import com.birtek.cashew.database.CasesimCollectionsDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -39,11 +40,12 @@ public class CaseSim extends BaseCommand {
 
     private void cacheContainers() {
         CasesimCasesDatabase casesDatabase = CasesimCasesDatabase.getInstance();
+        CasesimCollectionsDatabase collectionsDatabase = CasesimCollectionsDatabase.getInstance();
         Database database = Database.getInstance();
         casesChoices = casesDatabase.getAllCasesNames();
         if (casesChoices == null) LOGGER.warn("Failed to cache case choices!");
-        collectionsChoices = database.getCasesimCollections();
-        if (collectionsChoices.isEmpty()) LOGGER.warn("Failed to cache collection choices!");
+        collectionsChoices = collectionsDatabase.getAllCollectionsNames();
+        if (collectionsChoices == null) LOGGER.warn("Failed to cache collection choices!");
         capsulesChoices = database.getCasesimCapsules();
         if (capsulesChoices.isEmpty()) LOGGER.warn("Failed to cache capsule choices!");
     }
@@ -310,7 +312,7 @@ public class CaseSim extends BaseCommand {
         }
 
         // Get all skins from the collection
-        Database database = Database.getInstance();
+        CasesimCollectionsDatabase database = CasesimCollectionsDatabase.getInstance();
         CaseInfo collectionInfo = database.getCollectionInfo(selectedCollection);
         if (collectionInfo == null) {
             LOGGER.error("Query for collection info of " + selectedCollection + " in casesimCollections.Collections returned null");
