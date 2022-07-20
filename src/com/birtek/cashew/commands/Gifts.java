@@ -37,6 +37,9 @@ public class Gifts extends BaseCommand {
     };
 
     ArrayList<GiftInfo> availableGifts;
+
+    ArrayList<String> availableGiftsNames = new ArrayList<>();
+
     HashSet<Integer> processedIDs = new HashSet<>();
 
     public Gifts() {
@@ -45,6 +48,9 @@ public class Gifts extends BaseCommand {
         if(availableGifts == null) {
             LOGGER.error("GiftsDatabase.getAvailableGifts() returned null! No gifts are known!");
             availableGifts = new ArrayList<>();
+        }
+        for(GiftInfo gift: availableGifts) {
+            availableGiftsNames.add(gift.getName());
         }
     }
 
@@ -339,19 +345,9 @@ public class Gifts extends BaseCommand {
         if (event.getName().startsWith("gifts")) {
             if (event.getFocusedOption().getName().equals("gift")) {
                 String typed = event.getOption("gift", "", OptionMapping::getAsString);
-                ArrayList<String> matching = new ArrayList<>();
-                for (GiftInfo gift : availableGifts) {
-                    if (gift.getName().toLowerCase().contains(typed.toLowerCase(Locale.ROOT))) {
-                        matching.add(gift.getName());
-                    }
-                }
-                if (matching.size() > 25) {
-                    event.replyChoiceStrings("There's more than 25 matching choices").queue();
-                } else {
-                    event.replyChoiceStrings(matching).queue();
-                }
+                event.replyChoiceStrings(autocompleteFromList(availableGiftsNames, typed)).queue();
             } else if(event.getFocusedOption().getName().equals("scoreboard")) {
-                String typed = event.getOption("gift", "", OptionMapping::getAsString);
+                String typed = event.getOption("scoreboard", "", OptionMapping::getAsString);
                 event.replyChoiceStrings(autocompleteFromList(leaderboardTypesStrings, typed)).queue();
             }
         }
