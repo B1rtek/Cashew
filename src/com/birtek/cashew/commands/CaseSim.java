@@ -1,6 +1,6 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.CasesimCapsulesDatabase;
 import com.birtek.cashew.database.CasesimCasesDatabase;
 import com.birtek.cashew.database.CasesimCollectionsDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -41,12 +41,12 @@ public class CaseSim extends BaseCommand {
     private void cacheContainers() {
         CasesimCasesDatabase casesDatabase = CasesimCasesDatabase.getInstance();
         CasesimCollectionsDatabase collectionsDatabase = CasesimCollectionsDatabase.getInstance();
-        Database database = Database.getInstance();
+        CasesimCapsulesDatabase database = CasesimCapsulesDatabase.getInstance();
         casesChoices = casesDatabase.getAllCasesNames();
         if (casesChoices == null) LOGGER.warn("Failed to cache case choices!");
         collectionsChoices = collectionsDatabase.getAllCollectionsNames();
         if (collectionsChoices == null) LOGGER.warn("Failed to cache collection choices!");
-        capsulesChoices = database.getCasesimCapsules();
+        capsulesChoices = database.getAllCapsulesNames();
         if (capsulesChoices.isEmpty()) LOGGER.warn("Failed to cache capsule choices!");
     }
 
@@ -349,7 +349,7 @@ public class CaseSim extends BaseCommand {
         }
 
         // Get all items from the capsule
-        Database database = Database.getInstance();
+        CasesimCapsulesDatabase database = CasesimCapsulesDatabase.getInstance();
         CaseInfo capsuleInfo = database.getCapsuleInfo(selectedCapsule);
         if (capsuleInfo == null) {
             LOGGER.error("Query for capsule info of " + selectedCapsule + " in casesimCapsules.Capsules returned null");
