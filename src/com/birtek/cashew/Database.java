@@ -260,16 +260,6 @@ public final class Database {
         return list;
     }
 
-    public ArrayList<String> getCasesimCases() {
-        try {
-            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT name FROM Cases");
-            return createArrayListFromResultSet(preparedStatement.executeQuery());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
-
     public ArrayList<String> getCasesimCollections() {
         try {
             PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT name FROM Collections");
@@ -287,21 +277,6 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             return new ArrayList<>();
-        }
-    }
-
-    public CaseInfo getCaseInfo(String caseName) {
-        try {
-            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Cases WHERE name = ?");
-            preparedStatement.setString(1, caseName);
-            ResultSet results = preparedStatement.executeQuery();
-            if (results.next()) {
-                return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getInt(5));
-            }
-            return null;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -344,28 +319,6 @@ public final class Database {
             return null;
         }
         return skins;
-    }
-
-    public ArrayList<SkinInfo> getCaseSkins(CaseInfo caseInfo) {
-        try {
-            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Skins WHERE caseId = ?");
-            preparedStatement.setInt(1, caseInfo.caseId());
-            return getSkinsFromResultSet(preparedStatement.executeQuery());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public ArrayList<SkinInfo> getCaseKnives(CaseInfo caseInfo) {
-        try {
-            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * From Knives where knifeGroup = ?");
-            preparedStatement.setInt(1, caseInfo.knifeGroup());
-            return getSkinsFromResultSet(preparedStatement.executeQuery());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public ArrayList<SkinInfo> getCollectionSkins(CaseInfo collectionInfo) {
