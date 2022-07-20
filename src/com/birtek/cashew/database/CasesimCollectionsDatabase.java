@@ -9,6 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class CasesimCollectionsDatabase extends CasesimDatabase {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesimCollectionsDatabase.class);
 
     private static volatile CasesimCollectionsDatabase instance;
@@ -105,7 +106,7 @@ public class CasesimCollectionsDatabase extends CasesimDatabase {
             preparedStatement.setInt(1, collectionInfo.caseId());
             return getSkinsFromResultSet(preparedStatement.executeQuery());
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.warn(e + " thrown at CasesimCollectionsDatabase.getCollectionSkins()");
             return null;
         }
     }
