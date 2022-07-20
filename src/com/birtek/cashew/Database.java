@@ -260,16 +260,6 @@ public final class Database {
         return list;
     }
 
-    public ArrayList<String> getCasesimCollections() {
-        try {
-            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT name FROM Collections");
-            return createArrayListFromResultSet(preparedStatement.executeQuery());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
-
     public ArrayList<String> getCasesimCapsules() {
         try {
             PreparedStatement preparedStatement = casesimCapsulesConnection.prepareStatement("SELECT name FROM Capsules");
@@ -277,21 +267,6 @@ public final class Database {
         } catch (SQLException e) {
             e.printStackTrace();
             return new ArrayList<>();
-        }
-    }
-
-    public CaseInfo getCollectionInfo(String collectionName) {
-        try {
-            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT * FROM Collections WHERE name = ?");
-            preparedStatement.setString(1, collectionName);
-            ResultSet results = preparedStatement.executeQuery();
-            if (results.next()) {
-                return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), 0);
-            }
-            return null;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -304,28 +279,6 @@ public final class Database {
                 return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), 0);
             }
             return null;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private ArrayList<SkinInfo> getSkinsFromResultSet(ResultSet results) throws SQLException {
-        ArrayList<SkinInfo> skins = new ArrayList<>();
-        while (results.next()) {
-            skins.add(new SkinInfo(results.getInt(1), results.getInt(2), results.getString(3), CaseSim.SkinRarity.values()[results.getInt(4)], results.getFloat(5), results.getFloat(6), results.getString(7), results.getString(8), results.getString(9), results.getString(10), results.getString(11), results.getString(12), results.getString(13), results.getString(14), results.getString(15), results.getString(16), results.getString(17), results.getString(18)));
-        }
-        if (skins.isEmpty()) {
-            return null;
-        }
-        return skins;
-    }
-
-    public ArrayList<SkinInfo> getCollectionSkins(CaseInfo collectionInfo) {
-        try {
-            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT * FROM Skins WHERE collectionId = ?");
-            preparedStatement.setInt(1, collectionInfo.caseId());
-            return getSkinsFromResultSet(preparedStatement.executeQuery());
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
