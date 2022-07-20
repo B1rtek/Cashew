@@ -254,7 +254,7 @@ public class Gifts extends BaseCommand {
         if(callersStats.place() != 0) {
             leaderboardEmbed.addField("Your position", "#" + callersStats.place() + " with " + callersStats.count() + " " + pointsName, false);
         } else {
-            leaderboardEmbed.addField("Your position", "You haven't yet " + pointsName + " any " + gift.getName() + "s!", false);
+            leaderboardEmbed.addField("Your position", "You haven't yet " + pointsName + " any " + (!Objects.equals(gift.getName(), "all") ? gift.getName() : "gift") + "s!", false);
         }
         if(gift.getId() != 0) {
             leaderboardEmbed.setThumbnail(gift.imageURL());
