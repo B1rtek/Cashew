@@ -219,7 +219,11 @@ public class Gifts extends BaseCommand {
                     event.reply("Something went wrong while fetching the chosen leaderboard page, try again later").setEphemeral(true).queue();
                     return;
                 } else if(leaderboardPage.isEmpty()) {
-                    event.reply("This page doesn't exist!").setEphemeral(true).queue();
+                    if(pageNumber == 1) {
+                        event.reply("This leaderboard doesn't yet exist, you can be the first person on it!").setEphemeral(true).queue();
+                    } else {
+                        event.reply("This page doesn't exist!").setEphemeral(true).queue();
+                    }
                     return;
                 }
                 LeaderboardRecord callersStats = database.getGiftsLeaderboardUserStats(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID, event.getUser().getId());
