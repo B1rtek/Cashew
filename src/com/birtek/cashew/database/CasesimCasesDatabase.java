@@ -32,7 +32,7 @@ public class CasesimCasesDatabase extends CasesimDatabase {
         }
 
         try {
-            casesimCasesConnection = DriverManager.getConnection("jdbc:sqlite:databases/data/gifts.db");
+            casesimCasesConnection = DriverManager.getConnection("jdbc:sqlite:databases/data/casesimCases.db");
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to casesimCases.db - possibly missing database");
             e.printStackTrace();
