@@ -1,6 +1,7 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Database;
+import com.birtek.cashew.database.CasesimCasesDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -37,9 +38,10 @@ public class CaseSim extends BaseCommand {
     }
 
     private void cacheContainers() {
+        CasesimCasesDatabase casesDatabase = CasesimCasesDatabase.getInstance();
         Database database = Database.getInstance();
-        casesChoices = database.getCasesimCases();
-        if (casesChoices.isEmpty()) LOGGER.warn("Failed to cache case choices!");
+        casesChoices = casesDatabase.getAllCasesNames();
+        if (casesChoices == null) LOGGER.warn("Failed to cache case choices!");
         collectionsChoices = database.getCasesimCollections();
         if (collectionsChoices.isEmpty()) LOGGER.warn("Failed to cache collection choices!");
         capsulesChoices = database.getCasesimCapsules();
@@ -258,7 +260,7 @@ public class CaseSim extends BaseCommand {
         }
 
         // Get all skins from the case
-        Database database = Database.getInstance();
+        CasesimCasesDatabase database = CasesimCasesDatabase.getInstance();
         CaseInfo caseInfo = database.getCaseInfo(selectedCase);
         if (caseInfo == null) {
             LOGGER.error("Query for case info of " + selectedCase + " in casesimCases.Cases returned null");
