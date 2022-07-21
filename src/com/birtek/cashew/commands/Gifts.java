@@ -218,6 +218,10 @@ public class Gifts extends BaseCommand {
                     return;
                 }
                 GiftInfo chosenGift = findGiftByName(giftName);
+                if(chosenGift == null) {
+                    event.reply("This gift doesn't exist!").setEphemeral(true).queue();
+                    return;
+                }
                 int giftID = chosenGift.id();
                 GiftHistoryDatabase database = GiftHistoryDatabase.getInstance();
                 ArrayList<LeaderboardRecord> leaderboardPage = database.getGiftsLeaderboardPage(leaderboardType, pageNumber, Objects.requireNonNull(event.getGuild()).getId(), giftID);
