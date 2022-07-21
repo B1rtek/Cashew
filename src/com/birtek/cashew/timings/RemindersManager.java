@@ -1,6 +1,6 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.RemindersDatabase;
 import net.dv8tion.jda.api.JDA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ public class RemindersManager {
     }
 
     private void getReminders() {
-        Database database = Database.getInstance();
+        RemindersDatabase database = RemindersDatabase.getInstance();
         ArrayList<ReminderRunnable> remindersArrayList = database.getAllReminders();
         if(remindersArrayList == null) {
             LOGGER.error("Failed to obtain the list of reminders!");
