@@ -1,8 +1,6 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.database.CasesimCapsulesDatabase;
-import com.birtek.cashew.database.CasesimCasesDatabase;
-import com.birtek.cashew.database.CasesimCollectionsDatabase;
+import com.birtek.cashew.database.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

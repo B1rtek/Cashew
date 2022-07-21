@@ -1,7 +1,5 @@
 package com.birtek.cashew.database;
 
-import com.birtek.cashew.commands.CaseInfo;
-import com.birtek.cashew.commands.SkinInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,8 +1,6 @@
 package com.birtek.cashew.database;
 
-import com.birtek.cashew.commands.GiftStats;
 import com.birtek.cashew.commands.Gifts;
-import com.birtek.cashew.commands.LeaderboardRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package com.birtek.cashew.commands;
+package com.birtek.cashew.database;
 
 public record GiftStats(int amountGifted, int amountReceived, long lastGifted) {
 

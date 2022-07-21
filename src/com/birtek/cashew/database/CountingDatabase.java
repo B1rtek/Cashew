@@ -1,6 +1,5 @@
 package com.birtek.cashew.database;
 
-import com.birtek.cashew.messagereactions.CountingInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

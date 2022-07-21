@@ -1,7 +1,6 @@
 package com.birtek.cashew.database;
 
 import com.birtek.cashew.commands.CaseSim;
-import com.birtek.cashew.commands.SkinInfo;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

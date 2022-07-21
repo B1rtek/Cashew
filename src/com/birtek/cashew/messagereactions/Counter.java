@@ -1,6 +1,7 @@
 package com.birtek.cashew.messagereactions;
 
 import com.birtek.cashew.database.CountingDatabase;
+import com.birtek.cashew.database.CountingInfo;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;

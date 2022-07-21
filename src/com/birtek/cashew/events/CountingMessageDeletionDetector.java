@@ -1,7 +1,7 @@
 package com.birtek.cashew.events;
 
 import com.birtek.cashew.database.CountingDatabase;
-import com.birtek.cashew.messagereactions.CountingInfo;
+import com.birtek.cashew.database.CountingInfo;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 

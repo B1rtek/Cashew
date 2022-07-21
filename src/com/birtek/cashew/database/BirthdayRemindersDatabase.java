@@ -2,7 +2,6 @@ package com.birtek.cashew.database;
 
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.timings.BirthdayReminder;
-import com.birtek.cashew.timings.BirthdayReminderDefaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

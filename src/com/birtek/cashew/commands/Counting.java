@@ -2,7 +2,7 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.CountingDatabase;
-import com.birtek.cashew.messagereactions.CountingInfo;
+import com.birtek.cashew.database.CountingInfo;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
