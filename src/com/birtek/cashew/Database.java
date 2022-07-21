@@ -13,41 +13,18 @@ import java.util.List;
 public final class Database {
 
     private static volatile Database instance;
-
     public static final String SQLITE_DRIVER = "org.sqlite.JDBC";
-    public static final String POSTGRES_DRIVER = "org.sqlite.JDBC";
     public static final String CASE_OPENING_DB = "jdbc:sqlite:databases/data/caseOpening.db";
     public static final String COLLECTION_OPENING_DB = "jdbc:sqlite:databases/data/collectionOpening.db";
-    public static final String TIMED_MESSAGES_DB = "jdbc:sqlite:databases/userData/timedMessages.db";
-    public static final String SOCIALCREDIT_DB = "jdbc:sqlite:databases/userData/socialCredit.db";
-    public static final String COUNTING_DB = "jdbc:sqlite:databases/userData/counting.db";
-    public static final String GIFTS_DB = "jdbc:sqlite:databases/data/gifts.db";
-    public static final String GIFT_HISTORY_DB = "jdbc:sqlite:databases/userData/giftHistory.db";
-    public static final String CASESIM_CASES_DB = "jdbc:sqlite:databases/data/casesimCases.db";
-    public static final String CASESIM_COLLECTIONS_DB = "jdbc:sqlite:databases/data/casesimCollections.db";
-    public static final String CASESIM_CAPSULES_DB = "jdbc:sqlite:databases/data/casesimCapsules.db";
-    public static final String BIRTHDAY_REMINDSRS_DB = "jdbc:sqlite:databases/userData/birthdayReminders.db";
-    public static final String REMINDERS_DB = "jdbc:sqlite:databases/userData/reminders.db";
-    public static final String POLLS_DB = "jdbc:sqlite:databases/userData/polls.db";
     private Connection caseOpeningConnection;
     private Connection collectionOpeningConnection;
     private Connection timedMessagesConnection;
-    private Connection socialCreditConnection;
-    private Connection countingConnection;
-    private Connection giftsConnection;
-    private Connection giftHistoryConnection;
-    private Connection casesimCasesConnection;
-    private Connection casesimCollectionsConnection;
-    private Connection casesimCapsulesConnection;
-    private Connection birthdayRemindersConnection;
-    private Connection remindersConnection;
-    private Connection pollsConnection;
 
     private Database() {
 
         // SQLite
         try {
-            Class.forName(Database.POSTGRES_DRIVER);
+            Class.forName(Database.SQLITE_DRIVER);
         } catch (ClassNotFoundException e) {
             System.err.println("Missing SQLite JDBC driver");
             e.printStackTrace();
@@ -56,10 +33,6 @@ public final class Database {
         try {
             caseOpeningConnection = DriverManager.getConnection(CASE_OPENING_DB);
             collectionOpeningConnection = DriverManager.getConnection(COLLECTION_OPENING_DB);
-            giftsConnection = DriverManager.getConnection(GIFTS_DB);
-            casesimCasesConnection = DriverManager.getConnection(CASESIM_CASES_DB);
-            casesimCollectionsConnection = DriverManager.getConnection(CASESIM_COLLECTIONS_DB);
-            casesimCapsulesConnection = DriverManager.getConnection(CASESIM_CAPSULES_DB);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the SQLite3 databases");
             e.printStackTrace();
@@ -77,12 +50,6 @@ public final class Database {
         try {
             String postgresDBUrl = System.getenv("JDBC_DATABASE_URL");
             timedMessagesConnection = DriverManager.getConnection(postgresDBUrl);
-            socialCreditConnection = DriverManager.getConnection(postgresDBUrl);
-            countingConnection = DriverManager.getConnection(postgresDBUrl);
-            giftHistoryConnection = DriverManager.getConnection(postgresDBUrl);
-            birthdayRemindersConnection = DriverManager.getConnection(postgresDBUrl);
-            remindersConnection = DriverManager.getConnection(postgresDBUrl);
-            pollsConnection = DriverManager.getConnection(postgresDBUrl);
         } catch (SQLException e) {
             System.err.println("There was a problem while establishing a connection with the Postgres databases");
             e.printStackTrace();
@@ -246,53 +213,6 @@ public final class Database {
             e.printStackTrace();
             System.err.println("An error occured while querying the Messages table.");
             return null;
-        }
-    }
-
-    public ArrayList<PollSummarizer> getAllPolls() {
-        try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("SELECT * FROM polls");
-            ResultSet results = preparedStatement.executeQuery();
-            ArrayList<PollSummarizer> polls = new ArrayList<>();
-            while(results.next()) {
-                polls.add(new PollSummarizer(results.getInt(1), results.getString(2), results.getString(3), results.getString(4)));
-            }
-            return polls;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public PollSummarizer addPoll(PollSummarizer poll) {
-        try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("INSERT INTO polls(channelid, messageid, endtime) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, poll.getChannelID());
-            preparedStatement.setString(2, poll.getMessageID());
-            preparedStatement.setString(3, poll.getEndTime());
-            preparedStatement.execute();
-            ResultSet id = preparedStatement.getGeneratedKeys();
-            if(id.next()) {
-                poll.setId(id.getInt(1));
-                Cashew.pollManager.addPoll(poll);
-                return poll;
-            }
-            return null;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public boolean deletePoll(int id) {
-        try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("DELETE FROM polls WHERE _id = ?");
-            preparedStatement.setInt(1, id);
-            int rowsDeleted = preparedStatement.executeUpdate();
-            return rowsDeleted != 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
         }
     }
 }
