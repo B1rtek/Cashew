@@ -1,7 +1,7 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.BirthdayRemindersDatabase;
 import com.birtek.cashew.timings.BirthdayReminder;
 import com.birtek.cashew.timings.BirthdayReminderDefaults;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -101,16 +101,16 @@ public class Birthday extends BaseCommand {
                     } else {
                         channelID = channel.getId();
                     }
-                    Database database = Database.getInstance();
+                    BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
                     BirthdayReminder reminder = new BirthdayReminder(0, message, date, channelID, Objects.requireNonNull(event.getGuild()).getId(), event.getUser().getId());
-                    if(database.addBirthdayReminder(reminder)) {
+                    if(database.setBirthdayReminder(reminder)) {
                         event.reply("Successfully added a birthday reminder!").setEphemeral(true).queue();
                     } else {
                         event.reply("Something went wrong while adding this birthday reminder").setEphemeral(true).queue();
                     }
                 }
                 case "delete" -> {
-                    Database database = Database.getInstance();
+                    BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
                     if (database.deleteBirthdayReminder(Objects.requireNonNull(event.getGuild()).getId(), event.getUser().getId())) {
                         event.reply("Successfully removed the birthday reminder!").setEphemeral(true).queue();
                     } else {
@@ -125,9 +125,9 @@ public class Birthday extends BaseCommand {
                             return;
                         }
                         boolean override = Objects.equals(event.getOption("type", "default", OptionMapping::getAsString), "override");
-                        Database database = Database.getInstance();
+                        BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
                         BirthdayReminderDefaults defaults = new BirthdayReminderDefaults(Objects.requireNonNull(event.getGuild()).getId(), channel.getId(), override);
-                        if(database.addBirthdayRemindersDefaults(defaults)) {
+                        if(database.setBirthdayRemindersDefaults(defaults)) {
                             event.reply("Default channel added!").setEphemeral(true).queue();
                         } else {
                             event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
@@ -137,7 +137,7 @@ public class Birthday extends BaseCommand {
                     }
                 }
                 case "check" -> {
-                    Database database = Database.getInstance();
+                    BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
                     BirthdayReminder reminder = database.getBirthdayReminder(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
                     if(reminder == null) {
                         event.reply("Something went wrong while querying the birthday reminders database").setEphemeral(true).queue();
@@ -171,7 +171,7 @@ public class Birthday extends BaseCommand {
                     }
                 }
                 case "checkdefault" -> {
-                    Database database = Database.getInstance();
+                    BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
                     BirthdayReminderDefaults defaults = database.getBirthdayReminderDefault(Objects.requireNonNull(event.getGuild()).getId());
                     if(defaults == null) {
                         event.reply("Something went wrong while querying the birthday reminders database").setEphemeral(true).queue();
