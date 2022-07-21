@@ -1,6 +1,6 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.PollsDatabase;
 import com.birtek.cashew.timings.PollSummarizer;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
 import java.util.ArrayList;
 
 public class Poll extends BaseCommand {
@@ -69,7 +68,7 @@ public class Poll extends BaseCommand {
                     pollMessage.addReaction(optionEmoji.get(i)).queue();
                 }
                 PollSummarizer poll = new PollSummarizer(0, event.getChannel().getId(), pollMessage.getId(), timeString);
-                Database database = Database.getInstance();
+                PollsDatabase database = PollsDatabase.getInstance();
                 poll = database.addPoll(poll);
                 if(poll != null) {
                     event.reply("Poll created!").setEphemeral(true).queue();

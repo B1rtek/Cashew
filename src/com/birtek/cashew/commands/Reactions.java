@@ -1,7 +1,7 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.ChannelActivityDatabase;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,28 +26,23 @@ public class Reactions extends BaseCommand {
     );
 
     String setActivity(String channelID, int newActivitySetting, boolean differentChannelSpecified) {
-        Database database = Database.getInstance();
-        try {
-            if (database.updateChannelActivity(channelID, newActivitySetting)) {
-                String target = "this";
-                String annoying = "";
-                String state = "off";
-                if (newActivitySetting > 0) {
-                    state = "on";
-                }
-                if (newActivitySetting == 2) {
-                    annoying = "(including the ann0y1ng ones) ";
-                }
-                if (differentChannelSpecified) {
-                    target = "the specified";
-                }
-                return "Reactions in " + target + " channel " + annoying + "have been turned " + state + ".";
-            } else {
-                return "An error occurred while executing this command.";
+        ChannelActivityDatabase database = ChannelActivityDatabase.getInstance();
+        if (database.updateChannelActivity(channelID, newActivitySetting)) {
+            String target = "this";
+            String annoying = "";
+            String state = "off";
+            if (newActivitySetting > 0) {
+                state = "on";
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return "An error occurred while updating the setting. Try again in a few minutes.";
+            if (newActivitySetting == 2) {
+                annoying = "(including the ann0y1ng ones) ";
+            }
+            if (differentChannelSpecified) {
+                target = "the specified";
+            }
+            return "Reactions in " + target + " channel " + annoying + "have been turned " + state + ".";
+        } else {
+            return "An error occurred while executing this command.";
         }
     }
 
@@ -66,19 +60,10 @@ public class Reactions extends BaseCommand {
                 } else if (args.length == 2) {
                     args[1] = args[1].toLowerCase(Locale.ROOT);
                     switch (args[1]) {
-                        case "off": {
-                            newActivitySetting = 0;
-                            break;
-                        }
-                        case "on": {
-                            newActivitySetting = 1;
-                            break;
-                        }
-                        case "all": {
-                            newActivitySetting = 2;
-                            break;
-                        }
-                        default: {
+                        case "off" -> newActivitySetting = 0;
+                        case "on" -> newActivitySetting = 1;
+                        case "all" -> newActivitySetting = 2;
+                        default -> {
                             event.getMessage().reply("Incorrect syntax. Please specify the argument [off|on|all].").mentionRepliedUser(false).queue();
                             return;
                         }
@@ -101,19 +86,10 @@ public class Reactions extends BaseCommand {
                     }
                     args[2] = args[2].toLowerCase(Locale.ROOT);
                     switch (args[2]) {
-                        case "off": {
-                            newActivitySetting = 0;
-                            break;
-                        }
-                        case "on": {
-                            newActivitySetting = 1;
-                            break;
-                        }
-                        case "all": {
-                            newActivitySetting = 2;
-                            break;
-                        }
-                        default: {
+                        case "off" -> newActivitySetting = 0;
+                        case "on" -> newActivitySetting = 1;
+                        case "all" -> newActivitySetting = 2;
+                        default -> {
                             event.getMessage().reply("Incorrect syntax. Please specify the argument [off|on|all].").mentionRepliedUser(false).queue();
                             return;
                         }

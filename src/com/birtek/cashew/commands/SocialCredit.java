@@ -1,7 +1,7 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.SocialCreditDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -61,7 +61,7 @@ public class SocialCredit extends BaseCommand {
     }
 
     private MessageEmbed modifySocialCredit(String userID, Guild server, long socialCreditChange, String reason) {
-        Database database = Database.getInstance();
+        SocialCreditDatabase database = SocialCreditDatabase.getInstance();
         database.addSocialCredit(userID, server.getId(), socialCreditChange);
         EmbedBuilder socialCreditEmbed = new EmbedBuilder();
         String embedTitle = "**" + Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName() + "**";
@@ -84,12 +84,8 @@ public class SocialCredit extends BaseCommand {
     }
 
     private String checkSocialCredit(String userID, Guild server) {
-        Database database = Database.getInstance();
+        SocialCreditDatabase database = SocialCreditDatabase.getInstance();
         long socialCredit = database.getSocialCredit(userID, server.getId());
-        if (socialCredit == 648294745) {
-            database.addSocialCredit(userID, server.getId(), 0);
-            socialCredit = 0;
-        }
         String effectiveUserName = Objects.requireNonNull(server.getMemberById(userID)).getEffectiveName();
         return "User **" + effectiveUserName + "** has " + socialCredit + " social credit.";
     }
@@ -174,7 +170,7 @@ public class SocialCredit extends BaseCommand {
     }
 
     private int loseSocialCredit(String userID, String serverID) {
-        Database database = Database.getInstance();
+        SocialCreditDatabase database = SocialCreditDatabase.getInstance();
         Random random = new Random();
         int amountLost = random.nextInt(100) + 1;
         database.addSocialCredit(userID, serverID, -amountLost);

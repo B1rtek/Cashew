@@ -1,6 +1,6 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.RemindersDatabase;
 import com.birtek.cashew.timings.ReminderRunnable;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -10,9 +10,6 @@ import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
 import org.nocrala.tools.texttablefmt.Table;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -24,7 +21,7 @@ public class Reminder extends BaseCommand {
             switch (Objects.requireNonNull(event.getSubcommandName())) {
                 case "set" -> {
                     // check if the current reminders count isn't already at 10 (maximum)
-                    Database database = Database.getInstance();
+                    RemindersDatabase database = RemindersDatabase.getInstance();
                     if(database.getRemindersCount(event.getUser().getId()) >= 10) {
                         event.reply("You already have the maximum number of reminders set").setEphemeral(true).queue();
                         return;
@@ -59,8 +56,8 @@ public class Reminder extends BaseCommand {
                     }
                 }
                 case "list" -> {
-                    Database database = Database.getInstance();
-                    ArrayList<ReminderRunnable> reminders = database.getReminders(event.getUser().getId());
+                    RemindersDatabase database = RemindersDatabase.getInstance();
+                    ArrayList<ReminderRunnable> reminders = database.getUserReminders(event.getUser().getId());
                     if(reminders == null) {
                         event.reply("Something went wrong while checking your reminders (Error 3)").setEphemeral(true).queue();
                         return;
@@ -93,7 +90,7 @@ public class Reminder extends BaseCommand {
                         event.reply("Wrong ID!").setEphemeral(true).queue();
                         return;
                     }
-                    Database database = Database.getInstance();
+                    RemindersDatabase database = RemindersDatabase.getInstance();
                     int result = database.deleteReminder(id, event.getUser().getId());
                     if(result == 1) {
                         event.reply("Reminder successfully deleted!").setEphemeral(true).queue();

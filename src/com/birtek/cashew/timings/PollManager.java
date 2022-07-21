@@ -1,6 +1,6 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.PollsDatabase;
 import net.dv8tion.jda.api.JDA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class PollManager {
     }
 
     private void getPolls() {
-        Database database = Database.getInstance();
+        PollsDatabase database = PollsDatabase.getInstance();
         ArrayList<PollSummarizer> pollSummarizersList = database.getAllPolls();
         if(pollSummarizersList == null) {
             LOGGER.error("Failed to obtain the list of polls!");

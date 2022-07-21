@@ -1,6 +1,7 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.BirthdayReminderDefaults;
+import com.birtek.cashew.database.BirthdayRemindersDatabase;
 import net.dv8tion.jda.api.JDA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +31,14 @@ public class BirthdayRemindersManager {
     }
 
     private void getReminders() {
-        Database database = Database.getInstance();
-        ArrayList<BirthdayReminder> reminders = database.getBirthdayReminders();
+        BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
+        ArrayList<BirthdayReminder> reminders = database.getAllReminders();
         if (reminders == null || reminders.isEmpty()) {
             LOGGER.error("Failed to obtain the list of birthday reminders!");
             return;
         }
         createRemindersMap(reminders);
-        ArrayList<BirthdayReminderDefaults> defaultsList = database.getBirthdayReminderDefaults();
+        ArrayList<BirthdayReminderDefaults> defaultsList = database.getAllDefaults();
         if (defaultsList == null || defaultsList.isEmpty()) {
             LOGGER.error("Failed to obtain the list of birthday reminder defaults!");
             return;
@@ -110,7 +111,7 @@ public class BirthdayRemindersManager {
 
     public void updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         birthdayReminderDefaults.put(defaults.serverID(), defaults);
-        Database database = Database.getInstance();
+        BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
         ArrayList<BirthdayReminder> affectedReminders = database.getBirthdayRemindersFromServer(defaults.serverID());
         if(affectedReminders == null) {
             LOGGER.warn("Failed to obtain birthday reminders for server " + defaults.serverID());

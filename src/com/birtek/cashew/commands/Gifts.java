@@ -1,6 +1,6 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -36,11 +36,21 @@ public class Gifts extends BaseCommand {
     };
 
     ArrayList<GiftInfo> availableGifts;
+
+    ArrayList<String> availableGiftsNames = new ArrayList<>();
+
     HashSet<Integer> processedIDs = new HashSet<>();
 
     public Gifts() {
-        Database database = Database.getInstance();
+        GiftsDatabase database = GiftsDatabase.getInstance();
         availableGifts = database.getAvailableGifts();
+        if(availableGifts == null) {
+            LOGGER.error("GiftsDatabase.getAvailableGifts() returned null! No gifts are known!");
+            availableGifts = new ArrayList<>();
+        }
+        for(GiftInfo gift: availableGifts) {
+            availableGiftsNames.add(gift.getName());
+        }
     }
 
     MessageEmbed generateGiftErrorEmbed(String message) {
@@ -109,10 +119,10 @@ public class Gifts extends BaseCommand {
         if (chosenGift == null) {
             return generateGiftErrorEmbed("Gift " + giftName + " doesn't exist");
         }
-        Database database = Database.getInstance();
-        GiftStats userGiftStats = database.getUserGiftStats(chosenGift.getId(), user.getId(), server.getId());
+        GiftHistoryDatabase database = GiftHistoryDatabase.getInstance();
+        GiftStats userGiftStats = database.getGiftStats(chosenGift.getId(), user.getId(), server.getId());
         if (userGiftStats == null) {
-            return generateGiftErrorEmbed("Gift could not be obtained, there was an error while querying the gift database.");
+            return generateGiftErrorEmbed("There was an error while obtaining your gift stats, try gifting again later.");
         }
         long timeDifference = calculateTimeFromLastGift(userGiftStats.getLastGifted());
         long cooldown = 600;
@@ -121,8 +131,11 @@ public class Gifts extends BaseCommand {
         }
         //success
         GiftStats newStats = new GiftStats(userGiftStats.getAmountGifted() + 1, userGiftStats.getAmountReceived(), Instant.now().getEpochSecond());
-        database.updateUserGiftStats(newStats, chosenGift.getId(), user.getId(), server.getId());
-        return generateGiftSuccessEmbed(chosenGift.displayName(), chosenGift.getImageURL());
+        if(database.updateGiftStats(newStats, chosenGift.getId(), user.getId(), server.getId())) {
+            return generateGiftSuccessEmbed(chosenGift.displayName(), chosenGift.getImageURL());
+        } else {
+            return generateGiftErrorEmbed("Something went wrong while updating your gift stats, try gifting again later.");
+        }
     }
 
     MessageEmbed generateGiftStatsEmbed(GiftStats userGiftStats, GiftInfo giftInfo, User user, Guild server) {
@@ -140,8 +153,8 @@ public class Gifts extends BaseCommand {
         if (chosenGift == null) {
             return generateGiftErrorEmbed("Gift " + giftName + " doesn't exist");
         }
-        Database database = Database.getInstance();
-        GiftStats userGiftStats = database.getUserGiftStats(chosenGift.getId(), user.getId(), server.getId());
+        GiftHistoryDatabase database = GiftHistoryDatabase.getInstance();
+        GiftStats userGiftStats = database.getGiftStats(chosenGift.getId(), user.getId(), server.getId());
         if (userGiftStats == null) {
             return generateGiftErrorEmbed("Gift stats could not be obtained, there was an error while querying the gift database.");
         }
@@ -204,18 +217,34 @@ public class Gifts extends BaseCommand {
                     return;
                 }
                 GiftInfo chosenGift = findGiftByName(giftName);
-                int giftID = chosenGift.id();
-                Database database = Database.getInstance();
-                ArrayList<LeaderboardRecord> leaderboardPage = database.getGiftsLeaderboardPage(leaderboardType, pageNumber, Objects.requireNonNull(event.getGuild()).getId(), giftID);
-                if(leaderboardPage == null) {
-                    event.reply("Something went wrong while fetching the leaderboard...").setEphemeral(true).queue();
-                    return;
-                } else if(leaderboardPage.isEmpty()) {
-                    event.reply("This page doesn't exist!").setEphemeral(true).queue();
+                if(chosenGift == null) {
+                    event.reply("This gift doesn't exist!").setEphemeral(true).queue();
                     return;
                 }
-                LeaderboardRecord callersStats = database.getGiftsLeaderboardStats(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID, event.getUser().getId());
+                int giftID = chosenGift.id();
+                GiftHistoryDatabase database = GiftHistoryDatabase.getInstance();
+                ArrayList<LeaderboardRecord> leaderboardPage = database.getGiftsLeaderboardPage(leaderboardType, pageNumber, Objects.requireNonNull(event.getGuild()).getId(), giftID);
+                if(leaderboardPage == null) {
+                    event.reply("Something went wrong while fetching the chosen leaderboard page, try again later").setEphemeral(true).queue();
+                    return;
+                } else if(leaderboardPage.isEmpty()) {
+                    if(pageNumber == 1) {
+                        event.reply("This leaderboard doesn't yet exist, you can be the first person on it!").setEphemeral(true).queue();
+                    } else {
+                        event.reply("This page doesn't exist!").setEphemeral(true).queue();
+                    }
+                    return;
+                }
+                LeaderboardRecord callersStats = database.getGiftsLeaderboardUserStats(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID, event.getUser().getId());
+                if(callersStats == null) {
+                    event.reply("Failed to obtain your stats from this leaderboard, try again later").setEphemeral(true).queue();
+                    return;
+                }
                 int totalPages = database.getGiftsLeaderboardPageCount(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID);
+                if(totalPages == -1) {
+                    event.reply("Failed to obtain the amount of pages of the leaderboard, try again later").setEphemeral(true).queue();
+                    return;
+                }
                 generateAndSendLeaderboardEmbed(leaderboard, leaderboardIndex, leaderboardPage, event, chosenGift, callersStats, pageNumber, totalPages);
             }
         }
@@ -238,7 +267,7 @@ public class Gifts extends BaseCommand {
         if(callersStats.place() != 0) {
             leaderboardEmbed.addField("Your position", "#" + callersStats.place() + " with " + callersStats.count() + " " + pointsName, false);
         } else {
-            leaderboardEmbed.addField("Your position", "You haven't yet " + pointsName + " any " + gift.getName() + "s!", false);
+            leaderboardEmbed.addField("Your position", "You haven't yet " + pointsName + " any " + (!Objects.equals(gift.getName(), "all") ? gift.getName() : "gift") + "s!", false);
         }
         if(gift.getId() != 0) {
             leaderboardEmbed.setThumbnail(gift.imageURL());
@@ -299,12 +328,15 @@ public class Gifts extends BaseCommand {
             System.err.println("While trying to accept gift: " + giftInfo.getName());
             return;
         }
-        Database database = Database.getInstance();
-        GiftStats oldGiftStats = database.getUserGiftStats(giftInfo.getId(), event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
-        if (oldGiftStats != null) {
-            database.updateUserGiftStats(new GiftStats(oldGiftStats.getAmountGifted(), oldGiftStats.getAmountReceived() + 1, oldGiftStats.getLastGifted()), giftInfo.getId(), event.getUser().getId(), event.getGuild().getId());
-        } else {
-            event.reply("Updating gift stats failed :(").setEphemeral(true).queue();
+        GiftHistoryDatabase database = GiftHistoryDatabase.getInstance();
+        GiftStats oldGiftStats = database.getGiftStats(giftInfo.getId(), event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
+        if (oldGiftStats == null) {
+            event.reply("Failed to obtain your gift stats, try obtaining the gift later").setEphemeral(true).queue();
+            return;
+        }
+        if(!database.updateGiftStats(new GiftStats(oldGiftStats.getAmountGifted(), oldGiftStats.getAmountReceived() + 1, oldGiftStats.getLastGifted()), giftInfo.getId(), event.getUser().getId(), event.getGuild().getId())) {
+            event.reply("Updating gift stats failed, try obtaining the gift later").setEphemeral(true).queue();
+            return;
         }
         if(randomID != -1) {
             processedIDs.remove(randomID);
@@ -316,19 +348,9 @@ public class Gifts extends BaseCommand {
         if (event.getName().startsWith("gifts")) {
             if (event.getFocusedOption().getName().equals("gift")) {
                 String typed = event.getOption("gift", "", OptionMapping::getAsString);
-                ArrayList<String> matching = new ArrayList<>();
-                for (GiftInfo gift : availableGifts) {
-                    if (gift.getName().toLowerCase().contains(typed.toLowerCase(Locale.ROOT))) {
-                        matching.add(gift.getName());
-                    }
-                }
-                if (matching.size() > 25) {
-                    event.replyChoiceStrings("There's more than 25 matching choices").queue();
-                } else {
-                    event.replyChoiceStrings(matching).queue();
-                }
+                event.replyChoiceStrings(autocompleteFromList(availableGiftsNames, typed)).queue();
             } else if(event.getFocusedOption().getName().equals("scoreboard")) {
-                String typed = event.getOption("gift", "", OptionMapping::getAsString);
+                String typed = event.getOption("scoreboard", "", OptionMapping::getAsString);
                 event.replyChoiceStrings(autocompleteFromList(leaderboardTypesStrings, typed)).queue();
             }
         }

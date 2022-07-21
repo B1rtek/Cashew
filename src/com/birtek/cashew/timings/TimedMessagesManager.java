@@ -1,6 +1,6 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.Database;
 import net.dv8tion.jda.api.JDA;
 
 import java.text.DateFormat;

@@ -1,7 +1,8 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.BoBurnhamDatabase;
+import com.birtek.cashew.database.BoBurnhamQuote;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -10,15 +11,20 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Random;
-
+/**
+ * /boburnham command class
+ * Sends quotes from Bo Burnham on demand
+ * (I just wish that my database had more of them)
+ */
 public class BoBurnham extends BaseCommand {
 
-    private MessageEmbed createQuoteEmbedFromRecord(ResultSet quotes) throws SQLException {
+    /**
+     * Creates an embed from the provided BoBurnhamQuote
+     * @param quote quote to turn into an embed
+     */
+    private MessageEmbed createQuoteEmbed(BoBurnhamQuote quote) {
         EmbedBuilder quoteEmbed = new EmbedBuilder();
-        String quoteContent = quotes.getString("quote");
+        String quoteContent = quote.quote();
         String[] quoteParts = quoteContent.split("▒");
         StringBuilder description = new StringBuilder();
         for (String quotePart : quoteParts) {
@@ -26,33 +32,19 @@ public class BoBurnham extends BaseCommand {
             description.append('\n');
         }
         quoteEmbed.setDescription(description.toString());
-        quoteEmbed.setAuthor(quotes.getString("track"), quotes.getString("link"), quotes.getString("albumCover"));
-        quoteEmbed.setFooter("from \"" + quotes.getString("album") + "\"");
+        quoteEmbed.setAuthor(quote.track(), quote.link(), quote.albumCoverUrl());
+        quoteEmbed.setFooter("from \"" + quote.album() + "\"");
         return quoteEmbed.build();
     }
 
     private MessageEmbed getQuoteEmbed(boolean nsfw) {
-        Database database = Database.getInstance();
-        int count = database.getQuoteCount(nsfw ? 1 : 0);
-        if (count == 0) return null;
-        Random rand = new Random();
-        int quoteNumber = rand.nextInt(count) + 1;
-        ResultSet quotes = database.getQuotes(nsfw ? 1 : 0);
-        if (quotes == null) return null;
-        try {
-            int rowNumber = 1;
-            while (quotes.next()) {
-                if (rowNumber < quoteNumber) {
-                    rowNumber++;
-                } else {
-                    return createQuoteEmbedFromRecord(quotes);
-                }
-            }
-
-        } catch (SQLException e) {
+        BoBurnhamDatabase database = BoBurnhamDatabase.getInstance();
+        BoBurnhamQuote quote = database.getQuote(nsfw);
+        if(quote != null) {
+            return createQuoteEmbed(quote);
+        } else {
             return null;
         }
-        return null;
     }
 
     @Override

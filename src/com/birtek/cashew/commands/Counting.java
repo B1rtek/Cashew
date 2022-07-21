@@ -1,8 +1,8 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.Database;
-import com.birtek.cashew.messagereactions.CountingInfo;
+import com.birtek.cashew.database.CountingDatabase;
+import com.birtek.cashew.database.CountingInfo;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -25,16 +25,30 @@ public class Counting extends BaseCommand {
             if (checkPermissions(event, countingCommandPermissions)) {
                 String argument = parseInput(args);
                 if (argument.equalsIgnoreCase("reset")) {
-                    Database database = Database.getInstance();
+                    CountingDatabase database = CountingDatabase.getInstance();
                     CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-                    database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId());
-                    event.getMessage().reply("Counter has been reset.").mentionRepliedUser(false).queue();
+                    if (countingInfo != null) {
+                        if (database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId())) {
+                            event.getMessage().reply("Counter has been reset.").mentionRepliedUser(false).queue();
+                        } else {
+                            event.getMessage().reply("Something went wrong").queue();
+                        }
+                    } else {
+                        event.getMessage().reply("Something went wrong").queue();
+                    }
                 } else if (argument.equalsIgnoreCase("setcount")) {
                     int newCount = parseSecondArgument(args);
-                    Database database = Database.getInstance();
+                    CountingDatabase database = CountingDatabase.getInstance();
                     CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-                    database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId());
-                    event.getMessage().reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").mentionRepliedUser(false).queue();
+                    if (countingInfo != null) {
+                        if (database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId())) {
+                            event.getMessage().reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").mentionRepliedUser(false).queue();
+                        } else {
+                            event.getMessage().reply("Something went wrong").queue();
+                        }
+                    } else {
+                        event.getMessage().reply("Something went wrong").queue();
+                    }
                 } else {
                     if (saveToDatabase(argument.toLowerCase(Locale.ROOT), event.getChannel().getId())) {
                         event.getMessage().reply("Counting has been turned " + args[1] + " in this channel.").mentionRepliedUser(false).queue();
@@ -47,7 +61,7 @@ public class Counting extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("counting")) {
-            if(isPrivateChannel(event)) {
+            if (isPrivateChannel(event)) {
                 event.reply("Counting doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
@@ -60,15 +74,29 @@ public class Counting extends BaseCommand {
                         event.reply("Counting has been turned " + toggle + " in this channel.").queue();
                     }
                 } else if (newCount != -2147483647) {
-                    Database database = Database.getInstance();
+                    CountingDatabase database = CountingDatabase.getInstance();
                     CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-                    database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId());
-                    event.reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").queue();
+                    if (countingInfo != null) {
+                        if (database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId())) {
+                            event.reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").queue();
+                        } else {
+                            event.reply("Something went wrong").setEphemeral(true).queue();
+                        }
+                    } else {
+                        event.reply("Something went wrong").setEphemeral(true).queue();
+                    }
                 } else if (reset.equals("definitely")) {
-                    Database database = Database.getInstance();
+                    CountingDatabase database = CountingDatabase.getInstance();
                     CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-                    database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId());
-                    event.reply("Counter has been reset.").queue();
+                    if(countingInfo != null) {
+                        if(database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId())) {
+                            event.reply("Counter has been reset.").queue();
+                        } else {
+                            event.reply("Something went wrong").setEphemeral(true).queue();
+                        }
+                    } else {
+                        event.reply("Something went wrong").setEphemeral(true).queue();
+                    }
                 } else {
                     event.reply("No actions were performed").setEphemeral(true).queue();
                 }
@@ -80,8 +108,8 @@ public class Counting extends BaseCommand {
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if(event.getName().equals("counting")) {
-            if(event.getFocusedOption().getName().equals("toggle")) {
+        if (event.getName().equals("counting")) {
+            if (event.getFocusedOption().getName().equals("toggle")) {
                 event.replyChoiceStrings("on", "off").queue();
             } else if (event.getFocusedOption().getName().equals("reset")) {
                 event.replyChoiceStrings("definitely").queue();
@@ -106,7 +134,7 @@ public class Counting extends BaseCommand {
     }
 
     private boolean saveToDatabase(String argument, String channelID) {
-        Database database = Database.getInstance();
+        CountingDatabase database = CountingDatabase.getInstance();
         return database.setCountingStatus(argument.equals("on"), channelID);
     }
 }

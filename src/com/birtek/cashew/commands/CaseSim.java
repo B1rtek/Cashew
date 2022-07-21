@@ -1,6 +1,6 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -37,12 +37,14 @@ public class CaseSim extends BaseCommand {
     }
 
     private void cacheContainers() {
-        Database database = Database.getInstance();
-        casesChoices = database.getCasesimCases();
-        if (casesChoices.isEmpty()) LOGGER.warn("Failed to cache case choices!");
-        collectionsChoices = database.getCasesimCollections();
-        if (collectionsChoices.isEmpty()) LOGGER.warn("Failed to cache collection choices!");
-        capsulesChoices = database.getCasesimCapsules();
+        CasesimCasesDatabase casesDatabase = CasesimCasesDatabase.getInstance();
+        CasesimCollectionsDatabase collectionsDatabase = CasesimCollectionsDatabase.getInstance();
+        CasesimCapsulesDatabase database = CasesimCapsulesDatabase.getInstance();
+        casesChoices = casesDatabase.getAllCasesNames();
+        if (casesChoices == null) LOGGER.warn("Failed to cache case choices!");
+        collectionsChoices = collectionsDatabase.getAllCollectionsNames();
+        if (collectionsChoices == null) LOGGER.warn("Failed to cache collection choices!");
+        capsulesChoices = database.getAllCapsulesNames();
         if (capsulesChoices.isEmpty()) LOGGER.warn("Failed to cache capsule choices!");
     }
 
@@ -258,7 +260,7 @@ public class CaseSim extends BaseCommand {
         }
 
         // Get all skins from the case
-        Database database = Database.getInstance();
+        CasesimCasesDatabase database = CasesimCasesDatabase.getInstance();
         CaseInfo caseInfo = database.getCaseInfo(selectedCase);
         if (caseInfo == null) {
             LOGGER.error("Query for case info of " + selectedCase + " in casesimCases.Cases returned null");
@@ -308,7 +310,7 @@ public class CaseSim extends BaseCommand {
         }
 
         // Get all skins from the collection
-        Database database = Database.getInstance();
+        CasesimCollectionsDatabase database = CasesimCollectionsDatabase.getInstance();
         CaseInfo collectionInfo = database.getCollectionInfo(selectedCollection);
         if (collectionInfo == null) {
             LOGGER.error("Query for collection info of " + selectedCollection + " in casesimCollections.Collections returned null");
@@ -345,7 +347,7 @@ public class CaseSim extends BaseCommand {
         }
 
         // Get all items from the capsule
-        Database database = Database.getInstance();
+        CasesimCapsulesDatabase database = CasesimCapsulesDatabase.getInstance();
         CaseInfo capsuleInfo = database.getCapsuleInfo(selectedCapsule);
         if (capsuleInfo == null) {
             LOGGER.error("Query for capsule info of " + selectedCapsule + " in casesimCapsules.Capsules returned null");

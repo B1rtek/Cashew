@@ -1,7 +1,7 @@
 package com.birtek.cashew.timings;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.Database;
+import com.birtek.cashew.database.RemindersDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.PrivateChannel;
@@ -42,7 +42,7 @@ public class ReminderRunnable implements Runnable {
                 privateChannel.sendMessageEmbeds(reminderEmbed.build()).queue();
             }
         }
-        Database database = Database.getInstance();
+        RemindersDatabase database = RemindersDatabase.getInstance();
         if(database.deleteReminder(this.id, this.userID) != 1) LOGGER.warn("Failed to remove Reminder " + this.id + " from RemindersManager!");
         Cashew.remindersManager.deleteReminder(this.id);
     }
