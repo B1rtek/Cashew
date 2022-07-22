@@ -112,7 +112,7 @@ public class Reactions extends BaseCommand {
         if (event.getName().equals("reactions")) {
             if (checkSlashCommandPermissions(event, reactionsCommandPermissions)) {
                 String toggle = event.getOption("toggle", "", OptionMapping::getAsString);
-                MessageChannel channel = event.getOption("channel", null, OptionMapping::getAsMessageChannel);
+                MessageChannel channel = (MessageChannel) event.getOption("channel", null, OptionMapping::getAsChannel);
                 if (!toggle.isEmpty()) {
                     int newActivity = mapToggleToActivity.get(toggle);
                     String channelID = event.getChannel().getId();
