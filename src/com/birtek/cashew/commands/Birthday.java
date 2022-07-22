@@ -91,7 +91,7 @@ public class Birthday extends BaseCommand {
                         event.reply("Invalid message length").setEphemeral(true).queue();
                         return;
                     }
-                    MessageChannel channel = event.getOption("channel", null, OptionMapping::getAsTextChannel);
+                    MessageChannel channel = (MessageChannel) event.getOption("channel", null, OptionMapping::getAsChannel);
                     String channelID;
                     if(channel == null) {
                             channelID = Cashew.birthdayRemindersManager.getDefaultChannel(Objects.requireNonNull(event.getGuild()).getId());
@@ -119,7 +119,7 @@ public class Birthday extends BaseCommand {
                 }
                 case "setdefault" -> {
                     if(checkSlashCommandPermissions(event, manageServerPermission)) {
-                        MessageChannel channel = event.getOption("channel", null, OptionMapping::getAsTextChannel);
+                        MessageChannel channel = (MessageChannel) event.getOption("channel", null, OptionMapping::getAsChannel);
                         if(channel == null) {
                             event.reply("Invalid channel specified").setEphemeral(true).queue();
                             return;
