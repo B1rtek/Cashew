@@ -24,6 +24,15 @@ public class PollSummarizer implements Runnable {
     private final String messageID, channelID, pollEndingTime;
     private static JDA jdaInstance;
 
+    /**
+     * A class that contains all information needed to summarize the poll as well as being the runnable which does the
+     * summarization
+     *
+     * @param id             ID of the poll assigned by the database
+     * @param channelID      ID of the channel in which the poll was created
+     * @param messageID      ID of the message containing the poll
+     * @param pollEndingTime timestamp in a String form interpretable by date formatters with the poll ending time and date
+     */
     public PollSummarizer(int id, String channelID, String messageID, String pollEndingTime) {
         this.id = id;
         this.messageID = messageID;
@@ -42,6 +51,10 @@ public class PollSummarizer implements Runnable {
         return Math.round((float) votes / (float) totalVotes * 10000) / 100.0 + "%";
     }
 
+    /**
+     * Calculates the results of the poll and then edits the original embed placing results in it and stopping the count
+     * of new votes
+     */
     @Override
     public void run() {
         try {
@@ -62,7 +75,7 @@ public class PollSummarizer implements Runnable {
 
             EmbedBuilder resultsEmbed = new EmbedBuilder();
             resultsEmbed.setTitle(pollEmbed.getTitle());
-            if(totalVotes != 0) {
+            if (totalVotes != 0) {
                 resultsEmbed.setDescription("Final results");
                 for (Pair<Integer, String> vote : votes) {
                     resultsEmbed.addField(vote.getLeft() + " vote" + (vote.getLeft() != 1 ? "s" : "") + ", " + calculatePercentage(vote.getLeft(), totalVotes), vote.getRight(), false);

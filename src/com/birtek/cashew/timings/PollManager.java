@@ -26,12 +26,20 @@ public class PollManager {
 
     }
 
+    /**
+     * Starts the manager by getting all polls from the database and scheduling their
+     * {@link PollSummarizer PollSummarizers}
+     * @param jda JDA instance created in the main Cashew class
+     */
     public void start(JDA jda) {
         jdaInstance = jda;
         getPolls();
         schedulePollSummarizers();
     }
 
+    /**
+     * Gets all polls from the database
+     */
     private void getPolls() {
         PollsDatabase database = PollsDatabase.getInstance();
         ArrayList<PollSummarizer> pollSummarizersList = database.getAllPolls();
@@ -48,6 +56,9 @@ public class PollManager {
         }
     }
 
+    /**
+     * Schedules all polls for execution (conclusion)
+     */
     private void schedulePollSummarizers() {
         for (PollSummarizer poll : polls.values()) {
             ScheduledFuture<?> pollFuture = schedulePollSummarizer(poll);
@@ -55,12 +66,27 @@ public class PollManager {
         }
     }
 
+    /**
+     * Schedules conclusion of a poll by calculating initial delay needed to schedule the runnable and then schedules it
+     * with calculated parameters
+     *
+     * @param poll {@link PollSummarizer poll} to schedule
+     * @return a {@link ScheduledFuture ScheduledFuture} generated for this poll
+     */
     private ScheduledFuture<?> schedulePollSummarizer(PollSummarizer poll) {
         poll.setJdaInstance(jdaInstance);
         int initialDelay = calculateInitialDelay(poll.getEndTime());
         return scheduler.schedule(poll, initialDelay, TimeUnit.SECONDS);
     }
 
+    /**
+     * Calculates initial delay needed for scheduling {@link Runnable Runnables} with
+     * {@link ScheduledExecutorService ScheduledExecutorService} using complicated date stuff and avoiding accidental
+     * timezone conversions that ruin everything
+     *
+     * @param pollEndTime execution time set by the user who created the {@link PollSummarizer poll}
+     * @return number of seconds before the planned execution specified by the pollEndTime as an integer
+     */
     private int calculateInitialDelay(String pollEndTime) {
         // I know that it's a duplicate
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
