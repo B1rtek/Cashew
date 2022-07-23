@@ -156,11 +156,14 @@ public class BirthdayRemindersManager {
      * Used by the Manager internally to update all reminders whose server's default settings changed
      *
      * @param reminder reminder that will be rescheduled with updated data
-     * @return true if rescheduling was successful
      */
-    private boolean updateBirthdayReminder(BirthdayReminder reminder) {
-        if (!deleteBirthdayReminder(reminder.getServerID(), reminder.getUserID())) return false;
-        return addBirthdayReminder(reminder);
+    private void updateBirthdayReminder(BirthdayReminder reminder) {
+        birthdayRemindersFutures.get(reminder.getId()).cancel(false);
+        birthdayRemindersFutures.remove(reminder.getId());
+        birthdayReminders.remove(reminder.getId());
+        ScheduledFuture<?> reminderFuture = scheduleReminder(reminder);
+        birthdayReminders.put(reminder.getId(), reminder);
+        birthdayRemindersFutures.put(reminder.getId(), reminderFuture);
     }
 
     /**
@@ -179,7 +182,7 @@ public class BirthdayRemindersManager {
             return false;
         } else {
             for (BirthdayReminder reminder : affectedReminders) {
-                if (!updateBirthdayReminder(reminder)) return false;
+                updateBirthdayReminder(reminder);
             }
         }
         return true;
