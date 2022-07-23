@@ -100,32 +100,25 @@ public class BirthdayRemindersDatabase {
 
     /**
      * Puts a new {@link BirthdayReminder BirthdayReminder} in the database or updates an existing one if the user who
-     * requested a new one already had one - one user can only have one reminder per server. The reminder is later
-     * put into the {@link com.birtek.cashew.timings.BirthdayRemindersManager BirthdayRemindersManager}, but that will
-     * be later changed and work the other way
+     * requested a new one already had one - one user can only have one reminder per server.
      *
      * @param reminder {@link BirthdayReminder BirthdayReminder} object containing all information about the reminder
-     * @return true if the update was successful, false otherwise
+     * @return {@link BirthdayReminder BirthdayReminder} with corrected ID if setting was successful, or null if an
+     * error occurred
      */
-    public boolean setBirthdayReminder(BirthdayReminder reminder) {
+    public BirthdayReminder setBirthdayReminder(BirthdayReminder reminder) {
         int id = getBirthdayReminderID(reminder.getServerID(), reminder.getUserID());
         switch (id) {
             case -1:
-                return false;
+                return null;
             case 0:  // new record
-                reminder = insertBirthdayReminder(reminder);
-                if (reminder != null) {
-                    Cashew.birthdayRemindersManager.addBirthdayReminder(reminder);
-                    return true;
-                }
-                return false;
+                return insertBirthdayReminder(reminder);
             default:  // record update
                 reminder.setId(id);
                 if (this.updateBirthdayReminder(reminder)) {
-                    Cashew.birthdayRemindersManager.updateBirthdayReminder(reminder);
-                    return true;
+                    return reminder;
                 }
-                return false;
+                return null;
         }
     }
 
@@ -205,28 +198,25 @@ public class BirthdayRemindersDatabase {
     }
 
     /**
-     * Removes a {@link BirthdayReminder BirthdayReminder} from the database. The reminder is later
-     * removed from the {@link com.birtek.cashew.timings.BirthdayRemindersManager BirthdayRemindersManager}, but that
-     * will be later changed and work the other way
+     * Removes a {@link BirthdayReminder BirthdayReminder} from the database.
      *
      * @param serverID ID of the server from which the request came
      * @param userID   ID of the user who is deleting their {@link BirthdayReminder BirthdayReminder} - because every user
      *                 can only have one reminder per server, these two arguments identify a record
-     * @return true if the deletion was successful, false otherwise
+     * @return the ID of the deleted reminder, or -1 if an error occurred
      */
-    public boolean deleteBirthdayReminder(String serverID, String userID) {
+    public int deleteBirthdayReminder(String serverID, String userID) {
         try {
             int id = getBirthdayReminderID(serverID, userID);
-            if (id <= 0) return false;
+            if (id <= 0) return -1;
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM birthdayreminders WHERE serverid = ? AND userid = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
-            if (preparedStatement.executeUpdate() != 1) return false;
-            Cashew.birthdayRemindersManager.deleteBirthdayReminder(id);
-            return true;
+            if(preparedStatement.executeUpdate() != 1) return -1;
+            return id;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at BirthdayRemindersDatabase.deleteBirthdayReminder()");
-            return false;
+            return -1;
         }
     }
 

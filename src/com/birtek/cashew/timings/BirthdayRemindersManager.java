@@ -59,7 +59,7 @@ public class BirthdayRemindersManager {
 
     ScheduledFuture<?> scheduleReminder(BirthdayReminder reminder) {
         BirthdayReminderDefaults defaults = birthdayReminderDefaults.get(reminder.getServerID());
-        if(defaults != null) {
+        if (defaults != null) {
             if (defaults.override() || reminder.getChannelID().isEmpty()) {
                 reminder.setChannelID(defaults.channelID());
             }
@@ -87,25 +87,39 @@ public class BirthdayRemindersManager {
     }
 
     private void createRemindersMap(ArrayList<BirthdayReminder> reminders) {
-        for(BirthdayReminder reminder: reminders) {
+        for (BirthdayReminder reminder : reminders) {
             birthdayReminders.put(reminder.getId(), reminder);
         }
     }
 
-    public void addBirthdayReminder(BirthdayReminder reminder) {
+    /**
+     * Adds a reminder to the database and then if that's successful, schedules it for execution
+     *
+     * @param reminder {@link BirthdayReminder BirthdayReminder} to add
+     * @return true if the addition was successful, false otherwise
+     */
+    public boolean addBirthdayReminder(BirthdayReminder reminder) {
+        BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
+        BirthdayReminder reminderWithID = database.setBirthdayReminder(reminder);
+        if (reminderWithID == null) return false;
         ScheduledFuture<?> reminderFuture = scheduleReminder(reminder);
         birthdayReminders.put(reminder.getId(), reminder);
         birthdayRemindersFutures.put(reminder.getId(), reminderFuture);
+        return true;
     }
 
-    public void deleteBirthdayReminder(int id) {
-        birthdayRemindersFutures.get(id).cancel(false);
-        birthdayRemindersFutures.remove(id);
-        birthdayReminders.remove(id);
+    public boolean deleteBirthdayReminder(String serverID, String userID) {
+        BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
+        int deletedReminderID = database.deleteBirthdayReminder(serverID, userID);
+        if (deletedReminderID == -1) return false;
+        birthdayRemindersFutures.get(deletedReminderID).cancel(false);
+        birthdayRemindersFutures.remove(deletedReminderID);
+        birthdayReminders.remove(deletedReminderID);
+        return true;
     }
 
     public void updateBirthdayReminder(BirthdayReminder reminder) {
-        deleteBirthdayReminder(reminder.getId());
+        deleteBirthdayReminder(reminder.getServerID(), reminder.getUserID());
         addBirthdayReminder(reminder);
     }
 
@@ -113,10 +127,10 @@ public class BirthdayRemindersManager {
         birthdayReminderDefaults.put(defaults.serverID(), defaults);
         BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
         ArrayList<BirthdayReminder> affectedReminders = database.getBirthdayRemindersFromServer(defaults.serverID());
-        if(affectedReminders == null) {
+        if (affectedReminders == null) {
             LOGGER.warn("Failed to obtain birthday reminders for server " + defaults.serverID());
         } else {
-            for(BirthdayReminder reminder: affectedReminders) {
+            for (BirthdayReminder reminder : affectedReminders) {
                 updateBirthdayReminder(reminder);
             }
         }
@@ -124,7 +138,7 @@ public class BirthdayRemindersManager {
 
     public String getDefaultChannel(String serverID) {
         BirthdayReminderDefaults defaults = birthdayReminderDefaults.get(serverID);
-        if(defaults == null) return null;
+        if (defaults == null) return null;
         return defaults.channelID();
     }
 }
