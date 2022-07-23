@@ -1,6 +1,6 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.database.PollsDatabase;
+import com.birtek.cashew.Cashew;
 import com.birtek.cashew.timings.PollSummarizer;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -68,9 +68,7 @@ public class Poll extends BaseCommand {
                     pollMessage.addReaction(optionEmoji.get(i)).queue();
                 }
                 PollSummarizer poll = new PollSummarizer(0, event.getChannel().getId(), pollMessage.getId(), timeString);
-                PollsDatabase database = PollsDatabase.getInstance();
-                poll = database.addPoll(poll);
-                if(poll != null) {
+                if(Cashew.pollManager.addPoll(poll)) {
                     event.reply("Poll created!").setEphemeral(true).queue();
                 } else {
                     event.reply("Something went wrong while setting up the poll").setEphemeral(true).queue();

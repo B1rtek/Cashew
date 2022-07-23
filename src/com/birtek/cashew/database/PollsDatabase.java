@@ -1,6 +1,5 @@
 package com.birtek.cashew.database;
 
-import com.birtek.cashew.Cashew;
 import com.birtek.cashew.timings.PollSummarizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,8 +77,7 @@ public class PollsDatabase {
     }
 
     /**
-     * Adds a poll to the database, and then to the {@link com.birtek.cashew.timings.PollManager PollManager}. This will
-     * be switched in the future and the Manager will be calling this method in the database, not the other way around
+     * Adds a poll to the database, and then to the {@link com.birtek.cashew.timings.PollManager PollManager}.
      *
      * @param poll a {@link PollSummarizer PollSummarizer} object containing all information about poll like ending
      *             time, ID of the message with the poll etc. apart from the poll ID
@@ -95,7 +93,6 @@ public class PollsDatabase {
             ResultSet id = preparedStatement.getGeneratedKeys();
             if (id.next()) {
                 poll.setId(id.getInt(1));
-                Cashew.pollManager.addPoll(poll);
                 return poll;
             }
             return null;
