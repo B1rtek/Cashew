@@ -18,6 +18,12 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * a {@link net.dv8tion.jda.api.hooks.ListenerAdapter listener} for the /birthday command, used to set birthday
+ * reminders. Each user can have one reminder on every server where they are with different settings, moderators can
+ * set up a channel dedicated for the reminders if they want to by setting a default or override channel for the
+ * reminders
+ */
 public class Birthday extends BaseCommand {
 
     private final HashMap<String, String> monthMap = new HashMap<>();
@@ -38,6 +44,10 @@ public class Birthday extends BaseCommand {
         }
     };
 
+    /**
+     * Initializes the listener by constructing the monthMap, which is used to map months' names to numbers which can be
+     * interpreted by date formatters
+     */
     public Birthday() {
         for (int i = 1; i <= 12; i++) {
             String number = String.valueOf(i);

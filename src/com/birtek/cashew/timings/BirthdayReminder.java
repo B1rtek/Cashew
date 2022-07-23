@@ -17,6 +17,17 @@ public class BirthdayReminder implements Runnable {
     private String channelID;
     private static JDA jdaInstance = null;
 
+    /**
+     * Class describing a BirthdayReminder as well as being a {@link Runnable Runnable} that is scheduled and executed
+     *
+     * @param id          ID of the record in the database which generated this BirthdayReminder
+     * @param message     message set up by the user who set up this reminder
+     * @param dateAndTime date and time of when the reminder should be delivered (most likely the setter's birthday)
+     * @param channelID   ID of the channel chosen by the setter in which the reminder will be sent if server's settings
+     *                    don't specify an override channel
+     * @param serverID    ID of the server on which this reminder was set up
+     * @param userID      ID of the user who set up this reminder
+     */
     public BirthdayReminder(int id, String message, String dateAndTime, String channelID, String serverID, String userID) {
         this.id = id;
         this.message = message;
@@ -26,22 +37,28 @@ public class BirthdayReminder implements Runnable {
         this.userID = userID;
     }
 
+    /**
+     * Sends an embed to a user whose BirthdayReminder couldn't be delivered due to some reason
+     *
+     * @param reason reason in a String describing why the reminder wasn't delivered
+     * @param task   {@link BirthdayReminder BirthdayReminder} object corresponding to that reminder
+     */
     private static void cantBeDelivered(String reason, BirthdayReminder task) {
         PrivateChannel privateChannel = Objects.requireNonNull(jdaInstance.getUserById(task.getUserID())).openPrivateChannel().complete();
-        if(privateChannel != null) {
+        if (privateChannel != null) {
             EmbedBuilder deliveryFailEmbed = new EmbedBuilder();
             deliveryFailEmbed.setTitle("Your birthday reminder could not be delivered");
             deliveryFailEmbed.setDescription("Reason: " + reason);
             deliveryFailEmbed.setColor(Color.red);
             String serverName = task.getServerID();
             Guild server = jdaInstance.getGuildById(task.getServerID());
-            if(server != null) {
+            if (server != null) {
                 serverName = server.getName();
             }
             deliveryFailEmbed.addField("Server", serverName, true);
             String channelName = task.getChannelID();
             TextChannel channel = jdaInstance.getTextChannelById(task.getChannelID());
-            if(channel != null) {
+            if (channel != null) {
                 channelName = channel.getName();
             }
             deliveryFailEmbed.addField("Channel", channelName, true);
@@ -50,10 +67,13 @@ public class BirthdayReminder implements Runnable {
         }
     }
 
+    /**
+     * Sends the BirthdayReminder according to its settings, or an error message if something goes wrong
+     */
     @Override
     public void run() {
         TextChannel textChannel = jdaInstance.getTextChannelById(this.channelID);
-        if(textChannel == null) {
+        if (textChannel == null) {
             cantBeDelivered("Destination channel doesn't exist", this);
             return;
         }
@@ -98,10 +118,6 @@ public class BirthdayReminder implements Runnable {
 
     public String getUserID() {
         return userID;
-    }
-
-    public JDA getJdaInstance() {
-        return jdaInstance;
     }
 
     public static void setJdaInstance(JDA jda) {
