@@ -123,10 +123,9 @@ public class Birthday extends BaseCommand {
                             return;
                         }
                         boolean override = Objects.equals(event.getOption("type", "default", OptionMapping::getAsString), "override");
-                        BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
                         BirthdayReminderDefaults defaults = new BirthdayReminderDefaults(Objects.requireNonNull(event.getGuild()).getId(), channel.getId(), override);
-                        if (database.setBirthdayRemindersDefaults(defaults)) {
-                            event.reply("Default channel added!").setEphemeral(true).queue();
+                        if (Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults)) {
+                            event.reply("Default settings changed!").setEphemeral(true).queue();
                         } else {
                             event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
                         }

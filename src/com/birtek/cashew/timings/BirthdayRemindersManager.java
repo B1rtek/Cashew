@@ -118,22 +118,25 @@ public class BirthdayRemindersManager {
         return true;
     }
 
-    public void updateBirthdayReminder(BirthdayReminder reminder) {
-        deleteBirthdayReminder(reminder.getServerID(), reminder.getUserID());
-        addBirthdayReminder(reminder);
+    private boolean updateBirthdayReminder(BirthdayReminder reminder) {
+        if(!deleteBirthdayReminder(reminder.getServerID(), reminder.getUserID())) return false;
+        return addBirthdayReminder(reminder);
     }
 
-    public void updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
-        birthdayReminderDefaults.put(defaults.serverID(), defaults);
+    public boolean updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
+        if(!database.setBirthdayRemindersDefaults(defaults)) return false;
+        birthdayReminderDefaults.put(defaults.serverID(), defaults);
         ArrayList<BirthdayReminder> affectedReminders = database.getBirthdayRemindersFromServer(defaults.serverID());
         if (affectedReminders == null) {
             LOGGER.warn("Failed to obtain birthday reminders for server " + defaults.serverID());
+            return false;
         } else {
             for (BirthdayReminder reminder : affectedReminders) {
-                updateBirthdayReminder(reminder);
+                if(!updateBirthdayReminder(reminder)) return false;
             }
         }
+        return true;
     }
 
     public String getDefaultChannel(String serverID) {

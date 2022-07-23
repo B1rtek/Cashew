@@ -1,6 +1,5 @@
 package com.birtek.cashew.database;
 
-import com.birtek.cashew.Cashew;
 import com.birtek.cashew.timings.BirthdayReminder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,7 +211,7 @@ public class BirthdayRemindersDatabase {
             PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM birthdayreminders WHERE serverid = ? AND userid = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
-            if(preparedStatement.executeUpdate() != 1) return -1;
+            if (preparedStatement.executeUpdate() != 1) return -1;
             return id;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at BirthdayRemindersDatabase.deleteBirthdayReminder()");
@@ -222,34 +221,22 @@ public class BirthdayRemindersDatabase {
 
     /**
      * Puts new {@link BirthdayReminderDefaults BirthdayReminderDefaults} record in the database or updates an existing
-     * one if the server from which the request came already has set up its defaults. The defaults are later
-     * put into the {@link com.birtek.cashew.timings.BirthdayRemindersManager BirthdayRemindersManager}, but that will
-     * be later changed and work the other way
+     * one if the server from which the request came already has set up its defaults
      *
      * @param defaults {@link BirthdayReminderDefaults BirthdayReminderDefaults} object containing server settings for
-     *                 {@link BirthdayReminder BirthdayReminders'} default channel on the server and whether it should override
-     *                 users' settings
+     *                 {@link BirthdayReminder BirthdayReminders'} default channel on the server and whether it should
+     *                 override users' settings
      * @return true if the update was successful, false otherwise
      */
     public boolean setBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         int id = getDefaultsID(defaults.serverID());
-        switch (id) {
-            case -1:
-                return false;
-            case 0:  // new record
-                if (insertBirthdayRemindersDefaults(defaults)) {
-                    Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults);
-                    return true;
-                }
-                break;
-            default: // update
-                if (updateBirthdayRemindersDefaults(defaults)) {
-                    Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults);
-                    return true;
-                }
-                break;
-        }
-        return false;
+        return switch (id) {
+            case -1 -> false;
+            case 0 ->  // new record
+                    insertBirthdayRemindersDefaults(defaults);
+            default -> // update
+                    updateBirthdayRemindersDefaults(defaults);
+        };
     }
 
     /**
