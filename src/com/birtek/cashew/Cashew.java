@@ -46,7 +46,7 @@ public class Cashew {
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
                 .setCompression(Compression.NONE)
-                .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), /*new OpenCase(), new OpenCollection(),*/ new TimedMessageCommand(),
+                .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new TimedMessageCommand(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
