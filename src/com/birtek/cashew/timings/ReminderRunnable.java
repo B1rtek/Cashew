@@ -17,6 +17,16 @@ public class ReminderRunnable implements Runnable {
     private final String content, dateTime, userID;
     private static JDA jdaInstance;
 
+    /**
+     * A class that contains all information needed to send the reminder scheduled by a user
+     *
+     * @param id       ID of the reminder assigned by the database
+     * @param ping     if set to true, a ping will be a part of the reminder
+     * @param content  text content of the reminder
+     * @param dateTime timestamp in a String form interpretable by date formatters with the reminder delivery time and
+     *                 date
+     * @param userID   ID of the user who set the reminder
+     */
     public ReminderRunnable(int id, boolean ping, String content, String dateTime, String userID) {
         this.id = id;
         this.ping = ping;
@@ -29,6 +39,9 @@ public class ReminderRunnable implements Runnable {
         ReminderRunnable.jdaInstance = jdaInstance;
     }
 
+    /**
+     * Sends a reminder to the person who set the reminder according to its settings, and then automatically removes it
+     */
     @Override
     public void run() {
         PrivateChannel privateChannel = Objects.requireNonNull(jdaInstance.getUserById(userID)).openPrivateChannel().complete();

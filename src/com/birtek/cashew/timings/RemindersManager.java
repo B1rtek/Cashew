@@ -21,6 +21,9 @@ public class RemindersManager {
     private final HashMap<Integer, ScheduledFuture<?>> remindersFutures = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
+    /**
+     * Initializes the manager by getting and scheduling all reminders listed in the database
+     */
     public RemindersManager() {
         getReminders();
         scheduleReminders();
@@ -30,6 +33,9 @@ public class RemindersManager {
         ReminderRunnable.setJdaInstance(jdaInstance);
     }
 
+    /**
+     * Gets all reminders from the database and puts them on HashMaps
+     */
     private void getReminders() {
         RemindersDatabase database = RemindersDatabase.getInstance();
         ArrayList<ReminderRunnable> remindersArrayList = database.getAllReminders();
@@ -46,6 +52,9 @@ public class RemindersManager {
         }
     }
 
+    /**
+     * Schedules all reminders for execution
+     */
     private void scheduleReminders() {
         for (ReminderRunnable reminder : reminders.values()) {
             ScheduledFuture<?> reminderFuture = scheduleReminder(reminder);
@@ -53,11 +62,26 @@ public class RemindersManager {
         }
     }
 
+    /**
+     * Schedules a reminder by calculating initial delay needed to schedule the task and then schedules it with
+     * calculated parameters
+     *
+     * @param reminder {@link ReminderRunnable ReminderRunnable} to schedule
+     * @return a {@link ScheduledFuture ScheduledFuture} generated for this reminder
+     */
     private ScheduledFuture<?> scheduleReminder(ReminderRunnable reminder) {
         int initialDelay = calculateInitialDelay(reminder.getDateTime());
         return scheduler.schedule(reminder, initialDelay, TimeUnit.SECONDS);
     }
 
+    /**
+     * Calculates initial delay needed for scheduling {@link Runnable Runnables} with
+     * {@link ScheduledExecutorService ScheduledExecutorService} using complicated date stuff and avoiding accidental
+     * timezone conversions that ruin everything
+     *
+     * @param dateTimeString execution time set by the user who created the {@link ReminderRunnable reminder}
+     * @return number of seconds before the planned execution specified by the dateTimeString as an integer
+     */
     private int calculateInitialDelay(String dateTimeString) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.of("Europe/Warsaw"));

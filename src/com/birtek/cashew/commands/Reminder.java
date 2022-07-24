@@ -14,6 +14,10 @@ import org.nocrala.tools.texttablefmt.Table;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * A {@link net.dv8tion.jda.api.hooks.ListenerAdapter listener} for the /reminder command, which lets users set up to 10
+ * reminders that will be delivered to their DMs
+ */
 public class Reminder extends BaseCommand {
 
     @Override
