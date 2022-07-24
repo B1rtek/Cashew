@@ -63,9 +63,9 @@ public class ScheduledMessagesManager {
         String currentYearString = String.valueOf(now.getYear());
         if (currentYearString.length() == 1) currentYearString = '0' + currentYearString;
         String currentMonthString = String.valueOf(now.getMonthValue());
-        if(currentMonthString.length() == 1) currentMonthString = '0' + currentMonthString;
+        if (currentMonthString.length() == 1) currentMonthString = '0' + currentMonthString;
         String currentDayString = String.valueOf(now.getDayOfMonth());
-        if(currentDayString.length() == 1) currentDayString = '0' + currentDayString;
+        if (currentDayString.length() == 1) currentDayString = '0' + currentDayString;
         ZonedDateTime timeOfNextRun = LocalDateTime.parse(currentYearString + '-' + currentMonthString + '-' + currentDayString + ' ' + executionTimeString, dateTimeFormatter).atZone(ZoneId.of("Europe/Warsaw"));
         if (now.isAfter(timeOfNextRun)) {
             timeOfNextRun = timeOfNextRun.plusDays(1);
@@ -75,15 +75,39 @@ public class ScheduledMessagesManager {
         return (int) diff.toSeconds();
     }
 
-    public void addScheduledMessage(ScheduledMessage message) {
+    /**
+     * Adds a {@link ScheduledMessage ScheduledMessage} to the database and schedules it afterwards
+     *
+     * @param message {@link ScheduledMessage ScheduledMessage} to add
+     * @return ID of the message assigned by the database, or -1 if an error occurred
+     */
+    public int addScheduledMessage(ScheduledMessage message, String serverID) {
+        ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
+        ScheduledMessage messageWithID = database.addScheduledMessage(message, serverID);
+        if (messageWithID == null) return -1;
         ScheduledFuture<?> scheduledMessageFuture = scheduleMessage(message);
         scheduledFutures.put(message.getId(), scheduledMessageFuture);
         scheduledMessages.put(message.getId(), message);
+        return message.getId();
     }
 
-    public void deleteScheduledMessage(int id) {
-        scheduledFutures.get(id).cancel(false);
-        scheduledFutures.remove(id);
-        scheduledMessages.remove(id);
+    /**
+     * Removes a {@link ScheduledMessage ScheduledMessage} from the database and unschedules it afterwards
+     *
+     * @param id       ID of the {@link ScheduledMessage ScheduledMessage} to remove, if it's equal to 0, all messages set on
+     *                 the server will be removed
+     * @param serverID ID of the server from which this request came
+     * @return true if the removal was successful, false otherwise
+     */
+    public boolean deleteScheduledMessage(int id, String serverID) {
+        ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
+        ArrayList<ScheduledMessage> messagesToRemove = database.getScheduledMessages(id, serverID);
+        if(!database.removeScheduledMessage(id, serverID)) return false;
+        for(ScheduledMessage message: messagesToRemove) {
+            scheduledFutures.get(message.getId()).cancel(false);
+            scheduledFutures.remove(message.getId());
+            scheduledMessages.remove(message.getId());
+        }
+        return true;
     }
 }
