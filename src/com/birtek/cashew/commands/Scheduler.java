@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class TimedMessageCommand extends BaseCommand {
+public class Scheduler extends BaseCommand {
 
     Permission[] timedMessageCommandPermissions = {
             Permission.MANAGE_CHANNEL
