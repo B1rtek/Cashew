@@ -146,25 +146,27 @@ public class SocialCredit extends BaseCommand {
                 return;
             }
             String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
-            String reason = event.getOption("reason", "", OptionMapping::getAsString);
-            long amount;
-            try {
-                amount = event.getOption("amount", 0L, OptionMapping::getAsLong);
-            } catch (ArithmeticException e) { // someone tried adding more than int allows lol
-                targetUserID = event.getUser().getId();
-                amount = -1;
-                reason = "Stop trying to break the bot by adding or removing more than INT_MAX or INT_MIN";
-            }
-            if (amount == 0) { // credit check
-                event.reply(checkSocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()))).queue();
-            } else {
-                if (checkSlashCommandPermissions(event, manageServerPermission)) {
-                    MessageEmbed socialCreditEmbed = modifySocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()), amount, reason);
-                    event.replyEmbeds(socialCreditEmbed).queue();
-                } else {
+            if(Objects.equals(event.getSubcommandName(), "modify")) {
+                if(!checkSlashCommandPermissions(event, manageServerPermission)) {
                     int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
                     event.reply("You lose " + amountLost + " social credit for misuse of the social credit system.").queue();
+                    return;
                 }
+                String reason = event.getOption("reason", "", OptionMapping::getAsString);
+                long amount;
+                try {
+                    amount = event.getOption("amount", 0L, OptionMapping::getAsLong);
+                } catch (ArithmeticException e) { // someone tried adding more than int allows lol
+                    targetUserID = event.getUser().getId();
+                    amount = -1;
+                    reason = "Stop trying to break the bot by adding or removing more than INT_MAX or INT_MIN";
+                }
+                MessageEmbed socialCreditEmbed = modifySocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()), amount, reason);
+                event.replyEmbeds(socialCreditEmbed).queue();
+            } else if(Objects.equals(event.getSubcommandName(), "check")) {
+                event.reply(checkSocialCredit(targetUserID, Objects.requireNonNull(event.getGuild()))).queue();
+            } else {
+                event.reply("Invalid subcommand (how?!)").setEphemeral(true).queue();
             }
         }
     }
