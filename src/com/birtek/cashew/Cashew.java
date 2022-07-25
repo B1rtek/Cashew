@@ -98,7 +98,7 @@ public class Cashew {
                                 .addOption(INTEGER, "amount", "Amount of social credit to add (a negative number will mean that the social credit will be deducted)", true)
                                 .addOption(STRING, "reason", "Reason for modifying the social credit score", false))
                         .addSubcommands(new SubcommandData("check", "Checks the social credit score of a user")
-                                .addOption(USER, "user", "User to check the social credit score of, yours by default", true))
+                                .addOption(USER, "user", "User to check the social credit score of, yours by default", false))
                         .setGuildOnly(true),
                 Commands.slash("scheduler", "Message scheduler command")
                         .addSubcommands(new SubcommandData("add", "Schedule a new message")
