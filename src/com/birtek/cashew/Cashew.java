@@ -93,9 +93,12 @@ public class Cashew {
                         .addOption(STRING, "tokiss", "A person (or a group of people) to kiss", true),
                 Commands.slash("kromer", "Sends you a random kromer gif"),
                 Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
-                        .addOption(USER, "user", "User to check or modify social credit of (to check yours, leave blank)")
-                        .addOption(INTEGER, "amount", "Amount of social credit to add or subtract")
-                        .addOption(STRING, "reason", "Reason for adding or removing social credit")
+                        .addSubcommands(new SubcommandData("modify", "Modifies user's social credit score")
+                                .addOption(USER, "user", "User to modify the social credit of", true)
+                                .addOption(INTEGER, "amount", "Amount of social credit to add (a negative number will mean that the social credit will be deducted)", true)
+                                .addOption(STRING, "reason", "Reason for modifying the social credit score", false))
+                        .addSubcommands(new SubcommandData("check", "Checks the social credit score of a user")
+                                .addOption(USER, "user", "User to check the social credit score of, yours by default", true))
                         .setGuildOnly(true),
                 Commands.slash("scheduler", "Message scheduler command")
                         .addSubcommands(new SubcommandData("add", "Schedule a new message")
