@@ -73,9 +73,11 @@ public class Cashew {
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("counting", "Manages the counting game")
-                        .addOption(STRING, "toggle", "Toggles counting on or off", false, true)
-                        .addOption(INTEGER, "setcount", "Sets the current count to the specified number")
-                        .addOption(STRING, "reset", "Resets the counter (only if it's a definitive decision)", false, true)
+                        .addSubcommands(new SubcommandData("toggle", "Toggles counting on or off")
+                                .addOption(STRING, "toggle", "Toggles counting on or off", false, true))
+                        .addSubcommands(new SubcommandData("setcount", "Sets a new current count value")
+                                .addOption(INTEGER, "count", "New count value", true))
+                        .addSubcommands(new SubcommandData("reset", "Resets the counter"))
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
