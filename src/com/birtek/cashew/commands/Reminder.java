@@ -95,14 +95,23 @@ public class Reminder extends BaseCommand {
                         event.reply("Wrong ID!").setEphemeral(true).queue();
                         return;
                     }
-                    int result = Cashew.remindersManager.deleteReminder(id, event.getUser().getId());
-                    if (result == 1) {
-                        event.reply("Reminder successfully deleted!").setEphemeral(true).queue();
-                    } else if (result == -1) {
-                        event.reply("Something went wrong while deleting the reminder (Error 1)").setEphemeral(true).queue();
+                    if(id == 0) { // delete all
+                        if(Cashew.remindersManager.deleteAllReminders(event.getUser().getId())) {
+                            event.reply("All reminders successfully deleted!").setEphemeral(true).queue();
+                        } else {
+                            event.reply("Something went wrong while deleting all your reminders").setEphemeral(true).queue();
+                        }
                     } else {
-                        event.reply("Reminder with this ID doesn't exist").setEphemeral(true).queue();
+                        int result = Cashew.remindersManager.deleteReminder(id, event.getUser().getId());
+                        if (result == 1) {
+                            event.reply("Reminder successfully deleted!").setEphemeral(true).queue();
+                        } else if (result == -1) {
+                            event.reply("Something went wrong while deleting the reminder (Error 1)").setEphemeral(true).queue();
+                        } else {
+                            event.reply("Reminder with this ID doesn't exist").setEphemeral(true).queue();
+                        }
                     }
+
                 }
             }
         }

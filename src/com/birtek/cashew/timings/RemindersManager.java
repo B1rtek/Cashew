@@ -127,4 +127,13 @@ public class RemindersManager {
         remindersFutures.remove(id);
         return 1;
     }
+
+    /**
+     * Removes all user's reminders
+     * @param userID ID of the user who requested deletion of all their reminders
+     * @return true if all reminders were successfully deleted, false otherwise
+     */
+    public boolean deleteAllReminders(String userID) {
+        return false;
+    }
 }
