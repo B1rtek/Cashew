@@ -14,7 +14,9 @@ import com.birtek.cashew.timings.ScheduledMessagesManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -37,13 +39,14 @@ public class Cashew {
     public static BirthdayRemindersManager birthdayRemindersManager;
     public static RemindersManager remindersManager;
     public static PollManager pollManager;
+    private static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER);
 
     public static void main(String[] args) throws LoginException {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
                 .setCompression(Compression.NONE)
-                .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), /*new OpenCase(), new OpenCollection(),*/ new TimedMessageCommand(),
+                .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
@@ -66,15 +69,21 @@ public class Cashew {
                 Commands.slash("nekoichi", "Sends two first lines of Nekoichi by Duca, the Nekopara Vol. 3 opening"),
                 Commands.slash("clear", "Purges messages from chat")
                         .addOption(INTEGER, "recent", "Number of recent messages to remove")
-                        .addOption(STRING, "range", "Range(s) of messages to remove, see help for more information"),
+                        .addOption(STRING, "range", "Range(s) of messages to remove, see help for more information")
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true),
                 Commands.slash("counting", "Manages the counting game")
-                        .addOption(STRING, "toggle", "Toggles counting on or off", false, true)
-                        .addOption(INTEGER, "setcount", "Sets the current count to the specified number")
-                        .addOption(STRING, "reset", "Resets the counter (only if it's a definitive decision)", false, true),
+                        .addSubcommands(new SubcommandData("toggle", "Toggles counting on or off")
+                                .addOption(STRING, "toggle", "Toggles counting on or off", false, true))
+                        .addSubcommands(new SubcommandData("setcount", "Sets a new current count value")
+                                .addOption(INTEGER, "count", "New count value", true))
+                        .addSubcommands(new SubcommandData("reset", "Resets the counter"))
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true),
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
                         .addOption(STRING, "toggle", "Toggles reactions on, off or turns even the annoying ones (all) on", false, true)
-                        .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one"),
-                //Commands.slash("choccymilk", "Gift someone some Choccy Milk!"),
+                        .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one")
+                        .setDefaultPermissions(moderatorPermissions),
                 Commands.slash("cuddle", "Cuddle someone!")
                         .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true),
                 Commands.slash("hug", "Hug someone!")
@@ -86,9 +95,13 @@ public class Cashew {
                         .addOption(STRING, "tokiss", "A person (or a group of people) to kiss", true),
                 Commands.slash("kromer", "Sends you a random kromer gif"),
                 Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
-                        .addOption(USER, "user", "User to check or modify social credit of (to check yours, leave blank)")
-                        .addOption(INTEGER, "amount", "Amount of social credit to add or subtract")
-                        .addOption(STRING, "reason", "Reason for adding or removing social credit"),
+                        .addSubcommands(new SubcommandData("modify", "Modifies user's social credit score")
+                                .addOption(USER, "user", "User to modify the social credit of", true)
+                                .addOption(INTEGER, "amount", "Amount of social credit to add (a negative number will mean that the social credit will be deducted)", true)
+                                .addOption(STRING, "reason", "Reason for modifying the social credit score", false))
+                        .addSubcommands(new SubcommandData("check", "Checks the social credit score of a user")
+                                .addOption(USER, "user", "User to check the social credit score of, yours by default", false))
+                        .setGuildOnly(true),
                 Commands.slash("scheduler", "Message scheduler command")
                         .addSubcommands(new SubcommandData("add", "Schedule a new message")
                                 .addOption(CHANNEL, "channel", "Destination channel of the message", true, false)
@@ -98,13 +111,9 @@ public class Cashew {
                                 .addOption(INTEGER, "id", "ID of the message to display (optional)"))
                         .addSubcommands(new SubcommandData("delete", "Deletes the specified messages")
                                 .addOption(STRING, "all", "Deletes ALL scheduled messages (type \"definitely\" to confirm)")
-                                .addOption(INTEGER, "id", "ID of the messsage to delete")),
-//                Commands.slash("opencase", "CS:GO case opening simulator")
-//                        .addOption(STRING, "case", "Name of the case to open", false, true)
-//                        .addOption(INTEGER, "id", "ID of the case to open (IDs are assigned in chronological order)"),
-//                Commands.slash("opencollection", "CS:GO collection opening simulator")
-//                        .addOption(STRING, "collection", "Name of the collection to open", false, true)
-//                        .addOption(INTEGER, "id", "ID of the collection to open (IDs are assigned in chronological order)"),
+                                .addOption(INTEGER, "id", "ID of the messsage to delete"))
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true),
                 Commands.slash("gifts", "Gift system command")
                         .addSubcommands(new SubcommandData("gift", "Give someone a gift!")
                                 .addOption(STRING, "gift", "Name of the gift to gift", true, true))
@@ -137,7 +146,8 @@ public class Cashew {
                                         .addOption(CHANNEL, "channel", "Channel to set the default/override to", true, false)
                                         .addOption(STRING, "type", "Default channel behaviour - should it override channels set by members or just be default?", true, true),
                                 new SubcommandData("check", "Shows your birthday reminder"),
-                                new SubcommandData("checkdefault", "Shows the default birthday reminders server settings")),
+                                new SubcommandData("checkdefault", "Shows the default birthday reminders server settings"))
+                        .setGuildOnly(true),
                 Commands.slash("reminder", "Set reminders that will be delivered to your DMs!")
                         .addSubcommands(
                                 new SubcommandData("set", "Set a reminder")
@@ -164,6 +174,8 @@ public class Cashew {
                         .addOption(STRING, "option5", "Option 5 of the poll", false, false)
                         .addOption(INTEGER, "timetovote", "Time after which the poll will conclude, by default 24 hours", false, false)
                         .addOption(STRING, "unit", "Unit of the time to vote, hours by default", false, true)
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);

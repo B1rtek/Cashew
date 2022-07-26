@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class TimedMessageCommand extends BaseCommand {
+public class Scheduler extends BaseCommand {
 
     Permission[] timedMessageCommandPermissions = {
             Permission.MANAGE_CHANNEL
@@ -90,10 +90,8 @@ public class TimedMessageCommand extends BaseCommand {
     }
 
     private String schedulerDeleteMessages(Guild server, String sscheduledMessageID, int scheduledMessageID) {
-        ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
         if (sscheduledMessageID.equalsIgnoreCase("all") || (sscheduledMessageID.isEmpty() && scheduledMessageID == 0)) {
-            boolean deletionResult = database.removeScheduledMessage(0, server.getId());
-            if (deletionResult) {
+            if (Cashew.scheduledMessagesManager.deleteScheduledMessage(0, server.getId())) {
                 return "Successfully deleted all timed messages!";
             } else {
                 return "Failed to delete the messages";
@@ -105,8 +103,7 @@ public class TimedMessageCommand extends BaseCommand {
                 }
                 scheduledMessageID = Integer.parseInt(sscheduledMessageID);
             }
-            boolean deletionResult = database.removeScheduledMessage(scheduledMessageID, server.getId());
-            if (deletionResult) {
+            if (Cashew.scheduledMessagesManager.deleteScheduledMessage(scheduledMessageID, server.getId())) {
                 return "Successfully deleted timed message " + scheduledMessageID + "!";
             } else {
                 return "Failed to delete the message";
@@ -115,9 +112,8 @@ public class TimedMessageCommand extends BaseCommand {
     }
 
     private String schedulerAddMessages(String messageContent, String timestring, String channelID, String serverID) {
-        ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
-        int insertID = database.addScheduledMessage(new ScheduledMessage(0, messageContent, timestring, channelID), serverID);
-        if (insertID != 0) {
+        int insertID = Cashew.scheduledMessagesManager.addScheduledMessage(new ScheduledMessage(0, messageContent, timestring, channelID), serverID);
+        if (insertID != -1) {
             return "Successfully added a new timed message! ID = " + insertID;
         } else {
             return "[5] Something went wrong...";

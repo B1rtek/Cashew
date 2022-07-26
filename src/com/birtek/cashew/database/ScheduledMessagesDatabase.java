@@ -1,6 +1,5 @@
 package com.birtek.cashew.database;
 
-import com.birtek.cashew.Cashew;
 import com.birtek.cashew.timings.ScheduledMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +66,7 @@ public class ScheduledMessagesDatabase {
     public ArrayList<ScheduledMessage> getScheduledMessages(int id, String serverID) {
         try {
             PreparedStatement preparedStatement;
-            if(id != 0) {
+            if (id != 0) {
                 preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ? AND _id = ?");
                 preparedStatement.setInt(2, id);
             } else {
@@ -87,9 +86,10 @@ public class ScheduledMessagesDatabase {
      *
      * @param scheduledMessage ScheduledMessage to add
      * @param serverID         serverID of the server where the message was scheduled
-     * @return the ID of the added ScheduledMessage or -1 if an error occurred
+     * @return the provided {@link ScheduledMessage ScheduledMessage} but with an ID assigned by the database, or null
+     *
      */
-    public int addScheduledMessage(ScheduledMessage scheduledMessage, String serverID) {
+    public ScheduledMessage addScheduledMessage(ScheduledMessage scheduledMessage, String serverID) {
         try {
             PreparedStatement preparedStatement = scheduledMessagesConnection.prepareStatement("INSERT INTO scheduledmessages(messagecontent, executiontime, repetitioninterval, destinationchannelid, serverid) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, scheduledMessage.getMessageContent());
@@ -97,20 +97,19 @@ public class ScheduledMessagesDatabase {
             preparedStatement.setString(3, "86400");
             preparedStatement.setString(4, scheduledMessage.getDestinationChannelID());
             preparedStatement.setString(5, serverID);
-            preparedStatement.executeUpdate();
+            if(preparedStatement.executeUpdate() != 1) return null;
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            int scheduledMessageID = -1;
             if (generatedKeys.next()) {
-                scheduledMessageID = generatedKeys.getInt(1);
-                if (scheduledMessageID != -1) {
+                int scheduledMessageID = generatedKeys.getInt(1);
+                if (scheduledMessageID >= 0) {
                     scheduledMessage.setId(scheduledMessageID);
-                    Cashew.scheduledMessagesManager.addScheduledMessage(scheduledMessage);
+                    return scheduledMessage;
                 }
             }
-            return scheduledMessageID;
+            return null;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at ScheduledMessagesDatabase.addScheduledMessages()");
-            return -1;
+            return null;
         }
     }
 
@@ -125,19 +124,19 @@ public class ScheduledMessagesDatabase {
     public boolean removeScheduledMessage(int id, String serverID) {
         try {
             PreparedStatement preparedStatement;
-            if(id != 0) { // check if the message exists if a single one is getting deleted
+            if (id != 0) { // check if the message exists if a single one is getting deleted
                 preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT COUNT(*) FROM scheduledmessages WHERE _id = ? AND serverid = ?");
                 preparedStatement.setInt(1, id);
                 preparedStatement.setString(2, serverID);
                 ResultSet results = preparedStatement.executeQuery();
-                if(results.next()) {
-                    if(results.getInt(1) != 1) return false;
+                if (results.next()) {
+                    if (results.getInt(1) != 1) return false;
                 } else {
                     return false;
                 }
             }
             // remove the messages
-            if(id != 0) {
+            if (id != 0) {
                 preparedStatement = scheduledMessagesConnection.prepareStatement("DELETE FROM scheduledmessages WHERE _id = ?");
                 preparedStatement.setInt(1, id);
             } else {
@@ -171,6 +170,7 @@ public class ScheduledMessagesDatabase {
 
     /**
      * Creates an ArrayList of ScheduledMessages out of a ResultSet containing data for them
+     *
      * @param results ResultSet containing all data needed to create a ScheduledMessage object, with columns in the same
      *                order as in the database
      * @return ArrayList of ScheduledMessages extracted from the results
@@ -178,7 +178,7 @@ public class ScheduledMessagesDatabase {
      */
     private ArrayList<ScheduledMessage> resultSetToArrayList(ResultSet results) throws SQLException {
         ArrayList<ScheduledMessage> scheduledMessages = new ArrayList<>();
-        while(results.next()) {
+        while (results.next()) {
             scheduledMessages.add(new ScheduledMessage(results.getInt(1), results.getString(2), results.getString(3), results.getString(4)));
         }
         return scheduledMessages;

@@ -1,6 +1,5 @@
 package com.birtek.cashew.database;
 
-import com.birtek.cashew.Cashew;
 import com.birtek.cashew.timings.ReminderRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,9 +56,7 @@ public class RemindersDatabase {
     }
 
     /**
-     * Adds a reminder to the database, and if that's successful, adds the reminder to the
-     * {@link com.birtek.cashew.timings.RemindersManager}. That will be later changed and the Manager will call this
-     * method instead of this method calling add in the Manager
+     * Adds a reminder to the database and gives it the ID assigned by the database
      *
      * @param reminder {@link ReminderRunnable ReminderRunnable} object containing all information about the reminder
      *                 apart from a correct ID
@@ -77,7 +74,6 @@ public class RemindersDatabase {
             ResultSet id = preparedStatement.getGeneratedKeys();
             if (id.next()) {
                 reminder.setId(id.getInt(1));
-                Cashew.remindersManager.addReminder(reminder);
                 return reminder;
             }
             return null;
@@ -153,9 +149,8 @@ public class RemindersDatabase {
     }
 
     /**
-     * Removes a reminder from the database, and then from the {@link com.birtek.cashew.timings.RemindersManager}.
-     * That will be later changed and the Manager will call this method instead of this method calling delete in the
-     * Manager
+     * Removes a reminder from the database after checking if the reminder belongs to the person who's trying to remove
+     * it
      *
      * @param id     ID of the reminder to remove
      * @param userID ID of the user requesting removal
@@ -169,11 +164,7 @@ public class RemindersDatabase {
             preparedStatement.setInt(1, id);
             preparedStatement.setString(2, userID);
             int rowsDeleted = preparedStatement.executeUpdate();
-            if (rowsDeleted != 0) {
-                Cashew.remindersManager.deleteReminder(id);
-                return 1;
-            }
-            return 0;
+            return rowsDeleted == 1 ? 1 : 0;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at RemindersDatabase.deleteReminder()");
             return -1;

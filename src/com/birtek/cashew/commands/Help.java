@@ -54,12 +54,22 @@ public class Help extends BaseCommand {
             specificHelpEmbed.setTitle("Nekoichi");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "nekoichi`", "Sends the first two lines of \"Nekoichi\" by Duca, the opening song from Nekopara Vol. 3.", false);
         } else if (command.equalsIgnoreCase("socialcredit") || command.equalsIgnoreCase("soc")) {
-            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
             specificHelpEmbed.addField("Works in DMs", "No", true);
             specificHelpEmbed.setTitle("Social credit");
-            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "socialcredit [@User]`", "Shows your social credit score, or the specified user's social credit score. Social credit can be added or removed only by the server admins.", false);
+            specificHelpEmbed.addField("`/socialcredit modify [user] [amount] <reason>`", "Removes or adds social credit from a user, a reason can be added to the generated embed as well. Can only be used by moderators.", false);
+            specificHelpEmbed.addField("`/socialcredit check <user>`", "Checks user's social credit score, by default yours.", false);
             specificHelpEmbed.addField("Aliases", '`' + Cashew.COMMAND_PREFIX + "soc`", false);
-        } else if (command.equalsIgnoreCase("kromer")) {
+        } else if (command.equalsIgnoreCase("counting")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
+            specificHelpEmbed.setTitle("Counting");
+            specificHelpEmbed.setDescription("Counting game command, can only be used by moderators");
+            specificHelpEmbed.addField("`/counting toggle [toggle]`", "Toggles the counting game in the current channel on or off", false);
+            specificHelpEmbed.addField("`/counting setcount [count]`", "Sets the current count value for the counting game", false);
+            specificHelpEmbed.addField("`/counting reset`", "Resets the current count to zero", false);
+        }
+        else if (command.equalsIgnoreCase("kromer")) {
             specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
             specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Kromer");
@@ -158,12 +168,8 @@ public class Help extends BaseCommand {
         helpEmbed.addField("`/birthday setdefault <channel> <type>`", "Sets the default birthday reminders channel and whether that channel should override user's settings", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear range <ranges>`", "Removes recent messages in the given range. For example, `$clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "counting <\"off\"|\"on\">`", "Turns on or off the counting game in the channel", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "counting reset`", "Resets the counter game in the channel", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "counting setcount <newCount(int)>`", "Sets the counter to the specified value (can be negative because why not)", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "reactions <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions to messages containing \"69\", \"amogus\", etc in a text channel. Setting it to \"all\" enables the reactions with pings.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "reactions <#channel> <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions in the specified channel.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "socialcredit <@User> <amount(int)>`", "Adds or removes someone's social credit on the server.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler show <id(int)|\"all\">`", "Shows the timed message with the spcified id/all scheduled messages on this server.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler delete <id(int)|\"all\">`", "Removes the timed message with the specified id/all of them.", false);
