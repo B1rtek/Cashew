@@ -59,6 +59,7 @@ public class Help extends BaseCommand {
             specificHelpEmbed.setTitle("Social credit");
             specificHelpEmbed.addField("`/socialcredit modify [user] [amount] <reason>`", "Removes or adds social credit from a user, a reason can be added to the generated embed as well. Can only be used by moderators.", false);
             specificHelpEmbed.addField("`/socialcredit check <user>`", "Checks user's social credit score, by default yours.", false);
+            specificHelpEmbed.addField("`/socialcredit leaderboard <scoreboard> <page>`", "Displays server's social credit leaderboard", false);
         } else if (command.equalsIgnoreCase("counting")) {
             specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
             specificHelpEmbed.addField("Works in DMs", "No", true);
