@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
@@ -51,6 +52,13 @@ public class SocialCredit extends BaseCommand {
             "https://cdn.discordapp.com/attachments/852811110158827533/897523146104651776/deepfried_1634056589191.jpg",
             "https://cdn.discordapp.com/attachments/852811110158827533/897524014296219740/deepfried_1634056796110.jpg",
             "https://cdn.discordapp.com/attachments/519234942526292002/897214371976052777/BC6FjYlKqhQAAAAAElFTkSuQmCC.png"
+    };
+
+    ArrayList<String> socialCreditLeaderboardChoices = new ArrayList<>() {
+        {
+            add("highest");
+            add("lowest");
+        }
     };
 
     String extractUserID(String maybeUserID) {
@@ -199,6 +207,16 @@ public class SocialCredit extends BaseCommand {
                 generateAndSendLeaderboardEmbed(event, top, leaderboardPage, callersStats, pageNumber, totalPages);
             } else {
                 event.reply("Invalid subcommand (how?!)").setEphemeral(true).queue();
+            }
+        }
+    }
+
+    @Override
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+        if(event.getName().startsWith("socialcredit")) {
+            if(event.getFocusedOption().getName().equals("scoreboard")) {
+                String typed = event.getOption("scoreboard", "", OptionMapping::getAsString);
+                event.replyChoiceStrings(autocompleteFromList(socialCreditLeaderboardChoices, typed)).queue();
             }
         }
     }
