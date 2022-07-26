@@ -101,6 +101,9 @@ public class Cashew {
                                 .addOption(STRING, "reason", "Reason for modifying the social credit score", false))
                         .addSubcommands(new SubcommandData("check", "Checks the social credit score of a user")
                                 .addOption(USER, "user", "User to check the social credit score of, yours by default", false))
+                        .addSubcommands(new SubcommandData("leaderboard", "Shows the leaderboard of the best citizens")
+                                .addOption(STRING, "scoreboard", "Select the scoreboard to show (by default shows the one with the best citizens)", false, true)
+                                .addOption(INTEGER, "page", "Number of the page to show (by default 1, which shows the top 10", false, false))
                         .setGuildOnly(true),
                 Commands.slash("scheduler", "Message scheduler command")
                         .addSubcommands(new SubcommandData("add", "Schedule a new message")
@@ -161,7 +164,7 @@ public class Cashew {
                         )
                         .addSubcommands(
                                 new SubcommandData("delete", "Delete a reminder")
-                                        .addOption(INTEGER, "id", "ID of the reminder to delete", true)
+                                        .addOption(INTEGER, "id", "ID of the reminder to delete, or 0 to delete them all", true)
                         ),
                 Commands.slash("feedback", "Send feedback to Cashew's creator!")
                         .addOption(STRING, "content", "Content of your feedback message", true, false),

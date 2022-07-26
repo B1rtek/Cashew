@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class SocialCreditDatabase {
 
@@ -158,6 +159,89 @@ public class SocialCreditDatabase {
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at SocialCreditDatabase.insertSocialCredit()");
             return false;
+        }
+    }
+
+    /**
+     * Gets the selected 10 record age of the social credit leaderboard of the selected scoreboard (top or bottom) from
+     * the server
+     *
+     * @param top      if set to true, will get the top leaderboard, else it will sort the records from the lowest to
+     *                 highest
+     * @param page     number of the page of the leaderboard to get
+     * @param serverID ID of the server from which the request for the leaderboard came - each server has a separate
+     *                 social credit system
+     * @return an ArrayList of {@link LeaderboardRecord LeaderboardRecords} containing the place, user ID and score for
+     * each record on the page or null if an error occurred
+     */
+    public ArrayList<LeaderboardRecord> getSocialCreditLeaderboardPage(boolean top, int page, String serverID) {
+        try {
+            String selectedSorting = top ? "desc" : "asc";
+            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("select pos, userid, credit from (select ROW_NUMBER() over (order by credit " + selectedSorting + ") pos, userid, credit from socialcredit where serverid = ? order by credit " + selectedSorting + ") as subqr where pos between (?-1)*10+1 and (?-1)*10+10");
+            preparedStatement.setString(1, serverID);
+            preparedStatement.setInt(2, page);
+            preparedStatement.setInt(3, page);
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<LeaderboardRecord> leaderboardRecords = new ArrayList<>();
+            while (results.next()) {
+                leaderboardRecords.add(new LeaderboardRecord(results.getInt(1), results.getString(2), results.getLong(3)));
+            }
+            return leaderboardRecords;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at SocialCreditDatabase.getSocialCreditLeaderboardPage()");
+            return null;
+        }
+    }
+
+    /**
+     * Gets the {@link LeaderboardRecord LeaderboardRecords} of the specified user from the server from the selected
+     * leaderboard
+     *
+     * @param top      if set to true, will get the record from the top leaderboard, else it will get one from the worst to
+     *                 best leaderboard
+     * @param serverID ID of the server from which the leaderboard request came - each server has a separate social
+     *                 credit system
+     * @param userID   ID of the user who requested the leaderboard
+     * @return {@link LeaderboardRecord LeaderboardRecord} containing user's score on the selected leaderboard, with
+     * place set to 0 if the record doesn't exist in the database, or null if an error occurred
+     */
+    public LeaderboardRecord getSocialCreditLeaderboardUserStats(boolean top, String serverID, String userID) {
+        try {
+            String selectedSorting = top ? "desc" : "asc";
+            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("select pos, userid, credit from (select ROW_NUMBER() over (order by credit " + selectedSorting + ") pos, userid, credit from socialcredit where serverid = ? order by credit " + selectedSorting + ") as subqr where userid = ?");
+            preparedStatement.setString(1, serverID);
+            preparedStatement.setString(2, userID);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                return new LeaderboardRecord(results.getInt(1), userID, results.getLong(3));
+            }
+            return new LeaderboardRecord(0, userID, 0);
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at SocialCreditDatabase.getSocialCreditLeaderboardUserStats()");
+            return null;
+        }
+    }
+
+    /**
+     * Gets the amount of pages of the social credit leaderboard on the server, which just corresponds to the amount of
+     * pages that would be occupied by all records in the server
+     * @param serverID ID of the server from which the leaderboard request came - each server has a separate social
+     *                 credit system
+     * @return amount of pages of the social credit leaderboard in the server, 0 if the leaderboard doesn't exist yet,
+     * or -1 if an error occurred
+     */
+    public int getSocialCreditLeaderboardPageCount(String serverID) {
+        try {
+            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("SELECT COUNT(*) from socialcredit where serverid = ?");
+            preparedStatement.setString(1, serverID);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                return results.getInt(1) / 10 + (results.getInt(1) % 10 == 0 ? 0 : 1);
+            }
+            return 0;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at SocialCreditDatabase.getSocialCreditLeaderboardPageCount()");
+            return -1;
         }
     }
 }

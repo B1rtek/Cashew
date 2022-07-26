@@ -256,7 +256,7 @@ public class BaseCommand extends ListenerAdapter {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.getColumnModel().getColumn(0).setMaxWidth(50);
         table.getColumnModel().getColumn(1).setMinWidth(250);
-        table.getColumnModel().getColumn(2).setMinWidth(80);
+        table.getColumnModel().getColumn(2).setMinWidth(calculatePointsWidth(leaderboardRecords));
         table.setRowHeight(28);
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         ge.registerFont(leaderboardFont);
@@ -291,6 +291,14 @@ public class BaseCommand extends ListenerAdapter {
             LOGGER.error("Failed to generate leaderboard " + pointsName);
             return null;
         }
+    }
+
+    private int calculatePointsWidth(ArrayList<LeaderboardRecord> leaderboardRecords) {
+        int width = 0;
+        for (LeaderboardRecord record : leaderboardRecords) {
+            width = Math.max(width, String.valueOf(record.count()).length());
+        }
+        return width * 15;
     }
 
     public static boolean isPrivateChannel(SlashCommandInteractionEvent event) {

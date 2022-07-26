@@ -180,8 +180,9 @@ public class RemindersDatabase {
      */
     private boolean isBelongingTo(int id, String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM reminders where _id = ?");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM reminders where _id = ? AND userid = ?");
             preparedStatement.setInt(1, id);
+            preparedStatement.setString(2, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
                 return results.getInt(1) == 1;
@@ -190,6 +191,29 @@ public class RemindersDatabase {
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at RemindersDatabase.isBelongingTo()");
             return false;
+        }
+    }
+
+    /**
+     * Deletes all user's reminders from the database
+     * @param userID ID of the user whose reminders should be removed
+     * @return a list of all user's reminders' IDs, or null if an error occurred or the user had no reminders
+     */
+    public ArrayList<Integer> deleteUsersReminders(String userID) {
+        try {
+            ArrayList<ReminderRunnable> reminders = getUserReminders(userID);
+            if(reminders == null || reminders.isEmpty()) return null;
+            ArrayList<Integer> remindersIDs = new ArrayList<>();
+            for(ReminderRunnable reminder: reminders) {
+                remindersIDs.add(reminder.getId());
+            }
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("DELETE FROM reminders WHERE userid = ?");
+            preparedStatement.setString(1, userID);
+            if (preparedStatement.executeUpdate() == 0) return null;
+            else return remindersIDs;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at RemindersDatabase.deleteUsersReminders()");
+            return null;
         }
     }
 }
