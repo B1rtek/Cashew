@@ -180,8 +180,9 @@ public class RemindersDatabase {
      */
     private boolean isBelongingTo(int id, String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM reminders where _id = ?");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM reminders where _id = ? AND userid = ?");
             preparedStatement.setInt(1, id);
+            preparedStatement.setString(2, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
                 return results.getInt(1) == 1;
