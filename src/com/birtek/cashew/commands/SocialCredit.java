@@ -234,7 +234,7 @@ public class SocialCredit extends BaseCommand {
      * @param totalPages      the total number of pages in the leaderboard
      */
     private void generateAndSendLeaderboardEmbed(SlashCommandInteractionEvent event, boolean top, ArrayList<LeaderboardRecord> leaderboardPage, LeaderboardRecord callersStats, int pageNumber, int totalPages) {
-        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, "Social Credit", event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), new Color(0xd63737));
+        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, "Social Credit", event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), new Color(0xd63737), 18);
         if(generatedTableImage == null) {
             event.reply("Something went wrong while generating the leaderboard table image").setEphemeral(true).queue();
             return;
