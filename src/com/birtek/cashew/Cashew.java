@@ -161,7 +161,7 @@ public class Cashew {
                         )
                         .addSubcommands(
                                 new SubcommandData("delete", "Delete a reminder")
-                                        .addOption(INTEGER, "id", "ID of the reminder to delete", true)
+                                        .addOption(INTEGER, "id", "ID of the reminder to delete, or 0 to delete them all", true)
                         ),
                 Commands.slash("feedback", "Send feedback to Cashew's creator!")
                         .addOption(STRING, "content", "Content of your feedback message", true, false),
