@@ -192,4 +192,27 @@ public class RemindersDatabase {
             return false;
         }
     }
+
+    /**
+     * Deletes all user's reminders from the database
+     * @param userID ID of the user whose reminders should be removed
+     * @return a list of all user's reminders' IDs, or null if an error occurred or the user had no reminders
+     */
+    public ArrayList<Integer> deleteUsersReminders(String userID) {
+        try {
+            ArrayList<ReminderRunnable> reminders = getUserReminders(userID);
+            if(reminders == null || reminders.isEmpty()) return null;
+            ArrayList<Integer> remindersIDs = new ArrayList<>();
+            for(ReminderRunnable reminder: reminders) {
+                remindersIDs.add(reminder.getId());
+            }
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("DELETE FROM reminders WHERE userid = ?");
+            preparedStatement.setString(1, userID);
+            if (preparedStatement.executeUpdate() == 0) return null;
+            else return remindersIDs;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at RemindersDatabase.deleteUsersReminders()");
+            return null;
+        }
+    }
 }

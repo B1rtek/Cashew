@@ -134,6 +134,14 @@ public class RemindersManager {
      * @return true if all reminders were successfully deleted, false otherwise
      */
     public boolean deleteAllReminders(String userID) {
-        return false;
+        RemindersDatabase database = RemindersDatabase.getInstance();
+        ArrayList<Integer> deletedIDs = database.deleteUsersReminders(userID);
+        if(deletedIDs == null) return false;
+        for(int id: deletedIDs) {
+            remindersFutures.get(id).cancel(false);
+            remindersFutures.remove(id);
+            remindersFutures.remove(id);
+        }
+        return true;
     }
 }
