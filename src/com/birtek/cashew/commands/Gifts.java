@@ -253,7 +253,7 @@ public class Gifts extends BaseCommand {
     private void generateAndSendLeaderboardEmbed(String leaderboard, int leaderboardIndex, ArrayList<LeaderboardRecord> leaderboardPage, SlashCommandInteractionEvent event, GiftInfo gift, LeaderboardRecord callersStats, int pageNumber, int totalPages) {
         String pointsName = leaderboardTypesStrings.get(leaderboardIndex).split("\\s+")[1];
         String capitalPointsName = Character.toString(pointsName.charAt(0)-32) + pointsName.substring(1);
-        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, capitalPointsName, event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), gift.color(), 6);
+        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, capitalPointsName, event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), gift.color());
         if(generatedTableImage == null) {
             event.reply("Something went wrong while generating the table image").setEphemeral(true).queue();
             return;

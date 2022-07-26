@@ -237,7 +237,7 @@ public class BaseCommand extends ListenerAdapter {
         }
     }
 
-    protected InputStream generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID, Color themeColor, int pointsLength) {
+    protected InputStream generateLeaderboard(ArrayList<LeaderboardRecord> leaderboardRecords, String pointsName, JDA jda, String serverID, Color themeColor) {
         String[][] tableData = new String[leaderboardRecords.size()][3];
         for (int i = 0; i < leaderboardRecords.size(); i++) {
             tableData[i][0] = String.valueOf(leaderboardRecords.get(i).place());
@@ -256,7 +256,7 @@ public class BaseCommand extends ListenerAdapter {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         table.getColumnModel().getColumn(0).setMaxWidth(50);
         table.getColumnModel().getColumn(1).setMinWidth(250);
-        table.getColumnModel().getColumn(2).setMinWidth(pointsLength*15);
+        table.getColumnModel().getColumn(2).setMinWidth(calculatePointsWidth(leaderboardRecords));
         table.setRowHeight(28);
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         ge.registerFont(leaderboardFont);
@@ -291,6 +291,14 @@ public class BaseCommand extends ListenerAdapter {
             LOGGER.error("Failed to generate leaderboard " + pointsName);
             return null;
         }
+    }
+
+    private int calculatePointsWidth(ArrayList<LeaderboardRecord> leaderboardRecords) {
+        int width = 0;
+        for (LeaderboardRecord record : leaderboardRecords) {
+            width = Math.max(width, String.valueOf(record.count()).length());
+        }
+        return width * 15;
     }
 
     public static boolean isPrivateChannel(SlashCommandInteractionEvent event) {
