@@ -1,13 +1,11 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.SocialCreditDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
@@ -90,53 +88,53 @@ public class SocialCredit extends BaseCommand {
         return "User **" + effectiveUserName + "** has " + socialCredit + " social credit.";
     }
 
-    @Override
-    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        String[] args = event.getMessage().getContentRaw().split("\\s+");
-        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "socialcredit") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "soc")) {
-            if (checkPermissions(event, socialCreditCommandPermissions)) {
-                if (event.isWebhookMessage()) return;
-                boolean youFailed = false;
-                if (args.length == 1) {
-                    String message = "$socialcredit " + event.getMessage().getAuthor().getId();
-                    args = message.split("\\s+");
-                } else {
-                    args[1] = extractUserID(args[1]);
-                    if (args[1].isEmpty()) {
-                        youFailed = true;
-                    }
-                }
-                if (!youFailed) {
-                    if (args.length == 2) {
-                        event.getMessage().reply(checkSocialCredit(args[1], event.getGuild())).mentionRepliedUser(false).queue();
-                    } else if (args.length == 3) {
-                        if (checkPermissions(event, manageServerPermission)) {
-                            long socialCreditChange = 0;
-                            try {
-                                socialCreditChange = Long.parseLong(args[2]);
-                            } catch (NumberFormatException e) {
-                                youFailed = true;
-                            }
-                            if (!youFailed) {
-                                MessageEmbed socialCreditEmbed = modifySocialCredit(args[1], event.getGuild(), socialCreditChange, "");
-                                event.getChannel().sendMessageEmbeds(socialCreditEmbed).queue();
-                            }
-                        } else {
-                            youFailed = true;
-                        }
-                    } else {
-                        youFailed = true;
-                    }
-                }
-                if (youFailed) {
-                    if (!checkPermissions(event, manageServerPermission)) {
-                        int amountLost = loseSocialCredit(event.getAuthor().getId(), Objects.requireNonNull(event.getGuild()).getId());
-                        event.getMessage().reply("You lose " + amountLost + " social credit for misuse of the social credit system.").mentionRepliedUser(false).queue();
-                    }
-                }
-            }
-        }
-    }
+//    @Override
+//    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+//        String[] args = event.getMessage().getContentRaw().split("\\s+");
+//        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "socialcredit") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "soc")) {
+//            if (checkPermissions(event, socialCreditCommandPermissions)) {
+//                if (event.isWebhookMessage()) return;
+//                boolean youFailed = false;
+//                if (args.length == 1) {
+//                    String message = "$socialcredit " + event.getMessage().getAuthor().getId();
+//                    args = message.split("\\s+");
+//                } else {
+//                    args[1] = extractUserID(args[1]);
+//                    if (args[1].isEmpty()) {
+//                        youFailed = true;
+//                    }
+//                }
+//                if (!youFailed) {
+//                    if (args.length == 2) {
+//                        event.getMessage().reply(checkSocialCredit(args[1], event.getGuild())).mentionRepliedUser(false).queue();
+//                    } else if (args.length == 3) {
+//                        if (checkPermissions(event, manageServerPermission)) {
+//                            long socialCreditChange = 0;
+//                            try {
+//                                socialCreditChange = Long.parseLong(args[2]);
+//                            } catch (NumberFormatException e) {
+//                                youFailed = true;
+//                            }
+//                            if (!youFailed) {
+//                                MessageEmbed socialCreditEmbed = modifySocialCredit(args[1], event.getGuild(), socialCreditChange, "");
+//                                event.getChannel().sendMessageEmbeds(socialCreditEmbed).queue();
+//                            }
+//                        } else {
+//                            youFailed = true;
+//                        }
+//                    } else {
+//                        youFailed = true;
+//                    }
+//                }
+//                if (youFailed) {
+//                    if (!checkPermissions(event, manageServerPermission)) {
+//                        int amountLost = loseSocialCredit(event.getAuthor().getId(), Objects.requireNonNull(event.getGuild()).getId());
+//                        event.getMessage().reply("You lose " + amountLost + " social credit for misuse of the social credit system.").mentionRepliedUser(false).queue();
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
