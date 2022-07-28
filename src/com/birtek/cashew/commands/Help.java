@@ -39,10 +39,11 @@ public class Help extends BaseCommand {
             specificHelpEmbed.setTitle("Pat");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "pat <user(doesn't have to be an @)>`", "Sends an embed with a gif with nekos getting pats and a message saying that you decided to pat the specified user.", false);
         } else if (command.equalsIgnoreCase("bestneko")) {
-            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
             specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Best neko");
-            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "bestneko`", "Sends a gif of Maple Minaduki", false);
+            specificHelpEmbed.addField("/bestneko set <neko>`", "Sets your favourite neko", false);
+            specificHelpEmbed.addField("/bestneko send`", "Sends a gif of your favourite neko", false);
         } else if (command.equalsIgnoreCase("boburnham")) {
             specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
             specificHelpEmbed.addField("Works in DMs", "Yes", true);
