@@ -39,7 +39,9 @@ public class Cashew {
     public static BirthdayRemindersManager birthdayRemindersManager;
     public static RemindersManager remindersManager;
     public static PollManager pollManager;
-    private static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER);
+    public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
+    public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
+
 
     public static void main(String[] args) throws LoginException {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))

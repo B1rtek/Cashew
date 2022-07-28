@@ -19,7 +19,7 @@ import java.util.Objects;
 public class Scheduler extends BaseCommand {
 
     Permission[] timedMessageCommandPermissions = {
-            Permission.MANAGE_CHANNEL
+            Cashew.moderatorPermission
     };
 
     private String schedulerListMessages(Guild server, int scheduledMessageID) {
