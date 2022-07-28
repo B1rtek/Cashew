@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Random;
 
-import static com.birtek.cashew.messagereactions.ReactToMaple.getABestNekoEmbed;
-
 public class BestNeko extends BaseCommand {
 
     private final ArrayList<String> nekos;
@@ -77,9 +75,6 @@ public class BestNeko extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if (event.getName().equals("bestneko")) {
-            event.replyEmbeds(getABestNekoEmbed()).queue();
-        }
         if (Objects.equals(event.getSubcommandName(), "set")) {
             String neko = event.getOption("neko", "Maple", OptionMapping::getAsString);
             int id = getNekoID(neko);
