@@ -62,7 +62,10 @@ public class Cashew {
                 Commands.slash("help", "Shows the help embed containing information about commands")
                         .addOption(STRING, "command", "Command to show help of", false, true),
                 Commands.slash("info", "Shows info about the bot"),
-                Commands.slash("bestneko", "Sends you a gif of the best neko <3"),
+                Commands.slash("bestneko", "Set and send a gif of your favourite neko!")
+                        .addSubcommands(new SubcommandData("set", "Set your favourite neko")
+                                .addOption(STRING, "neko", "Neko to set as favourite", true, true))
+                        .addSubcommands(new SubcommandData("send", "Send a random gif of your favourite neko")),
                 Commands.slash("boburnham", "Sends you a random quote from Bo Burnham's songs")
                         .addOption(STRING, "nsfw", "Decide whether you want an nsfw quote or not", false, true),
                 Commands.slash("dadjoke", "Sends you a random dad joke from icanhazdadjoke.com"),
