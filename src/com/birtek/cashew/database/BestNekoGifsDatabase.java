@@ -79,7 +79,7 @@ public class BestNekoGifsDatabase {
      */
     public ArrayList<ArrayList<String>> getNekoGifs() {
         try {
-            PreparedStatement preparedStatement = bestNekoGifsConnection.prepareStatement("SELECT * FROM BestnekoGifs");
+            PreparedStatement preparedStatement = bestNekoGifsConnection.prepareStatement("SELECT * FROM BestnekoGifs ORDER BY nekoID");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<ArrayList<String>> nekoGifs = new ArrayList<>();
             ArrayList<String> currentNekoGifs = new ArrayList<>();
@@ -87,7 +87,7 @@ public class BestNekoGifsDatabase {
             while (results.next()) {
                 if (results.getInt(1) != id) {
                     id = results.getInt(1);
-                    nekoGifs.add(currentNekoGifs);
+                    nekoGifs.add(new ArrayList<>(currentNekoGifs));
                     currentNekoGifs.clear();
                 }
                 currentNekoGifs.add(results.getString(2));
