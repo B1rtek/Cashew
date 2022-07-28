@@ -143,7 +143,16 @@ public class Help extends BaseCommand {
             specificHelpEmbed.setTitle("Feedback");
             specificHelpEmbed.setDescription("Sends feedback to Cashew's creator");
             specificHelpEmbed.addField("`/feedback <content>`", "Sends feedback with the provided content to Cashew's creator", false);
-        } else {
+        } else if (command.equalsIgnoreCase("scheduler")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
+            specificHelpEmbed.setTitle("Scheduler");
+            specificHelpEmbed.setDescription("Daily message scheduling system, only accessible by moderators");
+            specificHelpEmbed.addField("`/scheduler <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
+            specificHelpEmbed.addField("`/scheduler show <id(int)|\"all\">`", "Shows the timed message with the specified id/all scheduled messages on this server.", false);
+            specificHelpEmbed.addField("`/scheduler delete <id(int)|\"all\">`", "Removes the timed message with the specified id/all of them.", false);
+        }
+        else {
             specificHelpEmbed.setTitle("Unknown");
             specificHelpEmbed.addField("There is no such command", "Try again :(", false);
         }
@@ -170,9 +179,6 @@ public class Help extends BaseCommand {
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear range <ranges>`", "Removes recent messages in the given range. For example, `$clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "reactions <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions to messages containing \"69\", \"amogus\", etc in a text channel. Setting it to \"all\" enables the reactions with pings.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "reactions <#channel> <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions in the specified channel.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler show <id(int)|\"all\">`", "Shows the timed message with the spcified id/all scheduled messages on this server.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "scheduler delete <id(int)|\"all\">`", "Removes the timed message with the specified id/all of them.", false);
         helpEmbed.addField("`/poll <title> <option1> <option2> [option3..5] [timetovote] [unit]`", "Creates a poll. Poll can have between two and five options inclusive. By default polls have time to vote set to 24 hours, this can be changed by setting the `timetovote` and `unit` options.", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed.build();
@@ -226,7 +232,7 @@ public class Help extends BaseCommand {
         if (event.getName().equals("help")) {
             if (event.getFocusedOption().getName().equals("command")) {
                 String typed = event.getOption("command", "", OptionMapping::getAsString);
-                String[] options = {"bestneko", "birthday", "boburnham", "casesim", "cuddle", "dadjoke", "feedback", "gifts", "help", "hug", "info", "insp", "kiss", "korwin", "kromer", "nekoichi", "pat", "ping", "reminder", "socialcredit"};
+                String[] options = {"bestneko", "birthday", "boburnham", "casesim", "cuddle", "dadjoke", "feedback", "gifts", "help", "hug", "info", "insp", "kiss", "korwin", "kromer", "nekoichi", "pat", "ping", "reminder", "scheduler", "socialcredit"};
                 List<String> matching = new ArrayList<>();
                 for (String option : options) {
                     if (option.contains(typed)) {
