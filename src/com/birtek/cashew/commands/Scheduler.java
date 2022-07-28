@@ -131,7 +131,7 @@ public class Scheduler extends BaseCommand {
                         return;
                     }
                     String response = schedulerAddMessages(message, timestamp, channelID, Objects.requireNonNull(event.getGuild()).getId());
-                    event.reply(response).queue();
+                    event.reply(response).setEphemeral(true).queue();
                 } else if (event.getSubcommandName().equals("list")) {
                     int id = event.getOption("id", 0, OptionMapping::getAsInt);
                     String response = schedulerListMessages(event.getGuild(), id);
@@ -144,7 +144,7 @@ public class Scheduler extends BaseCommand {
                         return;
                     }
                     String response = schedulerDeleteMessages(event.getGuild(), id);
-                    event.reply(response).queue();
+                    event.reply(response).setEphemeral(true).queue();
                 }
             } else {
                 event.reply("You do not have permission to use this command").setEphemeral(true).queue();
