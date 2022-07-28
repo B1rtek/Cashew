@@ -67,7 +67,7 @@ public class BestNeko extends BaseCommand {
      */
     private MessageEmbed createBestNekoEmbed(String nekoGif, String nekoName) {
         EmbedBuilder bestNekoEmbed = new EmbedBuilder();
-        bestNekoEmbed.setTitle("❤️ " + nekoName + " ❤️");
+        bestNekoEmbed.setAuthor("❤️  " + nekoName + "  ❤️");
         bestNekoEmbed.setImage(nekoGif);
         bestNekoEmbed.setFooter("Best neko!");
         return bestNekoEmbed.build();
