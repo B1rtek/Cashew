@@ -16,12 +16,24 @@ import org.nocrala.tools.texttablefmt.Table;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * A {@link net.dv8tion.jda.api.hooks.ListenerAdapter listener} for the /scheduler command, which lets server moderators
+ * set up messages that will be sent every day at the given hour, remove them and list them
+ */
 public class Scheduler extends BaseCommand {
 
     Permission[] timedMessageCommandPermissions = {
             Cashew.moderatorPermission
     };
 
+    /**
+     * Returns a table listing selected {@link ScheduledMessage ScheduledMessages}
+     *
+     * @param server             {@link Guild Server} object representing the server from which the request came
+     * @param scheduledMessageID ID of the message to show, if set to 0 will show all of them
+     * @return a String containing a table with all messages selected to be shown, or an error message explaining why
+     * that failed
+     */
     private String schedulerListMessages(Guild server, int scheduledMessageID) {
         ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
         ArrayList<ScheduledMessage> scheduledMessages;
@@ -33,7 +45,7 @@ public class Scheduler extends BaseCommand {
         if (scheduledMessages == null) return "Something went wrong while fetching the messages, try again later";
         if (scheduledMessages.isEmpty()) {
             if (scheduledMessageID == 0) {
-                return "There are no defined TimedMessages yet.";
+                return "There are no defined Scheduled messages yet.";
             } else {
                 return "Message with this ID doesn't exist.";
             }
@@ -57,22 +69,39 @@ public class Scheduler extends BaseCommand {
         return "```prolog\n" + messagesTable.render() + "\n```";
     }
 
+    /**
+     * Deletes selected {@link ScheduledMessage ScheduledMessages} from the database and unschedules them
+     *
+     * @param server             {@link Guild Server} from which the deletion request came
+     * @param scheduledMessageID ID of the message to remove, if set to 0 will delete all of them
+     * @return a String with a message telling whether the deletion was successful or not
+     */
     private String schedulerDeleteMessages(Guild server, int scheduledMessageID) {
         if (scheduledMessageID == 0) {
             if (Cashew.scheduledMessagesManager.deleteScheduledMessage(0, server.getId())) {
-                return "Successfully deleted all timed messages!";
+                return "Successfully deleted all Scheduled messages!";
             } else {
                 return "Failed to delete the messages";
             }
         } else {
             if (Cashew.scheduledMessagesManager.deleteScheduledMessage(scheduledMessageID, server.getId())) {
-                return "Successfully deleted timed message " + scheduledMessageID + "!";
+                return "Successfully deleted Scheduled message " + scheduledMessageID + "!";
             } else {
                 return "Failed to delete the message";
             }
         }
     }
 
+    /**
+     * Adds a {@link ScheduledMessage ScheduledMessage} to the database and schedules it
+     *
+     * @param messageContent content of the {@link ScheduledMessage ScheduledMessage} to add
+     * @param timestring     a String containing a timestamp in a HH:MM:SS format with an hour on which the message will be
+     *                       sent every day
+     * @param channelID      ID of the channel in which the message will be sent
+     * @param serverID       ID of the server from which the addition request came
+     * @return a String with a message telling whether the addition was successful or not
+     */
     private String schedulerAddMessages(String messageContent, String timestring, String channelID, String serverID) {
         int insertID = Cashew.scheduledMessagesManager.addScheduledMessage(new ScheduledMessage(0, messageContent, timestring, channelID), serverID);
         if (insertID != -1) {
