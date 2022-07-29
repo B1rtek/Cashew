@@ -20,6 +20,7 @@ dependencies {
     implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
     implementation('ch.qos.logback:logback-classic:1.2.11')
     implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
+    implementation group: 'org.json', name: 'json', version: '20220320'
 }
 
 application {
