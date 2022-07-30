@@ -86,9 +86,13 @@ public class Cashew {
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
-                        .addOption(STRING, "toggle", "Toggles reactions on, off or turns even the annoying ones (all) on", false, true)
-                        .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one")
-                        .setDefaultPermissions(moderatorPermissions),
+                        .addSubcommands(new SubcommandData("set", "Turns on or off reactions for certain messages")
+                                .addOption(STRING, "toggle", "New state of the reaction - either ON or OFF", true, false)
+                                .addOption(STRING, "reaction", "Reaction to change the settings of - leave blank to apply to all reactions", false, true)
+                                .addOption(CHANNEL, "channel", "Channel to apply the setting to - leave blank to apply to all channels", false, false))
+                        .addSubcommands(new SubcommandData("info", "Shows information about the reaction")
+                                .addOption(STRING, "reaction", "Reaction to get the info about", true, true))
+                        .setGuildOnly(true),
                 Commands.slash("cuddle", "Cuddle someone!")
                         .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true),
                 Commands.slash("hug", "Hug someone!")
