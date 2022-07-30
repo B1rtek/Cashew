@@ -1,6 +1,6 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.database.ReactionsDatabase;
+import com.birtek.cashew.database.ReactionsSettingsDatabase;
 import com.birtek.cashew.database.ReactionsSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class ReactionsSettingsManager {
      * shuts down
      */
     public ReactionsSettingsManager() {
-        ReactionsDatabase database = ReactionsDatabase.getInstance();
+        ReactionsSettingsDatabase database = ReactionsSettingsDatabase.getInstance();
         settingsMap = database.getAllReactionsSettings();
         if (settingsMap == null) {
             LOGGER.error("Failed to obtain reactions settings!");
@@ -66,7 +66,7 @@ public class ReactionsSettingsManager {
             settings = new ReactionsSettings(serverID);
         }
         settings.setActivity(reactionID, channelID, state);
-        ReactionsDatabase database = ReactionsDatabase.getInstance();
+        ReactionsSettingsDatabase database = ReactionsSettingsDatabase.getInstance();
         if (!database.setReactionsSettings(settings)) return false;
         settingsMap.put(serverID, settings);
         return true;

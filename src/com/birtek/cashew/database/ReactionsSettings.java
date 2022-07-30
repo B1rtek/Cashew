@@ -14,7 +14,7 @@ public class ReactionsSettings {
 
     /**
      * Creates a ReactionsSettings object from an existing JSON from the database, used by the
-     * {@link ReactionsDatabase ReactionsDatabase}
+     * {@link ReactionsSettingsDatabase ReactionsDatabase}
      *
      * @param jsonSettings a {@link JSONObject} with reactions settings for a server
      * @param serverID     ID of the server to which the settings belong
