@@ -152,6 +152,13 @@ public class Help extends BaseCommand {
             specificHelpEmbed.addField("`/scheduler <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
             specificHelpEmbed.addField("`/scheduler show <id(int)|\"all\">`", "Shows the timed message with the specified id/all scheduled messages on this server.", false);
             specificHelpEmbed.addField("`/scheduler delete <id(int)|\"all\">`", "Removes the timed message with the specified id/all of them.", false);
+        } else if (command.equalsIgnoreCase("reactions")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
+            specificHelpEmbed.setTitle("Reactions");
+            specificHelpEmbed.setDescription("Manages Cashew's reactions to user's messages");
+            specificHelpEmbed.addField("`/reactions set <toggle> [reaction] [#channel]`", "Changes reactions settings of a certain channel or reaction. Leaving the reaction field blank applies the setting to all reactions, leaving the channel blank applies the setting to all channels, both can be combined. Can only be used by moderators", false);
+            specificHelpEmbed.addField("`/reactions info <reaction>`", "Shows information about the selected reaction, describes how it works and what triggers it", false);
         }
         else {
             specificHelpEmbed.setTitle("Unknown");
@@ -167,6 +174,7 @@ public class Help extends BaseCommand {
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`", false);
         helpEmbed.addField("😂 Fun stuff", "`bestneko`, `/birthday`, `boburnham`, `/casesim`, `dadjoke`, `/gifts`, `insp`, `kromer`, `korwin`, `nekoichi`, `ping`, `socialcredit`", false);
+        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/reactions`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
@@ -178,8 +186,6 @@ public class Help extends BaseCommand {
         helpEmbed.addField("`/birthday setdefault <channel> <type>`", "Sets the default birthday reminders channel and whether that channel should override user's settings", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
         helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear range <ranges>`", "Removes recent messages in the given range. For example, `$clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "reactions <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions to messages containing \"69\", \"amogus\", etc in a text channel. Setting it to \"all\" enables the reactions with pings.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "reactions <#channel> <\"off\"|\"on\"|\"all\">`", "Enables or disables reactions in the specified channel.", false);
         helpEmbed.addField("`/poll <title> <option1> <option2> [option3..5] [timetovote] [unit]`", "Creates a poll. Poll can have between two and five options inclusive. By default polls have time to vote set to 24 hours, this can be changed by setting the `timetovote` and `unit` options.", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed.build();
@@ -233,7 +239,7 @@ public class Help extends BaseCommand {
         if (event.getName().equals("help")) {
             if (event.getFocusedOption().getName().equals("command")) {
                 String typed = event.getOption("command", "", OptionMapping::getAsString);
-                String[] options = {"bestneko", "birthday", "boburnham", "casesim", "cuddle", "dadjoke", "feedback", "gifts", "help", "hug", "info", "insp", "kiss", "korwin", "kromer", "nekoichi", "pat", "ping", "reminder", "scheduler", "socialcredit"};
+                String[] options = {"bestneko", "birthday", "boburnham", "casesim", "cuddle", "dadjoke", "feedback", "gifts", "help", "hug", "info", "insp", "kiss", "korwin", "kromer", "nekoichi", "pat", "ping", "reminder", "reactions", "scheduler", "socialcredit"};
                 List<String> matching = new ArrayList<>();
                 for (String option : options) {
                     if (option.contains(typed)) {
