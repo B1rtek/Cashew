@@ -5,8 +5,7 @@ import com.birtek.cashew.events.CountingMessageDeletionDetector;
 import com.birtek.cashew.events.CountingMessageModificationDetector;
 import com.birtek.cashew.events.GuildMemberJoinAndLeave;
 import com.birtek.cashew.reactions.Counter;
-import com.birtek.cashew.reactions.OwosEtc;
-import com.birtek.cashew.reactions.ReactToMaple;
+import com.birtek.cashew.reactions.ReactionsExecutor;
 import com.birtek.cashew.timings.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -50,7 +49,7 @@ public class Cashew {
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
-                        new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
+                        new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .build();
