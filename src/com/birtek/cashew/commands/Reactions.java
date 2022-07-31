@@ -73,11 +73,10 @@ public class Reactions extends BaseCommand {
                     return;
                 }
                 GuildChannel channel = event.getOption("channel", null, OptionMapping::getAsChannel);
-                if (channel == null) {
-                    event.reply("Invalid channel specified").setEphemeral(true).queue();
-                    return;
+                String channelID = "all";
+                if (channel != null) {
+                    channelID = channel.getId();
                 }
-                String channelID = channel.getId();
                 String serverID = Objects.requireNonNull(event.getGuild()).getId();
                 boolean state = Objects.equals(event.getOption("toggle", "", OptionMapping::getAsString), "on");
                 if (Cashew.reactionsSettingsManager.updateActivitySettings(serverID, channelID, reactionID, state)) {
