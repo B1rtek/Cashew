@@ -3,190 +3,106 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.ScheduledMessagesDatabase;
 import com.birtek.cashew.timings.ScheduledMessage;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
+import org.nocrala.tools.texttablefmt.BorderStyle;
+import org.nocrala.tools.texttablefmt.ShownBorders;
+import org.nocrala.tools.texttablefmt.Table;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * A {@link net.dv8tion.jda.api.hooks.ListenerAdapter listener} for the /scheduler command, which lets server moderators
+ * set up messages that will be sent every day at the given hour, remove them and list them
+ */
 public class Scheduler extends BaseCommand {
 
-    Permission[] timedMessageCommandPermissions = {
-            Permission.MANAGE_CHANNEL
-    };
-
-    private String schedulerListMessages(Guild server, String sscheduledMessageID, int scheduledMessageID) {
+    /**
+     * Returns a table listing selected {@link ScheduledMessage ScheduledMessages}
+     *
+     * @param server             {@link Guild Server} object representing the server from which the request came
+     * @param scheduledMessageID ID of the message to show, if set to 0 will show all of them
+     * @return a String containing a table with all messages selected to be shown, or an error message explaining why
+     * that failed
+     */
+    private String schedulerListMessages(Guild server, int scheduledMessageID) {
         ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
         ArrayList<ScheduledMessage> scheduledMessages;
-        if (sscheduledMessageID.isEmpty() && scheduledMessageID == 0) {
+        if (scheduledMessageID == 0) {
             scheduledMessages = database.getScheduledMessages(0, server.getId());
         } else {
-            if (sscheduledMessageID.isEmpty()) {
-                scheduledMessages = database.getScheduledMessages(Integer.parseInt(sscheduledMessageID), server.getId());
+            scheduledMessages = database.getScheduledMessages(scheduledMessageID, server.getId());
+        }
+        if (scheduledMessages == null) return "Something went wrong while fetching the messages, try again later";
+        if (scheduledMessages.isEmpty()) {
+            if (scheduledMessageID == 0) {
+                return "There are no defined Scheduled messages yet.";
             } else {
-                if (sscheduledMessageID.equalsIgnoreCase("all")) {
-                    scheduledMessages = database.getScheduledMessages(0, server.getId());
-                } else {
-                    if (!isNumeric(sscheduledMessageID)) {
-                        return "The provided ID is not a number.";
-                    }
-                    scheduledMessages = database.getScheduledMessages(Integer.parseInt(sscheduledMessageID), server.getId());
-                }
+                return "Message with this ID doesn't exist.";
             }
         }
-        if (scheduledMessages != null) {
-            StringBuilder table = new StringBuilder("```prolog\n");
-            table.append("ID        |Time    |Channel             |Message                       \n");
-            int rowCount = 0;
-            for (ScheduledMessage scheduledMessage : scheduledMessages) {
-                rowCount++;
-                StringBuilder id = new StringBuilder(String.valueOf(scheduledMessage.getId()));
-                id.setLength(10);
-                String stringId = id.toString().replace('\u0000', ' ');
-                table.append(stringId).append("|");
-                table.append(scheduledMessage.getExecutionTime()).append("|");
-                String channelID = scheduledMessage.getDestinationChannelID();
-                StringBuilder channel = new StringBuilder(Objects.requireNonNull(server.getGuildChannelById(channelID)).getName());
-                String stringChannel;
-                if (channel.length() > 20) {
-                    channel.setLength(17);
-                    stringChannel = channel.toString().replace('\u0000', ' ') + "...";
-                    //channel.append("...");
-                } else {
-                    channel.setLength(20);
-                    stringChannel = channel.toString().replace('\u0000', ' ');
-                }
-                table.append(stringChannel).append("|");
-                StringBuilder message = new StringBuilder(scheduledMessage.getMessageContent());
-                String stringMessage;
-                if (message.length() > 80) {
-                    message.setLength(77);
-                    stringMessage = message.toString().replace('\u0000', ' ') + "...";
-                    //message.append("...");
-                } else {
-                    message.setLength(80);
-                    stringMessage = message.toString().replace('\u0000', ' ');
-                }
-                stringMessage = stringMessage.replace("\n", "\\n");
-                table.append(stringMessage).append("\n");
-            }
-            table.append("```");
-            if (rowCount == 0) {
-                if (sscheduledMessageID.equals("all") || (sscheduledMessageID.isEmpty() && scheduledMessageID == 0)) {
-                    return "There are no defined TimedMessages yet.";
-                } else {
-                    return "Message with this ID doesn't exist.";
-                }
-            } else {
-                return table.toString();
-            }
-        } else {
-            return "[3] Something went wrong...";
+        Table messagesTable = new Table(4, BorderStyle.UNICODE_BOX, ShownBorders.HEADER_AND_COLUMNS);
+        messagesTable.setColumnWidth(0, 2, 10);
+        messagesTable.setColumnWidth(1, 8, 8);
+        messagesTable.setColumnWidth(2, 7, 20);
+        messagesTable.setColumnWidth(3, 7, 80);
+        messagesTable.addCell("ID");
+        messagesTable.addCell("Time");
+        messagesTable.addCell("Channel");
+        messagesTable.addCell("Message");
+        for (ScheduledMessage message : scheduledMessages) {
+            messagesTable.addCell(String.valueOf(message.getId()));
+            messagesTable.addCell(message.getExecutionTime());
+            GuildChannel channel = server.getGuildChannelById(message.getDestinationChannelID());
+            messagesTable.addCell(channel == null ? message.getDestinationChannelID() : channel.getName());
+            messagesTable.addCell(message.getMessageContent());
         }
+        return "```prolog\n" + messagesTable.render() + "\n```";
     }
 
-    private String schedulerDeleteMessages(Guild server, String sscheduledMessageID, int scheduledMessageID) {
-        if (sscheduledMessageID.equalsIgnoreCase("all") || (sscheduledMessageID.isEmpty() && scheduledMessageID == 0)) {
+    /**
+     * Deletes selected {@link ScheduledMessage ScheduledMessages} from the database and unschedules them
+     *
+     * @param server             {@link Guild Server} from which the deletion request came
+     * @param scheduledMessageID ID of the message to remove, if set to 0 will delete all of them
+     * @return a String with a message telling whether the deletion was successful or not
+     */
+    private String schedulerDeleteMessages(Guild server, int scheduledMessageID) {
+        if (scheduledMessageID == 0) {
             if (Cashew.scheduledMessagesManager.deleteScheduledMessage(0, server.getId())) {
-                return "Successfully deleted all timed messages!";
+                return "Successfully deleted all Scheduled messages!";
             } else {
                 return "Failed to delete the messages";
             }
         } else {
-            if (scheduledMessageID == 0) {
-                if (!isNumeric(sscheduledMessageID)) {
-                    return "The provided ID is not a number.";
-                }
-                scheduledMessageID = Integer.parseInt(sscheduledMessageID);
-            }
             if (Cashew.scheduledMessagesManager.deleteScheduledMessage(scheduledMessageID, server.getId())) {
-                return "Successfully deleted timed message " + scheduledMessageID + "!";
+                return "Successfully deleted Scheduled message " + scheduledMessageID + "!";
             } else {
                 return "Failed to delete the message";
             }
         }
     }
 
+    /**
+     * Adds a {@link ScheduledMessage ScheduledMessage} to the database and schedules it
+     *
+     * @param messageContent content of the {@link ScheduledMessage ScheduledMessage} to add
+     * @param timestring     a String containing a timestamp in a HH:MM:SS format with an hour on which the message will be
+     *                       sent every day
+     * @param channelID      ID of the channel in which the message will be sent
+     * @param serverID       ID of the server from which the addition request came
+     * @return a String with a message telling whether the addition was successful or not
+     */
     private String schedulerAddMessages(String messageContent, String timestring, String channelID, String serverID) {
         int insertID = Cashew.scheduledMessagesManager.addScheduledMessage(new ScheduledMessage(0, messageContent, timestring, channelID), serverID);
         if (insertID != -1) {
             return "Successfully added a new timed message! ID = " + insertID;
         } else {
-            return "[5] Something went wrong...";
-        }
-    }
-
-    private String compileMessage(String[] args) {
-        StringBuilder messageContent = new StringBuilder(args[3]);
-        for (int i = 4; i < args.length; i++) {
-            messageContent.append(" ").append(args[i]);
-        }
-        String messageContentString = messageContent.toString().replace("\"", "''");
-        messageContentString = messageContentString.replace("\\n", "\n");
-        return messageContentString;
-    }
-
-    private boolean isValidMessage(String messageContentString) {
-        return messageContentString.length() <= 2000;
-    }
-
-    private String compileChannel(String channelIDString) {
-        return channelIDString.substring(2, channelIDString.length() - 1);
-    }
-
-    private boolean isValidChannel(String channelIDString, Guild server) {
-        if (channelIDString.length() < 18) {
-            return false;
-        }
-        String channelID = compileChannel(channelIDString);
-        if (channelID.length() != 18 || !isNumeric(channelID)) {
-            return false;
-        }
-        return server.getGuildChannelById(channelID) != null;
-    }
-
-    @Override
-    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        String[] args = event.getMessage().getContentRaw().split("\\s+");
-        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "scheduler")) {
-            if (checkPermissions(event, timedMessageCommandPermissions)) {
-                if (event.isWebhookMessage()) return;
-                if (args.length < 4 && args.length != 3 && args.length != 2) {
-                    event.getMessage().reply("Incorrect syntax. Please specify all the arguments (<destination channel> <time> <message> or <action> <id>).").mentionRepliedUser(false).queue();
-                } else if (args.length == 3 || args.length == 2) {
-                    if (args[1].equalsIgnoreCase("show") || args[1].equalsIgnoreCase("list")) {
-                        String response = schedulerListMessages(event.getGuild(), args.length == 3 ? args[2] : "", 0);
-                        event.getMessage().reply(response).mentionRepliedUser(false).queue();
-                    } else if ((args[1].equalsIgnoreCase("delete") || args[1].equalsIgnoreCase("remove")) && args.length == 3) {
-                        String response = schedulerDeleteMessages(event.getGuild(), args[2], 0);
-                        event.getMessage().reply(response).mentionRepliedUser(false).queue();
-                    } else {
-                        event.getMessage().reply("Incorrect syntax. Please specify all the arguments (<action> <id>).").mentionRepliedUser(false).queue();
-                    }
-                } else {
-                    String scheduledMessage = compileMessage(args);
-                    if (!isValidMessage(scheduledMessage)) {
-                        event.getMessage().reply("Invalid message content specified").mentionRepliedUser(false).queue();
-                        return;
-                    }
-                    if (!isValidChannel(args[1], event.getGuild())) {
-                        event.getMessage().reply("Invalid channel specified").mentionRepliedUser(false).queue();
-                        return;
-                    }
-                    if (isInvalidTimestamp(args[2])) {
-                        event.getMessage().reply("Invalid timestamp specified").mentionRepliedUser(false).queue();
-                        return;
-                    }
-                    String response = schedulerAddMessages(scheduledMessage, args[2], compileChannel(args[1]), event.getGuild().getId());
-                    event.getMessage().reply(response).mentionRepliedUser(false).queue();
-                }
-            } else {
-                event.getMessage().delete().complete();
-            }
+            return "Something went wrong while adding your message, try again later";
         }
     }
 
@@ -197,7 +113,7 @@ public class Scheduler extends BaseCommand {
                 event.reply("Scheduler doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
-            if (checkSlashCommandPermissions(event, timedMessageCommandPermissions)) {
+            if (checkSlashCommandPermissions(event, modPermissions)) {
                 if (event.getSubcommandName() == null) {
                     event.reply("No command specified (how???)").setEphemeral(true).queue();
                 }
@@ -210,10 +126,10 @@ public class Scheduler extends BaseCommand {
                         return;
                     }
                     String response = schedulerAddMessages(message, timestamp, channelID, Objects.requireNonNull(event.getGuild()).getId());
-                    event.reply(response).queue();
+                    event.reply(response).setEphemeral(true).queue();
                 } else if (event.getSubcommandName().equals("list")) {
                     int id = event.getOption("id", 0, OptionMapping::getAsInt);
-                    String response = schedulerListMessages(event.getGuild(), "", id);
+                    String response = schedulerListMessages(event.getGuild(), id);
                     event.reply(response).queue();
                 } else if (event.getSubcommandName().equals("delete")) {
                     int id = event.getOption("id", 0, OptionMapping::getAsInt);
@@ -222,8 +138,8 @@ public class Scheduler extends BaseCommand {
                         event.reply("No messages were deleted").setEphemeral(true).queue();
                         return;
                     }
-                    String response = schedulerDeleteMessages(event.getGuild(), "", id);
-                    event.reply(response).queue();
+                    String response = schedulerDeleteMessages(event.getGuild(), id);
+                    event.reply(response).setEphemeral(true).queue();
                 }
             } else {
                 event.reply("You do not have permission to use this command").setEphemeral(true).queue();

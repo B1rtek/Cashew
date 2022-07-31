@@ -1,5 +1,6 @@
 package com.birtek.cashew.commands;
 
+import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.CountingDatabase;
 import com.birtek.cashew.database.CountingInfo;
 import net.dv8tion.jda.api.Permission;
@@ -13,7 +14,7 @@ import java.util.Objects;
 public class Counting extends BaseCommand {
 
     Permission[] countingCommandPermissions = {
-            Permission.MESSAGE_MANAGE
+            Cashew.moderatorPermission
     };
 
 //    @Override
@@ -63,7 +64,7 @@ public class Counting extends BaseCommand {
                 event.reply("Counting doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
-            if (checkSlashCommandPermissions(event, countingCommandPermissions)) {
+            if (checkSlashCommandPermissions(event, modPermissions)) {
                 if (Objects.equals(event.getSubcommandName(), "toggle")) {
                     String toggle = event.getOption("toggle", "", OptionMapping::getAsString);
                     if (!toggle.isEmpty() && (toggle.equals("on") || toggle.equals("off"))) {

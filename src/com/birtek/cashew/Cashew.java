@@ -4,13 +4,9 @@ import com.birtek.cashew.commands.*;
 import com.birtek.cashew.events.CountingMessageDeletionDetector;
 import com.birtek.cashew.events.CountingMessageModificationDetector;
 import com.birtek.cashew.events.GuildMemberJoinAndLeave;
-import com.birtek.cashew.messagereactions.Counter;
-import com.birtek.cashew.messagereactions.OwosEtc;
-import com.birtek.cashew.messagereactions.ReactToMaple;
-import com.birtek.cashew.timings.BirthdayRemindersManager;
-import com.birtek.cashew.timings.PollManager;
-import com.birtek.cashew.timings.RemindersManager;
-import com.birtek.cashew.timings.ScheduledMessagesManager;
+import com.birtek.cashew.reactions.Counter;
+import com.birtek.cashew.reactions.ReactionsExecutor;
+import com.birtek.cashew.timings.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -39,7 +35,10 @@ public class Cashew {
     public static BirthdayRemindersManager birthdayRemindersManager;
     public static RemindersManager remindersManager;
     public static PollManager pollManager;
-    private static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER);
+    public static ReactionsSettingsManager reactionsSettingsManager;
+    public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
+    public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
+
 
     public static void main(String[] args) throws LoginException {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
@@ -50,7 +49,7 @@ public class Cashew {
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
-                        new ReactToMaple(), new OwosEtc(), new Counter()) //messagereations
+                        new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .build();
@@ -60,7 +59,10 @@ public class Cashew {
                 Commands.slash("help", "Shows the help embed containing information about commands")
                         .addOption(STRING, "command", "Command to show help of", false, true),
                 Commands.slash("info", "Shows info about the bot"),
-                Commands.slash("bestneko", "Sends you a gif of the best neko <3"),
+                Commands.slash("bestneko", "Set and send a gif of your favourite neko!")
+                        .addSubcommands(new SubcommandData("set", "Set your favourite neko")
+                                .addOption(STRING, "neko", "Neko to set as favourite", true, true))
+                        .addSubcommands(new SubcommandData("send", "Send a random gif of your favourite neko")),
                 Commands.slash("boburnham", "Sends you a random quote from Bo Burnham's songs")
                         .addOption(STRING, "nsfw", "Decide whether you want an nsfw quote or not", false, true),
                 Commands.slash("dadjoke", "Sends you a random dad joke from icanhazdadjoke.com"),
@@ -81,9 +83,13 @@ public class Cashew {
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
-                        .addOption(STRING, "toggle", "Toggles reactions on, off or turns even the annoying ones (all) on", false, true)
-                        .addOption(CHANNEL, "channel", "The channel in which the change takes place, leave empty for the current one")
-                        .setDefaultPermissions(moderatorPermissions),
+                        .addSubcommands(new SubcommandData("set", "Turns on or off reactions for certain messages")
+                                .addOption(STRING, "toggle", "New state of the reaction - either ON or OFF", true, true)
+                                .addOption(STRING, "reaction", "Reaction to change the settings of - leave blank to apply to all reactions", false, true)
+                                .addOption(CHANNEL, "channel", "Channel to apply the setting to - leave blank to apply to all channels", false, false))
+                        .addSubcommands(new SubcommandData("info", "Shows information about the reaction")
+                                .addOption(STRING, "reaction", "Reaction to get the info about", true, true))
+                        .setGuildOnly(true),
                 Commands.slash("cuddle", "Cuddle someone!")
                         .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true),
                 Commands.slash("hug", "Hug someone!")
@@ -186,5 +192,6 @@ public class Cashew {
         remindersManager.setJDA(jda);
         pollManager = new PollManager();
         pollManager.start(jda);
+        reactionsSettingsManager = new ReactionsSettingsManager();
     }
 }

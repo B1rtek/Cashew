@@ -1,138 +1,125 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.database.ChannelActivityDatabase;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import com.birtek.cashew.database.Reaction;
+import com.birtek.cashew.database.ReactionsDatabase;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Locale;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
+
 
 public class Reactions extends BaseCommand {
 
-    Permission[] reactionsCommandPermissions = {
-            Permission.MANAGE_CHANNEL
+    private static final Logger LOGGER = LoggerFactory.getLogger(Reactions.class);
+
+    private final ArrayList<String> toggleOptions = new ArrayList<>() {
+        {
+            add("on");
+            add("off");
+        }
     };
 
-    Map<String, Integer> mapToggleToActivity = Map.of(
-            "off", 0,
-            "on", 1,
-            "all", 2
-    );
+    private final HashMap<String, Reaction> reactionsMap = new HashMap<>();
+    private final ArrayList<String> availableReactions = new ArrayList<>();
 
-    String setActivity(String channelID, int newActivitySetting, boolean differentChannelSpecified) {
-        ChannelActivityDatabase database = ChannelActivityDatabase.getInstance();
-        if (database.updateChannelActivity(channelID, newActivitySetting)) {
-            String target = "this";
-            String annoying = "";
-            String state = "off";
-            if (newActivitySetting > 0) {
-                state = "on";
-            }
-            if (newActivitySetting == 2) {
-                annoying = "(including the ann0y1ng ones) ";
-            }
-            if (differentChannelSpecified) {
-                target = "the specified";
-            }
-            return "Reactions in " + target + " channel " + annoying + "have been turned " + state + ".";
-        } else {
-            return "An error occurred while executing this command.";
+    /**
+     * Gets all reactions from the database and adds them to the list of available reactions and a map that assigns an
+     * ID to every reaction name. If that fails, bot exits with an error message
+     */
+    public Reactions() {
+        ReactionsDatabase database = ReactionsDatabase.getInstance();
+        ArrayList<Reaction> reactions = database.getAllReactions();
+        if (reactions == null) {
+            LOGGER.error("Failed to obtain the reactions list from the database!");
+            System.exit(1);
         }
-    }
-
-    @Override
-    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        String[] args = event.getMessage().getContentRaw().split("\\s+");
-        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "reactions")) {
-            if (checkPermissions(event, reactionsCommandPermissions)) {
-                int newActivitySetting;
-                String channelID = event.getChannel().getId();
-                if (event.isWebhookMessage()) return;
-                if (args.length < 2) {
-                    event.getMessage().reply("Incorrect syntax. Please specify the argument [off|on|all].").mentionRepliedUser(false).queue();
-                    return;
-                } else if (args.length == 2) {
-                    args[1] = args[1].toLowerCase(Locale.ROOT);
-                    switch (args[1]) {
-                        case "off" -> newActivitySetting = 0;
-                        case "on" -> newActivitySetting = 1;
-                        case "all" -> newActivitySetting = 2;
-                        default -> {
-                            event.getMessage().reply("Incorrect syntax. Please specify the argument [off|on|all].").mentionRepliedUser(false).queue();
-                            return;
-                        }
-                    }
-                } else if (args.length == 3) {
-                    try {
-                        channelID = args[1].substring(2, args[1].length() - 1);
-                    } catch (StringIndexOutOfBoundsException e) {
-                        event.getMessage().reply("Incorrect syntax. Type `" + Cashew.COMMAND_PREFIX + "help` for help.").mentionRepliedUser(false).queue();
-                        return;
-                    }
-                    try {
-                        if (event.getGuild().getGuildChannelById(channelID) == null) {
-                            event.getMessage().reply("Invalid channel specified").mentionRepliedUser(false).queue();
-                            return;
-                        }
-                    } catch (NumberFormatException e) {
-                        event.getMessage().reply("Invalid channel specified").mentionRepliedUser(false).queue();
-                        return;
-                    }
-                    args[2] = args[2].toLowerCase(Locale.ROOT);
-                    switch (args[2]) {
-                        case "off" -> newActivitySetting = 0;
-                        case "on" -> newActivitySetting = 1;
-                        case "all" -> newActivitySetting = 2;
-                        default -> {
-                            event.getMessage().reply("Incorrect syntax. Please specify the argument [off|on|all].").mentionRepliedUser(false).queue();
-                            return;
-                        }
-                    }
-                } else {
-                    event.getMessage().reply("Incorrect syntax. Type `" + Cashew.COMMAND_PREFIX + "help` for help.").mentionRepliedUser(false).queue();
-                    return;
-                }
-                //tutaj rzeczy
-                String creationMessage = setActivity(channelID, newActivitySetting, args.length >= 3);
-                event.getMessage().reply(creationMessage).mentionRepliedUser(false).queue();
-            } else {
-                event.getMessage().delete().complete();
-            }
+        for (Reaction reaction : reactions) {
+            availableReactions.add(reaction.name());
+            reactionsMap.put(reaction.name(), reaction);
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("reactions")) {
-            if (checkSlashCommandPermissions(event, reactionsCommandPermissions)) {
-                String toggle = event.getOption("toggle", "", OptionMapping::getAsString);
-                MessageChannel channel = (MessageChannel) event.getOption("channel", null, OptionMapping::getAsChannel);
-                if (!toggle.isEmpty()) {
-                    int newActivity = mapToggleToActivity.get(toggle);
-                    String channelID = event.getChannel().getId();
-                    if (channel != null) {
-                        channelID = channel.getId();
+            String reaction = event.getOption("reaction", "", OptionMapping::getAsString);
+            if (Objects.equals(event.getSubcommandName(), "set")) {
+                int reactionID = 0;
+                if (!reaction.isEmpty()) {
+                    Reaction chosenReaction = reactionsMap.get(reaction);
+                    if (chosenReaction == null) {
+                        event.reply("This reaction doesn't exist").setEphemeral(true).queue();
+                        return;
                     }
-                    String creationMessage = setActivity(channelID, newActivity, channel != null);
-                    event.reply(creationMessage).queue();
+                    reactionID = chosenReaction.id();
+                }
+                if (!checkSlashCommandPermissions(event, modPermissions)) {
+                    event.reply("This command can only be used by server moderators").setEphemeral(true).queue();
+                    return;
+                }
+                GuildChannel channel = event.getOption("channel", null, OptionMapping::getAsChannel);
+                String channelID = "all";
+                if (channel != null) {
+                    channelID = channel.getId();
+                }
+                String serverID = Objects.requireNonNull(event.getGuild()).getId();
+                boolean state = Objects.equals(event.getOption("toggle", "", OptionMapping::getAsString), "on");
+                if (Cashew.reactionsSettingsManager.updateActivitySettings(serverID, channelID, reactionID, state)) {
+                    event.reply("Reactions settings were successfully updated").setEphemeral(true).queue();
+                } else {
+                    event.reply("Something went wrong while applying the settings").setEphemeral(true).queue();
+                }
+            } else if (Objects.equals(event.getSubcommandName(), "info")) {
+                Reaction chosenReaction = reactionsMap.get(reaction);
+                if (chosenReaction == null) {
+                    event.reply("This reaction doesn't exist").setEphemeral(true).queue();
+                } else {
+                    event.replyEmbeds(createReactionInfoEmbed(chosenReaction)).setEphemeral(true).queue();
                 }
             } else {
-                event.reply("You do not have permission to use this command").setEphemeral(true).queue();
+                event.reply("No subcommand chosen (how????)").setEphemeral(true).queue();
             }
         }
     }
 
+    /**
+     * Creates an embed representing a Reaction in a nice form for a user
+     *
+     * @param chosenReaction {@link Reaction Reaction} which will be described by the embed
+     * @return {@link MessageEmbed MessageEmbed} with details about the Reaction
+     */
+    private MessageEmbed createReactionInfoEmbed(Reaction chosenReaction) {
+        EmbedBuilder reactionEmbed = new EmbedBuilder();
+        reactionEmbed.setTitle(chosenReaction.name());
+        StringBuilder reactionTriggers = new StringBuilder();
+        for (String pattern : chosenReaction.patterns()) {
+            reactionTriggers.append(pattern).append(", ");
+        }
+        reactionTriggers.delete(reactionTriggers.length() - 2, reactionTriggers.length());
+        reactionEmbed.addField("Triggers", reactionTriggers.toString(), false);
+        reactionEmbed.setDescription(chosenReaction.description());
+        return reactionEmbed.build();
+    }
+
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if(event.getName().equals("reactions")) {
-            if(event.getFocusedOption().getName().equals("toggle")) {
-                event.replyChoiceStrings("on", "off", "all").queue();
+        if (event.getName().equals("reactions")) {
+            if (event.getFocusedOption().getName().equals("toggle")) {
+                String typed = event.getOption("toggle", "", OptionMapping::getAsString);
+                event.replyChoiceStrings(autocompleteFromList(toggleOptions, typed)).queue();
+            } else if (event.getFocusedOption().getName().equals("reaction")) {
+                String typed = event.getOption("reaction", "", OptionMapping::getAsString);
+                event.replyChoiceStrings(autocompleteFromList(availableReactions, typed)).queue();
             }
         }
     }

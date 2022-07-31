@@ -156,7 +156,7 @@ public class SocialCredit extends BaseCommand {
             }
             String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
             if (Objects.equals(event.getSubcommandName(), "modify")) {
-                if (!checkSlashCommandPermissions(event, manageServerPermission)) {
+                if (!checkSlashCommandPermissions(event, modPermissions)) {
                     int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
                     event.reply("You lose " + amountLost + " social credit for misuse of the social credit system.").queue();
                     return;

@@ -1,9 +1,9 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
+import com.birtek.cashew.database.BirthdayReminderDefaults;
 import com.birtek.cashew.database.BirthdayRemindersDatabase;
 import com.birtek.cashew.timings.BirthdayReminder;
-import com.birtek.cashew.database.BirthdayReminderDefaults;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Channel;
 import net.dv8tion.jda.api.entities.MessageChannel;
@@ -126,7 +126,7 @@ public class Birthday extends BaseCommand {
                     }
                 }
                 case "setdefault" -> {
-                    if (checkSlashCommandPermissions(event, manageServerPermission)) {
+                    if (checkSlashCommandPermissions(event, modPermissions)) {
                         MessageChannel channel = (MessageChannel) event.getOption("channel", null, OptionMapping::getAsChannel);
                         if (channel == null) {
                             event.reply("Invalid channel specified").setEphemeral(true).queue();

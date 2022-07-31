@@ -1,4 +1,4 @@
-package com.birtek.cashew.messagereactions;
+package com.birtek.cashew.reactions;
 
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.entities.emoji.Emoji;

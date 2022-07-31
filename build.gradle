@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.birtek.cashew'
-version '2.20.2'
+version '2.21'
 compileJava.options.encoding = 'UTF-8'
 
 
@@ -20,6 +20,7 @@ dependencies {
     implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
     implementation('ch.qos.logback:logback-classic:1.2.11')
     implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
+    implementation group: 'org.json', name: 'json', version: '20220320'
 }
 
 application {
@@ -39,7 +40,7 @@ build.mustRunAfter clean
 
 jar {
     manifest {
-        attributes  'Class-Path': 'build/libs/Cashew-2.20.2-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
+        attributes  'Class-Path': 'build/libs/Cashew-2.21-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
     }
 }
 
@@ -48,7 +49,7 @@ wrapper {
 }
 
 shadowJar {
-    archiveFileName = "Cashew-2.20.2-all.jar"
+    archiveFileName = "Cashew-2.21-all.jar"
 }
 
 //

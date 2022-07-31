@@ -32,7 +32,7 @@ public class Poll extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if (event.getName().equals("poll") && checkSlashCommandPermissions(event, manageServerPermission)) {
+        if (event.getName().equals("poll") && checkSlashCommandPermissions(event, modPermissions)) {
             EmbedBuilder pollEmbed = new EmbedBuilder();
             String pollTitle = event.getOption("title", null, OptionMapping::getAsString);
             if (pollTitle == null) {
