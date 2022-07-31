@@ -75,33 +75,35 @@ public class BestNeko extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if (Objects.equals(event.getSubcommandName(), "set")) {
-            String neko = event.getOption("neko", "Maple", OptionMapping::getAsString);
-            int id = getNekoID(neko);
-            if (id == 0) {
-                event.reply("This neko doesn't exist!").setEphemeral(true).queue();
-                return;
-            }
-            BestNekoDatabase database = BestNekoDatabase.getInstance();
-            if (database.setNeko(event.getUser().getId(), id)) {
-                event.reply("Favourite neko successfully set to " + neko + "!").setEphemeral(true).queue();
+        if(event.getName().equals("bestneko")) {
+            if (Objects.equals(event.getSubcommandName(), "set")) {
+                String neko = event.getOption("neko", "Maple", OptionMapping::getAsString);
+                int id = getNekoID(neko);
+                if (id == 0) {
+                    event.reply("This neko doesn't exist!").setEphemeral(true).queue();
+                    return;
+                }
+                BestNekoDatabase database = BestNekoDatabase.getInstance();
+                if (database.setNeko(event.getUser().getId(), id)) {
+                    event.reply("Favourite neko successfully set to " + neko + "!").setEphemeral(true).queue();
+                } else {
+                    event.reply("Something went wrong while setting your favourite neko, try again later").setEphemeral(true).queue();
+                }
+            } else if (Objects.equals(event.getSubcommandName(), "send")) {
+                BestNekoDatabase database = BestNekoDatabase.getInstance();
+                int id = database.getNeko(event.getUser().getId());
+                if (id == 0) {
+                    event.reply("You didn't set your favourite neko yet, set the neko with /bestneko set").setEphemeral(true).queue();
+                    return;
+                } else if (id == -1) {
+                    event.reply("Something went wrong while getting your favourite neko, try again later").setEphemeral(true).queue();
+                    return;
+                }
+                String nekoGif = getRandomFavouriteNekoGif(id);
+                event.replyEmbeds(createBestNekoEmbed(nekoGif, getNekoName(id))).queue();
             } else {
-                event.reply("Something went wrong while setting your favourite neko, try again later").setEphemeral(true).queue();
+                event.reply("No subcommand specified (how???)").setEphemeral(true).queue();
             }
-        } else if (Objects.equals(event.getSubcommandName(), "send")) {
-            BestNekoDatabase database = BestNekoDatabase.getInstance();
-            int id = database.getNeko(event.getUser().getId());
-            if (id == 0) {
-                event.reply("You didn't set your favourite neko yet, set the neko with /bestneko set").setEphemeral(true).queue();
-                return;
-            } else if (id == -1) {
-                event.reply("Something went wrong while getting your favourite neko, try again later").setEphemeral(true).queue();
-                return;
-            }
-            String nekoGif = getRandomFavouriteNekoGif(id);
-            event.replyEmbeds(createBestNekoEmbed(nekoGif, getNekoName(id))).queue();
-        } else {
-            event.reply("No subcommand specified (how???)").setEphemeral(true).queue();
         }
     }
 
