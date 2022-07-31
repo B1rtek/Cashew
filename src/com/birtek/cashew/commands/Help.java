@@ -10,10 +10,39 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class Help extends BaseCommand {
+
+    private final ArrayList<String> commands = new ArrayList<>() {
+        {
+            add("bestneko");
+            add("birthday");
+            add("boburnham");
+            add("casesim");
+            add("clear");
+            add("cuddle");
+            add("dadjoke");
+            add("feedback");
+            add("gifts");
+            add("help");
+            add("hug");
+            add("info");
+            add("insp");
+            add("kiss");
+            add("korwin");
+            add("kromer");
+            add("nekoichi");
+            add("pat");
+            add("ping");
+            add("poll");
+            add("reminder");
+            add("reactions");
+            add("scheduler");
+            add("socialcredit");
+        }
+    };
+
 
     private MessageEmbed createSpecificHelpEmbed(String command) {
         EmbedBuilder specificHelpEmbed = new EmbedBuilder();
@@ -54,7 +83,7 @@ public class Help extends BaseCommand {
             specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Nekoichi");
             specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "nekoichi`", "Sends the first two lines of \"Nekoichi\" by Duca, the opening song from Nekopara Vol. 3.", false);
-        } else if (command.equalsIgnoreCase("socialcredit") || command.equalsIgnoreCase("soc")) {
+        } else if (command.equalsIgnoreCase("socialcredit")) {
             specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
             specificHelpEmbed.addField("Works in DMs", "No", true);
             specificHelpEmbed.setTitle("Social credit");
@@ -69,8 +98,7 @@ public class Help extends BaseCommand {
             specificHelpEmbed.addField("`/counting toggle [toggle]`", "Toggles the counting game in the current channel on or off", false);
             specificHelpEmbed.addField("`/counting setcount [count]`", "Sets the current count value for the counting game", false);
             specificHelpEmbed.addField("`/counting reset`", "Resets the current count to zero", false);
-        }
-        else if (command.equalsIgnoreCase("kromer")) {
+        } else if (command.equalsIgnoreCase("kromer")) {
             specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
             specificHelpEmbed.addField("Works in DMs", "Yes", true);
             specificHelpEmbed.setTitle("Kromer");
@@ -122,6 +150,7 @@ public class Help extends BaseCommand {
             specificHelpEmbed.addField("`/birthday delete`", "Deletes your birthday reminder", false);
             specificHelpEmbed.addField("`/birthday check`", "Displays your birthday reminder", false);
             specificHelpEmbed.addField("`/birthday checkdefault`", "Displays server's default birthday reminders channel and whether it overrides user's settings", false);
+            specificHelpEmbed.addField("`/birthday setdefault <channel> <type>`", "Sets the default birthday reminders channel and whether that channel should override user's settings. This subcommand can only be used by moderators", false);
         } else if (command.equalsIgnoreCase("reminder")) {
             specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
             specificHelpEmbed.addField("Works in DMs", "Yes", true);
@@ -159,6 +188,18 @@ public class Help extends BaseCommand {
             specificHelpEmbed.setDescription("Manages Cashew's reactions to user's messages");
             specificHelpEmbed.addField("`/reactions set <toggle> [reaction] [#channel]`", "Changes reactions settings of a certain channel or reaction. Leaving the reaction field blank applies the setting to all reactions, leaving the channel blank applies the setting to all channels, both can be combined. Can only be used by moderators", false);
             specificHelpEmbed.addField("`/reactions info <reaction>`", "Shows information about the selected reaction, describes how it works and what triggers it", false);
+        } else if (command.equalsIgnoreCase("clear")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "Yes", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
+            specificHelpEmbed.setTitle("Clear");
+            specificHelpEmbed.setDescription("A tool for moderators able to remove many messages at once.");
+            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
+            specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear range <ranges>`", "Removes recent messages in the given range. For example, `" + Cashew.COMMAND_PREFIX + "clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
+        } else if(command.equalsIgnoreCase("poll")) {
+            specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+            specificHelpEmbed.addField("Works in DMs", "No", true);
+            specificHelpEmbed.setTitle("Poll");
+            specificHelpEmbed.addField("`/poll <title> <option1> <option2> [option3..5] [timetovote] [unit]`", "Creates a poll. Poll can have between two and five options inclusive. By default polls have time to vote set to 24 hours, this can be changed by setting the `timetovote` and `unit` options.", false);
         }
         else {
             specificHelpEmbed.setTitle("Unknown");
@@ -173,26 +214,11 @@ public class Help extends BaseCommand {
         helpEmbed.setThumbnail(cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`", false);
-        helpEmbed.addField("😂 Fun stuff", "`bestneko`, `/birthday`, `boburnham`, `/casesim`, `dadjoke`, `/gifts`, `insp`, `kromer`, `korwin`, `nekoichi`, `ping`, `socialcredit`", false);
-        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/reactions`", false);
+        helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `dadjoke`, `/gifts`, `insp`, `kromer`, `korwin`, `nekoichi`, `ping`, `/socialcredit`", false);
+        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "clear, `/reactions`, `/poll`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
-    }
-
-    private MessageEmbed createAdminHelpEmbed(String cashewAvatarUrl) {
-        EmbedBuilder helpEmbed = new EmbedBuilder();
-        helpEmbed.setAuthor("🥜 Cashew's admin commands 🥜", null, cashewAvatarUrl);
-        helpEmbed.addField("`/birthday setdefault <channel> <type>`", "Sets the default birthday reminders channel and whether that channel should override user's settings", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
-        helpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear range <ranges>`", "Removes recent messages in the given range. For example, `$clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
-        helpEmbed.addField("`/poll <title> <option1> <option2> [option3..5] [timetovote] [unit]`", "Creates a poll. Poll can have between two and five options inclusive. By default polls have time to vote set to 24 hours, this can be changed by setting the `timetovote` and `unit` options.", false);
-        helpEmbed.setColor(0xffd297);
-        return helpEmbed.build();
-    }
-
-    private String getCashewAvatarFromSlashCommand(SlashCommandInteractionEvent event) {
-        return Objects.requireNonNull(Objects.requireNonNull(event.getGuild()).getMemberById(Cashew.CASHEW_USER_ID)).getUser().getAvatarUrl();
     }
 
     @Override
@@ -208,10 +234,6 @@ public class Help extends BaseCommand {
                 helpEmbed.setFooter("Called by " + Objects.requireNonNull(event.getMember()).getUser().getName(), event.getMember().getUser().getAvatarUrl());
                 event.getChannel().sendMessageEmbeds(helpEmbed.build()).queue();
                 helpEmbed.clear();
-                if (event.isWebhookMessage()) return;
-                if (checkPermissions(event, adminPermissions)) {
-                    event.getAuthor().openPrivateChannel().complete().sendMessageEmbeds(createAdminHelpEmbed(cashewAvatarUrl)).queue();
-                }
             }
         }
     }
@@ -219,14 +241,10 @@ public class Help extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("help")) {
-            String fallbackString = "gaukuvcgdhnvukcgbhkbvxdbkgvcnhjmdbdh(hopefullynoooneevertypesthis)";
-            String command = event.getOption("command", fallbackString, OptionMapping::getAsString);
-            if (command.equals(fallbackString)) {
+            String command = event.getOption("command", "", OptionMapping::getAsString);
+            if (command.isEmpty()) {
                 String cashewAvatarUrl = event.getJDA().getSelfUser().getAvatarUrl();
                 event.replyEmbeds(createGeneralHelpEmbed(cashewAvatarUrl).build()).queue();
-                if (checkSlashCommandPermissions(event, adminPermissions)) {
-                    event.getUser().openPrivateChannel().complete().sendMessageEmbeds(createAdminHelpEmbed(cashewAvatarUrl)).queue();
-                }
             } else {
                 MessageEmbed helpEmbed = createSpecificHelpEmbed(command);
                 event.replyEmbeds(helpEmbed).queue();
@@ -239,14 +257,7 @@ public class Help extends BaseCommand {
         if (event.getName().equals("help")) {
             if (event.getFocusedOption().getName().equals("command")) {
                 String typed = event.getOption("command", "", OptionMapping::getAsString);
-                String[] options = {"bestneko", "birthday", "boburnham", "casesim", "cuddle", "dadjoke", "feedback", "gifts", "help", "hug", "info", "insp", "kiss", "korwin", "kromer", "nekoichi", "pat", "ping", "reminder", "reactions", "scheduler", "socialcredit"};
-                List<String> matching = new ArrayList<>();
-                for (String option : options) {
-                    if (option.contains(typed)) {
-                        matching.add(option);
-                    }
-                }
-                event.replyChoiceStrings(matching).queue();
+                event.replyChoiceStrings(autocompleteFromList(commands, typed)).queue();
             }
         }
     }
