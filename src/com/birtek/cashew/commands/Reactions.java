@@ -34,8 +34,8 @@ public class Reactions extends BaseCommand {
         }
     };
 
-    private HashMap<String, Reaction> reactionsMap;
-    private ArrayList<String> availableReactions;
+    private final HashMap<String, Reaction> reactionsMap = new HashMap<>();
+    private final ArrayList<String> availableReactions = new ArrayList<>();
 
     /**
      * Gets all reactions from the database and adds them to the list of available reactions and a map that assigns an
@@ -111,7 +111,7 @@ public class Reactions extends BaseCommand {
         for (String pattern : chosenReaction.patterns()) {
             reactionTriggers.append(pattern).append(", ");
         }
-        reactionTriggers.delete(reactionTriggers.length() - 2, 2);
+        reactionTriggers.delete(reactionTriggers.length() - 2, reactionTriggers.length());
         reactionEmbed.addField("Triggers", reactionTriggers.toString(), false);
         reactionEmbed.setDescription(chosenReaction.description());
         return reactionEmbed.build();
