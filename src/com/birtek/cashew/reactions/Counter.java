@@ -1,4 +1,4 @@
-package com.birtek.cashew.messagereactions;
+package com.birtek.cashew.reactions;
 
 import com.birtek.cashew.database.CountingDatabase;
 import com.birtek.cashew.database.CountingInfo;
