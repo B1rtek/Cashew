@@ -21,6 +21,7 @@ public class Help extends BaseCommand {
             add("boburnham");
             add("casesim");
             add("clear");
+            add("counting");
             add("cuddle");
             add("dadjoke");
             add("feedback");
@@ -36,8 +37,8 @@ public class Help extends BaseCommand {
             add("pat");
             add("ping");
             add("poll");
-            add("reminder");
             add("reactions");
+            add("reminder");
             add("scheduler");
             add("socialcredit");
         }
@@ -240,8 +241,8 @@ public class Help extends BaseCommand {
         helpEmbed.setThumbnail(cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`", false);
-        helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `dadjoke`, `/gifts`, `insp`, `kromer`, `korwin`, `nekoichi`, `ping`, `/socialcredit`", false);
-        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "clear, `/reactions`, `/poll`", false);
+        helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `/counting`, `dadjoke`, `/gifts`, `insp`, `korwin`, `kromer`, `nekoichi`, `ping`, `/socialcredit`", false);
+        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`clear`, `/poll`, `/reactions`, `/scheduler`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
