@@ -69,8 +69,8 @@ public class ReactionsExecutor extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        if (!event.getMessage().isFromGuild()) return;
         Message message = event.getMessage();
+        if (!message.isFromGuild() || message.getAuthor().isBot()) return;
         String content = message.getContentDisplay();
         for (Reaction reaction : reactions) {
             if (isTriggered(reaction, content) && isActive(message, reaction)) {
