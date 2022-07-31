@@ -84,7 +84,7 @@ public class Cashew {
                         .setGuildOnly(true),
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
                         .addSubcommands(new SubcommandData("set", "Turns on or off reactions for certain messages")
-                                .addOption(STRING, "toggle", "New state of the reaction - either ON or OFF", true, false)
+                                .addOption(STRING, "toggle", "New state of the reaction - either ON or OFF", true, true)
                                 .addOption(STRING, "reaction", "Reaction to change the settings of - leave blank to apply to all reactions", false, true)
                                 .addOption(CHANNEL, "channel", "Channel to apply the setting to - leave blank to apply to all channels", false, false))
                         .addSubcommands(new SubcommandData("info", "Shows information about the reaction")
