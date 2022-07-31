@@ -35,6 +35,15 @@ public class ChannelActivityDatabase {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = channelActivityConnection.prepareStatement("DROP TABLE IF EXISTS channelactivity");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to remove the channelactivity table!");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**
