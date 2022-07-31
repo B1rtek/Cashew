@@ -7,10 +7,7 @@ import com.birtek.cashew.events.GuildMemberJoinAndLeave;
 import com.birtek.cashew.messagereactions.Counter;
 import com.birtek.cashew.messagereactions.OwosEtc;
 import com.birtek.cashew.messagereactions.ReactToMaple;
-import com.birtek.cashew.timings.BirthdayRemindersManager;
-import com.birtek.cashew.timings.PollManager;
-import com.birtek.cashew.timings.RemindersManager;
-import com.birtek.cashew.timings.ScheduledMessagesManager;
+import com.birtek.cashew.timings.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -39,6 +36,7 @@ public class Cashew {
     public static BirthdayRemindersManager birthdayRemindersManager;
     public static RemindersManager remindersManager;
     public static PollManager pollManager;
+    public static ReactionsSettingsManager reactionsSettingsManager;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
 
@@ -195,5 +193,6 @@ public class Cashew {
         remindersManager.setJDA(jda);
         pollManager = new PollManager();
         pollManager.start(jda);
+        reactionsSettingsManager = new ReactionsSettingsManager();
     }
 }
