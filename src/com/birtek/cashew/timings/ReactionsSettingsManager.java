@@ -1,10 +1,13 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.database.ReactionsSettingsDatabase;
+import com.birtek.cashew.database.Reaction;
+import com.birtek.cashew.database.ReactionsDatabase;
 import com.birtek.cashew.database.ReactionsSettings;
+import com.birtek.cashew.database.ReactionsSettingsDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -17,10 +20,18 @@ public class ReactionsSettingsManager {
     private final HashMap<String, ReactionsSettings> settingsMap;
 
     /**
-     * Creates the manager object and fetches all settings from the database. If the database returns an error, bot
+     * Creates the manager object, fetches all reactions and passes them to ReactionsSettings,
+     * and fetches all settings from the database. If the database returns an error, bot
      * shuts down
      */
     public ReactionsSettingsManager() {
+        ReactionsDatabase rDatabase = ReactionsDatabase.getInstance();
+        ArrayList<Reaction> allReactions = rDatabase.getAllReactions();
+        if (allReactions == null) {
+            LOGGER.error("Failed to obtain reactions!");
+            System.exit(1);
+        }
+        ReactionsSettings.setAllReactions(allReactions);
         ReactionsSettingsDatabase database = ReactionsSettingsDatabase.getInstance();
         settingsMap = database.getAllReactionsSettings();
         if (settingsMap == null) {
@@ -57,7 +68,7 @@ public class ReactionsSettingsManager {
      * @param serverID   ID of the server to check the settings for
      * @param channelID  ID of the channel to check the settings for
      * @param reactionID ID of the reaction to check the settings for
-     * @param state new setting to set for the specified combination of options
+     * @param state      new setting to set for the specified combination of options
      * @return activity setting for the channel - either true or false
      */
     public boolean updateActivitySettings(String serverID, String channelID, int reactionID, boolean state) {

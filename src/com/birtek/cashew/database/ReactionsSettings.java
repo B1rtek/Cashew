@@ -2,6 +2,7 @@ package com.birtek.cashew.database;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -11,6 +12,8 @@ public class ReactionsSettings {
 
     private final String serverID;
     private final JSONObject settings;
+
+    private static ArrayList<Reaction> allReactions;
 
     /**
      * Creates a ReactionsSettings object from an existing JSON from the database, used by the
@@ -35,39 +38,8 @@ public class ReactionsSettings {
         this.serverID = serverID;
     }
 
-    /**
-     * Sets the activity of a reaction to a certain state in the specified channel
-     *
-     * @param reactionID ID of the reaction to change settings of, 0 for all
-     * @param channelID  ID of the channel to change the setting in, set to "all" to set it in all channels
-     * @param state      new settings state - true is on, false is off
-     */
-    public void setActivity(int reactionID, String channelID, boolean state) {
-        String srID = String.valueOf(reactionID);
-        if (reactionID == 0) { // setting all - remove all settings and replace them with { "all": <state> }
-            Iterator<String> reactionsKeys = settings.keys();
-            while (reactionsKeys.hasNext()) {
-                String key = reactionsKeys.next();
-                settings.remove(key);
-            }
-            settings.put("all", state);
-        } else {
-            JSONObject reactionObject;
-            if (!settings.has(srID)) {
-                reactionObject = new JSONObject();
-            } else {
-                reactionObject = settings.getJSONObject(srID);
-            }
-            if (channelID.equals("all")) { // setting for all channels - remove settings for single channels
-                Iterator<String> channelsKeys = reactionObject.keys();
-                while (channelsKeys.hasNext()) {
-                    String key = channelsKeys.next();
-                    reactionObject.remove(key);
-                }
-            }
-            reactionObject.put(channelID, state);
-            settings.put(srID, reactionObject);
-        }
+    public static void setAllReactions(ArrayList<Reaction> reactions) {
+        allReactions = reactions;
     }
 
     /**
@@ -106,5 +78,61 @@ public class ReactionsSettings {
 
     public String getServerID() {
         return serverID;
+    }
+
+    /**
+     * Sets the activity of a reaction to a certain state in the specified channel
+     *
+     * @param reactionID ID of the reaction to change settings of, 0 for all
+     * @param channelID  ID of the channel to change the setting in, set to "all" to set it in all channels
+     * @param state      new settings state - true is on, false is off
+     */
+    public void setActivity(int reactionID, String channelID, boolean state) {
+        String srID = String.valueOf(reactionID);
+        if (reactionID == 0) {
+            if(!channelID.equals("all")) { // turning on or off all reactions in a certain channel
+                for(Reaction reaction: allReactions) {
+                    if(getActivity(reaction.id(), channelID) != state) {
+                        JSONObject reactionSettings;
+                        if(!settings.has(String.valueOf(reaction.id()))) {
+                            reactionSettings = new JSONObject();
+                        } else {
+                            reactionSettings = settings.getJSONObject(String.valueOf(reaction.id()));
+                        }
+                        reactionSettings.put(channelID, state);
+                        settings.put(String.valueOf(reaction.id()), reactionSettings);
+                    }
+                }
+            } else { // setting all - remove all settings and replace them with { "all": <state> }
+                Iterator<String> reactionsKeys = settings.keys();
+                ArrayList<String> keys = new ArrayList<>();
+                while (reactionsKeys.hasNext()) {
+                    keys.add(reactionsKeys.next());
+                }
+                for(String key: keys) {
+                    settings.remove(key);
+                }
+                settings.put("all", state);
+            }
+        } else {
+            JSONObject reactionObject;
+            if (!settings.has(srID)) {
+                reactionObject = new JSONObject();
+            } else {
+                reactionObject = settings.getJSONObject(srID);
+            }
+            if (channelID.equals("all")) { // setting for all channels - remove settings for single channels
+                Iterator<String> channelsKeys = reactionObject.keys();
+                ArrayList<String> keys = new ArrayList<>();
+                while (channelsKeys.hasNext()) {
+                    keys.add(channelsKeys.next());
+                }
+                for(String key: keys) {
+                    reactionObject.remove(key);
+                }
+            }
+            reactionObject.put(channelID, state);
+            settings.put(srID, reactionObject);
+        }
     }
 }
