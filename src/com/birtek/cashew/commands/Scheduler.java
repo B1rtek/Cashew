@@ -3,7 +3,6 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.ScheduledMessagesDatabase;
 import com.birtek.cashew.timings.ScheduledMessage;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -21,10 +20,6 @@ import java.util.Objects;
  * set up messages that will be sent every day at the given hour, remove them and list them
  */
 public class Scheduler extends BaseCommand {
-
-    Permission[] timedMessageCommandPermissions = {
-            Cashew.moderatorPermission
-    };
 
     /**
      * Returns a table listing selected {@link ScheduledMessage ScheduledMessages}
@@ -118,7 +113,7 @@ public class Scheduler extends BaseCommand {
                 event.reply("Scheduler doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
-            if (checkSlashCommandPermissions(event, timedMessageCommandPermissions)) {
+            if (checkSlashCommandPermissions(event, modPermissions)) {
                 if (event.getSubcommandName() == null) {
                     event.reply("No command specified (how???)").setEphemeral(true).queue();
                 }

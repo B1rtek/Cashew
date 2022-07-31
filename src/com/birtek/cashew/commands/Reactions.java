@@ -4,7 +4,6 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.Reaction;
 import com.birtek.cashew.database.ReactionsDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.GuildChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -22,10 +21,6 @@ import java.util.Objects;
 public class Reactions extends BaseCommand {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Reactions.class);
-
-    private final Permission[] reactionsCommandPermissions = {
-            Cashew.moderatorPermission
-    };
 
     private final ArrayList<String> toggleOptions = new ArrayList<>() {
         {
@@ -68,7 +63,7 @@ public class Reactions extends BaseCommand {
                     }
                     reactionID = chosenReaction.id();
                 }
-                if (!checkSlashCommandPermissions(event, reactionsCommandPermissions)) {
+                if (!checkSlashCommandPermissions(event, modPermissions)) {
                     event.reply("This command can only be used by server moderators").setEphemeral(true).queue();
                     return;
                 }

@@ -2,7 +2,6 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -20,10 +19,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class Clear extends BaseCommand {
-
-    Permission[] clearCommandPermissions = {
-            Permission.MESSAGE_MANAGE
-    };
 
     private MessageEmbed removeRecentMessages(MessageChannel channel, int count, boolean slashCommand) {
         EmbedBuilder clearEmbed = new EmbedBuilder();
@@ -158,7 +153,7 @@ public class Clear extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "clear")) {
-            if (checkPermissions(event, clearCommandPermissions)) {
+            if (checkPermissions(event, modPermissions)) {
                 if (event.isWebhookMessage()) return;
                 if (args.length < 2) {
                     event.getChannel().sendMessageEmbeds(removeRecentMessages(event.getChannel(), 2, false)).queue(message -> message.addReaction(Emoji.fromUnicode("❌")).queue());
@@ -192,7 +187,7 @@ public class Clear extends BaseCommand {
                 event.reply("Clear doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
-            if (checkSlashCommandPermissions(event, clearCommandPermissions)) {
+            if (checkSlashCommandPermissions(event, modPermissions)) {
                 int recent = event.getOption("recent", 0, OptionMapping::getAsInt);
                 String range = event.getOption("range", "", OptionMapping::getAsString);
                 MessageEmbed clearEmbed;

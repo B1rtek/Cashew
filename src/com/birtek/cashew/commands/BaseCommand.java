@@ -51,8 +51,8 @@ public class BaseCommand extends ListenerAdapter {
             Permission.MODERATE_MEMBERS
     };
 
-    public Permission[] manageServerPermission = {
-            Permission.MANAGE_SERVER
+    public Permission[] modPermissions = {
+            Cashew.moderatorPermission
     };
 
     protected ArrayList<String> timeUnits = new ArrayList<>() {
