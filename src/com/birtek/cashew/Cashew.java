@@ -62,7 +62,8 @@ public class Cashew {
                 Commands.slash("bestneko", "Set and send a gif of your favourite neko!")
                         .addSubcommands(new SubcommandData("set", "Set your favourite neko")
                                 .addOption(STRING, "neko", "Neko to set as favourite", true, true))
-                        .addSubcommands(new SubcommandData("send", "Send a random gif of your favourite neko")),
+                        .addSubcommands(new SubcommandData("send", "Send a random gif of your favourite neko"))
+                        .addSubcommands(new SubcommandData("chart", "Shows a piechart of the globak favourite nekos distribution")),
                 Commands.slash("boburnham", "Sends you a random quote from Bo Burnham's songs")
                         .addOption(STRING, "nsfw", "Decide whether you want an nsfw quote or not", false, true),
                 Commands.slash("dadjoke", "Sends you a random dad joke from icanhazdadjoke.com"),
