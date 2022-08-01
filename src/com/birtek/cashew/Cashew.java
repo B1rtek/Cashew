@@ -184,7 +184,10 @@ public class Cashew {
                         .addOption(INTEGER, "timetovote", "Time after which the poll will conclude, by default 24 hours", false, false)
                         .addOption(STRING, "unit", "Unit of the time to vote, hours by default", false, true)
                         .setDefaultPermissions(moderatorPermissions)
-                        .setGuildOnly(true)
+                        .setGuildOnly(true),
+                Commands.slash("roll", "Roll a dice")
+                        .addOption(INTEGER,"sides", "Number of sides of the dice, 6 by default", false, false)
+                        .addOption(INTEGER, "rolls", "Number of rolls to perform", false, false)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
