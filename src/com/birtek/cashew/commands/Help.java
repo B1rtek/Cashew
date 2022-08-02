@@ -56,6 +56,7 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.setTitle("Best neko");
                 specificHelpEmbed.addField("`/bestneko set <neko>`", "Sets your favourite neko", false);
                 specificHelpEmbed.addField("`/bestneko send`", "Sends a gif of your favourite neko", false);
+                specificHelpEmbed.addField("`/bestneko chart`", "Shows a piechart of global favourite nekos distribution", false);
             }
             case "birthday" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
