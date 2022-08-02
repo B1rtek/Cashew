@@ -174,8 +174,8 @@ public class BestNekoDatabase {
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<Pair<String, Integer>> distribution = new ArrayList<>();
             while(results.next()) {
-                String neko = nekos.get(results.getInt(3)-1);
-                distribution.add(Pair.of(neko, results.getInt(2)));
+                String neko = nekos.get(results.getInt(2)-1);
+                distribution.add(Pair.of(neko, results.getInt(1)));
             }
             return distribution;
         } catch (SQLException e) {
