@@ -33,12 +33,13 @@ import java.util.*;
 public class BaseCommand extends ListenerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseCommand.class);
-    private static Font leaderboardFont;
+    private static Font leaderboardFont, piechartFont;
 
     static {
         System.setProperty("awt.useSystemAAFontSettings", "lcd");
         try {
             leaderboardFont = Font.createFont(Font.TRUETYPE_FONT, new File("fonts/NotoSansDisplay-Regular.ttf")).deriveFont(Font.PLAIN, 24);
+            piechartFont = Font.createFont(Font.TRUETYPE_FONT, new File("fonts/NotoSansDisplay-Regular.ttf")).deriveFont(Font.PLAIN, 40);
         } catch (FontFormatException | IOException e) {
             LOGGER.error("Failed to load the custom leaderboards font!");
         }
@@ -285,7 +286,7 @@ public class BaseCommand extends ListenerAdapter {
         graphics.dispose();
         // https://stackoverflow.com/questions/4251383/how-to-convert-bufferedimage-to-inputstream
         InputStream result = convertToInputStream(bi);
-        if(result == null) {
+        if (result == null) {
             LOGGER.error("Failed to generate leaderboard " + pointsName);
         }
         return result;
@@ -315,36 +316,52 @@ public class BaseCommand extends ListenerAdapter {
     protected InputStream generatePiechart(ArrayList<Pair<String, Integer>> distribution, HashMap<String, Color> colorMap, String title) {
         BufferedImage bi = new BufferedImage(500, 500, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = bi.createGraphics();
-        ArrayList<Slice> slices = new ArrayList<>();
         double total = 0.0, current = 0.0;
-        int startAngle;
         for (Pair<String, Integer> record : distribution) {
-            slices.add(new Slice(record.getRight(), colorMap.get(record.getLeft())));
             total += record.getRight();
         }
-        for (Slice slice : slices) {
+        int startAngle;
+        graphics.setFont(leaderboardFont);
+        for (Pair<String, Integer> slice : distribution) {
             startAngle = (int) (current * 360 / total);
-            int arcAngle = (int) (slice.value * 360 / total);
-            graphics.setColor(slice.color);
+            int arcAngle = (int) (slice.getRight() * 360 / total);
+            graphics.setColor(colorMap.get(slice.getLeft()));
             graphics.fillArc(0, 0, 500, 500, startAngle, arcAngle);
-            current += slice.value;
+            current += slice.getRight();
+
+        }
+        current = 0.0;
+        graphics.setColor(Color.BLACK);
+        for (Pair<String, Integer> slice : distribution) {
+            startAngle = (int) (current * 360 / total);
+            int arcAngle = (int) (slice.getRight() * 360 / total);
+            Pair<Integer, Integer> position = calculateTextPositionOnCircle(Pair.of(250, 250), 250, startAngle + arcAngle / 2 + 90, 0.65, slice.getLeft(), 12, 24);
+            graphics.drawString(slice.getLeft(), position.getLeft(), position.getRight());
+            String percentage = Math.round((double) slice.getRight() * 100.0 / total * 100.0) / 100.0 + " %";
+            position = calculatePercentagePosition(position, slice.getLeft(), percentage, 12, 24);
+            graphics.drawString(percentage, position.getLeft(), position.getRight());
+            current += slice.getRight();
         }
         graphics.dispose();
         InputStream result = convertToInputStream(bi);
-        if(result == null) {
+        if (result == null) {
             LOGGER.error("Failed to generate piechart " + title);
         }
         return result;
     }
 
-    private class Slice {
-        double value;
-        Color color;
+    private Pair<Integer, Integer> calculateTextPositionOnCircle(Pair<Integer, Integer> center, int radius, int angle, double awayFromCenter, String text, int characterWidth, int characterHeight) {
+        int x = (int) (Math.round(Math.sin((double) angle * Math.PI / 180.0) * radius * awayFromCenter) + center.getLeft());
+        x -= text.length() * characterWidth / 2;
+        int y = (int) Math.round(Math.cos((double) angle * Math.PI / 180.0) * radius * awayFromCenter) + center.getRight();
+        y += characterHeight / 2;
+        return Pair.of(x, y);
+    }
 
-        public Slice(double value, Color color) {
-            this.value = value;
-            this.color = color;
-        }
+    private Pair<Integer, Integer> calculatePercentagePosition(Pair<Integer, Integer> labelOrigin, String label, String percentageLabel, int characterWidth, int characterHeight) {
+        int x = labelOrigin.getLeft() + (label.length() - percentageLabel.length()) * characterWidth / 2;
+        int y = labelOrigin.getRight() + characterHeight;
+        return Pair.of(x, y);
     }
 
     public static boolean isPrivateChannel(SlashCommandInteractionEvent event) {
