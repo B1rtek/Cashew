@@ -47,7 +47,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
                         new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
@@ -62,7 +62,8 @@ public class Cashew {
                 Commands.slash("bestneko", "Set and send a gif of your favourite neko!")
                         .addSubcommands(new SubcommandData("set", "Set your favourite neko")
                                 .addOption(STRING, "neko", "Neko to set as favourite", true, true))
-                        .addSubcommands(new SubcommandData("send", "Send a random gif of your favourite neko")),
+                        .addSubcommands(new SubcommandData("send", "Send a random gif of your favourite neko"))
+                        .addSubcommands(new SubcommandData("chart", "Shows a piechart of the globak favourite nekos distribution")),
                 Commands.slash("boburnham", "Sends you a random quote from Bo Burnham's songs")
                         .addOption(STRING, "nsfw", "Decide whether you want an nsfw quote or not", false, true),
                 Commands.slash("dadjoke", "Sends you a random dad joke from icanhazdadjoke.com"),
@@ -184,7 +185,10 @@ public class Cashew {
                         .addOption(INTEGER, "timetovote", "Time after which the poll will conclude, by default 24 hours", false, false)
                         .addOption(STRING, "unit", "Unit of the time to vote, hours by default", false, true)
                         .setDefaultPermissions(moderatorPermissions)
-                        .setGuildOnly(true)
+                        .setGuildOnly(true),
+                Commands.slash("roll", "Roll a dice")
+                        .addOption(INTEGER,"sides", "Number of sides of the dice, 6 by default", false, false)
+                        .addOption(INTEGER, "rolls", "Number of rolls to perform", false, false)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);

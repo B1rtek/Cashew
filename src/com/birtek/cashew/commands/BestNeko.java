@@ -7,14 +7,21 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Random;
 
 public class BestNeko extends BaseCommand {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BestNeko.class);
     private final ArrayList<String> nekos;
     private final ArrayList<ArrayList<String>> nekoGifs;
 
@@ -75,7 +82,7 @@ public class BestNeko extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if(event.getName().equals("bestneko")) {
+        if (event.getName().equals("bestneko")) {
             if (Objects.equals(event.getSubcommandName(), "set")) {
                 String neko = event.getOption("neko", "Maple", OptionMapping::getAsString);
                 int id = getNekoID(neko);
@@ -101,6 +108,31 @@ public class BestNeko extends BaseCommand {
                 }
                 String nekoGif = getRandomFavouriteNekoGif(id);
                 event.replyEmbeds(createBestNekoEmbed(nekoGif, getNekoName(id))).queue();
+            } else if (Objects.equals(event.getSubcommandName(), "chart")) {
+                BestNekoDatabase database = BestNekoDatabase.getInstance();
+                ArrayList<Pair<String, Integer>> distribution = database.getNekosDistribution();
+                BestNekoGifsDatabase gifsDatabase = BestNekoGifsDatabase.getInstance();
+                HashMap<String, Color> nekoColors = gifsDatabase.getNekoColors();
+                String chartName = "Favourite nekos distribution chart";
+                InputStream bestNekoPiechart = generatePiechart(distribution, nekoColors, chartName);
+                if(bestNekoPiechart == null) {
+                    LOGGER.warn("/bestneko chart generated a null image!");
+                    event.reply("Failed to generate the piechart, try again later").setEphemeral(true).queue();
+                    return;
+                }
+                EmbedBuilder piechartEmbed = new EmbedBuilder();
+                piechartEmbed.setTitle(chartName);
+                double total = 0.0;
+                for(Pair<String, Integer> neko: distribution) {
+                    total += neko.getRight();
+                }
+                for(Pair<String, Integer> neko: distribution) {
+                    String percentage = Math.round((double) neko.getRight() * 100.0 / total * 100.0) / 100.0 + " %";
+                    piechartEmbed.addField(neko.getLeft(), percentage, true);
+                }
+                piechartEmbed.setImage("attachment://piechart.png");
+                piechartEmbed.setColor(nekoColors.get(distribution.get(0).getLeft()));
+                event.replyFile(bestNekoPiechart, "piechart.png").addEmbeds(piechartEmbed.build()).queue();
             } else {
                 event.reply("No subcommand specified (how???)").setEphemeral(true).queue();
             }
@@ -109,8 +141,8 @@ public class BestNeko extends BaseCommand {
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if(event.getName().startsWith("bestneko")) {
-            if(event.getFocusedOption().getName().equals("neko")) {
+        if (event.getName().startsWith("bestneko")) {
+            if (event.getFocusedOption().getName().equals("neko")) {
                 String typed = event.getOption("neko", "", OptionMapping::getAsString);
                 event.replyChoiceStrings(autocompleteFromList(nekos, typed)).queue();
             }

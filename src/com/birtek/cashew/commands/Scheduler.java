@@ -109,7 +109,7 @@ public class Scheduler extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("scheduler")) {
-            if (isPrivateChannel(event)) {
+            if (!event.isFromGuild()) {
                 event.reply("Scheduler doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }

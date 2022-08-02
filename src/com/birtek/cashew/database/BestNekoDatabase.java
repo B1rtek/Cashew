@@ -1,9 +1,11 @@
 package com.birtek.cashew.database;
 
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class BestNekoDatabase {
 
@@ -154,6 +156,31 @@ public class BestNekoDatabase {
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at BestNekoDatabase.getNeko()");
             return -1;
+        }
+    }
+
+    /**
+     * Gets the "leaderboard" of favourite neko choices
+     *
+     * @return an ArrayList of {@link Pair Pairs} containing their name and the amount of people who chose them, without
+     * the nekos who weren't chosen by anyone or null if an error occurred
+     */
+    public ArrayList<Pair<String, Integer>> getNekosDistribution() {
+        BestNekoGifsDatabase database = BestNekoGifsDatabase.getInstance();
+        ArrayList<String> nekos =  database.getNekos();
+        if(nekos == null) return null;
+        try {
+            PreparedStatement preparedStatement = bestNekoConnection.prepareStatement("select count(*) as total, neko from bestneko group by neko order by total desc");
+            ResultSet results = preparedStatement.executeQuery();
+            ArrayList<Pair<String, Integer>> distribution = new ArrayList<>();
+            while(results.next()) {
+                String neko = nekos.get(results.getInt(2)-1);
+                distribution.add(Pair.of(neko, results.getInt(1)));
+            }
+            return distribution;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at BestNekoDatabase.getNekosDistribution()");
+            return null;
         }
     }
 }

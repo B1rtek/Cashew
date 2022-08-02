@@ -60,7 +60,7 @@ public class Counting extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("counting")) {
-            if (isPrivateChannel(event)) {
+            if (!event.isFromGuild()) {
                 event.reply("Counting doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
