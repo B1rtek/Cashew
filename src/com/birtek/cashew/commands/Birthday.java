@@ -59,7 +59,7 @@ public class Birthday extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("birthday")) {
-            if (isPrivateChannel(event)) {
+            if (!event.isFromGuild()) {
                 event.reply("Birthday reminders command doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }

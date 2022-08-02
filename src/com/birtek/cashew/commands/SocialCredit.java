@@ -150,7 +150,7 @@ public class SocialCredit extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("socialcredit")) {
-            if (isPrivateChannel(event)) {
+            if (!event.isFromGuild()) {
                 event.reply("Social credit doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
