@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -283,12 +284,19 @@ public class BaseCommand extends ListenerAdapter {
         table.paint(graphics);
         graphics.dispose();
         // https://stackoverflow.com/questions/4251383/how-to-convert-bufferedimage-to-inputstream
+        InputStream result = convertToInputStream(bi);
+        if(result == null) {
+            LOGGER.error("Failed to generate leaderboard " + pointsName);
+        }
+        return result;
+    }
+
+    private InputStream convertToInputStream(BufferedImage bi) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             ImageIO.write(bi, "png", outputStream);
             return new ByteArrayInputStream(outputStream.toByteArray());
         } catch (IOException e) {
-            LOGGER.error("Failed to generate leaderboard " + pointsName);
             return null;
         }
     }
@@ -299,6 +307,44 @@ public class BaseCommand extends ListenerAdapter {
             width = Math.max(width, String.valueOf(record.count()).length());
         }
         return width * 15;
+    }
+
+    // this is going to be so awful
+    // credit: tutorialspoint.com/javaexamples/gui_piechart.htm
+
+    protected InputStream generatePiechart(ArrayList<Pair<String, Integer>> distribution, HashMap<String, Color> colorMap, String title) {
+        BufferedImage bi = new BufferedImage(500, 500, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = bi.createGraphics();
+        ArrayList<Slice> slices = new ArrayList<>();
+        double total = 0.0, current = 0.0;
+        int startAngle;
+        for (Pair<String, Integer> record : distribution) {
+            slices.add(new Slice(record.getRight(), colorMap.get(record.getLeft())));
+            total += record.getRight();
+        }
+        for (Slice slice : slices) {
+            startAngle = (int) (current * 360 / total);
+            int arcAngle = (int) (slice.value * 360 / total);
+            graphics.setColor(slice.color);
+            graphics.fillArc(0, 0, 500, 500, startAngle, arcAngle);
+            current += slice.value;
+        }
+        graphics.dispose();
+        InputStream result = convertToInputStream(bi);
+        if(result == null) {
+            LOGGER.error("Failed to generate piechart " + title);
+        }
+        return result;
+    }
+
+    private class Slice {
+        double value;
+        Color color;
+
+        public Slice(double value, Color color) {
+            this.value = value;
+            this.color = color;
+        }
     }
 
     public static boolean isPrivateChannel(SlashCommandInteractionEvent event) {
