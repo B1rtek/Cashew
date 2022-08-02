@@ -33,25 +33,16 @@ import java.util.*;
 public class BaseCommand extends ListenerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseCommand.class);
-    private static Font leaderboardFont, piechartFont;
+    private static Font leaderboardFont;
 
     static {
         System.setProperty("awt.useSystemAAFontSettings", "lcd");
         try {
             leaderboardFont = Font.createFont(Font.TRUETYPE_FONT, new File("fonts/NotoSansDisplay-Regular.ttf")).deriveFont(Font.PLAIN, 24);
-            piechartFont = Font.createFont(Font.TRUETYPE_FONT, new File("fonts/NotoSansDisplay-Regular.ttf")).deriveFont(Font.PLAIN, 40);
         } catch (FontFormatException | IOException e) {
             LOGGER.error("Failed to load the custom leaderboards font!");
         }
     }
-
-    public Permission[] adminPermissions = {
-            Permission.ADMINISTRATOR
-    };
-
-    public Permission[] moderateMembersPermission = {
-            Permission.MODERATE_MEMBERS
-    };
 
     public Permission[] modPermissions = {
             Cashew.moderatorPermission
@@ -365,9 +356,5 @@ public class BaseCommand extends ListenerAdapter {
         int x = labelOrigin.getLeft() + (label.length() - percentageLabel.length()) * characterWidth / 2;
         int y = labelOrigin.getRight() + characterHeight;
         return Pair.of(x, y);
-    }
-
-    public static boolean isPrivateChannel(SlashCommandInteractionEvent event) {
-        return event.getGuild() == null;
     }
 }
