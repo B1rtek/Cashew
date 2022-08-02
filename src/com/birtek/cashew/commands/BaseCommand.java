@@ -316,31 +316,35 @@ public class BaseCommand extends ListenerAdapter {
     protected InputStream generatePiechart(ArrayList<Pair<String, Integer>> distribution, HashMap<String, Color> colorMap, String title) {
         BufferedImage bi = new BufferedImage(500, 500, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = bi.createGraphics();
-        double total = 0.0, current = 0.0;
+        double total = 0.0;
         for (Pair<String, Integer> record : distribution) {
             total += record.getRight();
         }
-        int startAngle;
+        ArrayList<Integer> angles = new ArrayList<>();
+        angles.add(0);
+        for(Pair<String, Integer> record: distribution) {
+            angles.add((int) Math.round(((double) record.getRight() * 360.0 / total)) + angles.get(angles.size()-1));
+        }
         graphics.setFont(leaderboardFont);
+        int degreeIndex = 1, startAngle, arcAngle;
         for (Pair<String, Integer> slice : distribution) {
-            startAngle = (int) (current * 360 / total);
-            int arcAngle = (int) (slice.getRight() * 360 / total);
+            startAngle = angles.get(degreeIndex-1);
+            arcAngle = angles.get(degreeIndex) - startAngle;
             graphics.setColor(colorMap.get(slice.getLeft()));
             graphics.fillArc(0, 0, 500, 500, startAngle, arcAngle);
-            current += slice.getRight();
-
+            degreeIndex++;
         }
-        current = 0.0;
         graphics.setColor(Color.BLACK);
+        degreeIndex = 1;
         for (Pair<String, Integer> slice : distribution) {
-            startAngle = (int) (current * 360 / total);
-            int arcAngle = (int) (slice.getRight() * 360 / total);
-            Pair<Integer, Integer> position = calculateTextPositionOnCircle(Pair.of(250, 250), 250, startAngle + arcAngle / 2 + 90, 0.65, slice.getLeft(), 12, 24);
+            startAngle = angles.get(degreeIndex-1);
+            arcAngle = angles.get(degreeIndex) - startAngle;
+            Pair<Integer, Integer> position = calculateTextPositionOnCircle(Pair.of(250, 250), 250, startAngle + arcAngle / 2 + 90, 0.75, slice.getLeft(), 12, 24);
             graphics.drawString(slice.getLeft(), position.getLeft(), position.getRight());
             String percentage = Math.round((double) slice.getRight() * 100.0 / total * 100.0) / 100.0 + " %";
             position = calculatePercentagePosition(position, slice.getLeft(), percentage, 12, 24);
             graphics.drawString(percentage, position.getLeft(), position.getRight());
-            current += slice.getRight();
+            degreeIndex++;
         }
         graphics.dispose();
         InputStream result = convertToInputStream(bi);
@@ -354,7 +358,6 @@ public class BaseCommand extends ListenerAdapter {
         int x = (int) (Math.round(Math.sin((double) angle * Math.PI / 180.0) * radius * awayFromCenter) + center.getLeft());
         x -= text.length() * characterWidth / 2;
         int y = (int) Math.round(Math.cos((double) angle * Math.PI / 180.0) * radius * awayFromCenter) + center.getRight();
-        y += characterHeight / 2;
         return Pair.of(x, y);
     }
 
