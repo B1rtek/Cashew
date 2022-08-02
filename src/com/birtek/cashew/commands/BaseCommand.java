@@ -340,9 +340,12 @@ public class BaseCommand extends ListenerAdapter {
         }
         ArrayList<Integer> angles = new ArrayList<>();
         angles.add(0);
+        double curTotal = 0.0;
         for (Pair<String, Integer> record : distribution) {
-            angles.add((int) Math.round(((double) record.getRight() * 360.0 / total)) + angles.get(angles.size() - 1));
+            curTotal += record.getRight();
+            angles.add((int) Math.round(curTotal * 360.0 / total));
         }
+        if(angles.get(angles.size()-1) != 360) angles.set(angles.size()-1, 360);
         graphics.setFont(leaderboardFont);
         int degreeIndex = 1, startAngle, arcAngle;
         for (Pair<String, Integer> slice : distribution) {
