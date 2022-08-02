@@ -113,7 +113,7 @@ public class BestNeko extends BaseCommand {
                 ArrayList<Pair<String, Integer>> distribution = database.getNekosDistribution();
                 BestNekoGifsDatabase gifsDatabase = BestNekoGifsDatabase.getInstance();
                 HashMap<String, Color> nekoColors = gifsDatabase.getNekoColors();
-                String chartName = "Favourite nekos distribution";
+                String chartName = "Favourite nekos distribution chart";
                 InputStream bestNekoPiechart = generatePiechart(distribution, nekoColors, chartName);
                 if(bestNekoPiechart == null) {
                     LOGGER.warn("/bestneko chart generated a null image!");
@@ -122,7 +122,16 @@ public class BestNeko extends BaseCommand {
                 }
                 EmbedBuilder piechartEmbed = new EmbedBuilder();
                 piechartEmbed.setTitle(chartName);
+                double total = 0.0;
+                for(Pair<String, Integer> neko: distribution) {
+                    total += neko.getRight();
+                }
+                for(Pair<String, Integer> neko: distribution) {
+                    String percentage = Math.round((double) neko.getRight() * 100.0 / total * 100.0) / 100.0 + " %";
+                    piechartEmbed.addField(neko.getLeft(), percentage, true);
+                }
                 piechartEmbed.setImage("attachment://piechart.png");
+                piechartEmbed.setColor(nekoColors.get(distribution.get(0).getLeft()));
                 event.replyFile(bestNekoPiechart, "piechart.png").addEmbeds(piechartEmbed.build()).queue();
             } else {
                 event.reply("No subcommand specified (how???)").setEphemeral(true).queue();
