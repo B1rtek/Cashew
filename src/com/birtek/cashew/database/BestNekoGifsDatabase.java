@@ -3,8 +3,10 @@ package com.birtek.cashew.database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BestNekoGifsDatabase {
     private static final Logger LOGGER = LoggerFactory.getLogger(BestNekoGifsDatabase.class);
@@ -96,6 +98,25 @@ public class BestNekoGifsDatabase {
             return nekoGifs;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at BestNekoGifsDatabase.getNekoGifs()");
+            return null;
+        }
+    }
+
+    /**
+     * Gets a HashMap with all nekos' theme colors
+     * @return a HashMap of nekos' names mapped to {@link Color Colors}, or null if an error occurred
+     */
+    public HashMap<String, Color> getNekoColors() {
+        try {
+            PreparedStatement preparedStatement = bestNekoGifsConnection.prepareStatement("SELECT neko, color FROM Nekos");
+            ResultSet results = preparedStatement.executeQuery();
+            HashMap<String, Color> nekoColors = new HashMap<>();
+            while(results.next()) {
+                nekoColors.put(results.getString(1), new Color(results.getInt(2)));
+            }
+            return nekoColors;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at BestNekoGifsDatabase.getNekoColors()");
             return null;
         }
     }
