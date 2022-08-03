@@ -298,7 +298,7 @@ public class BaseCommand extends ListenerAdapter {
     /**
      * Converts a {@link BufferedImage BufferedImage} to an {@link InputStream InputStream
      */
-    private InputStream convertToInputStream(BufferedImage bi) {
+    private static InputStream convertToInputStream(BufferedImage bi) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             ImageIO.write(bi, "png", outputStream);
@@ -331,7 +331,7 @@ public class BaseCommand extends ListenerAdapter {
      * @param title        title of the piechart, only for debugging purposes
      * @return an InputStream with an image of a piechart or null if an error occurred
      */
-    protected InputStream generatePiechart(ArrayList<Pair<String, Integer>> distribution, HashMap<String, Color> colorMap, String title) {
+    public static InputStream generatePiechart(ArrayList<Pair<String, Integer>> distribution, HashMap<String, Color> colorMap, String title) {
         BufferedImage bi = new BufferedImage(500, 500, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = bi.createGraphics();
         double total = 0.0;
@@ -387,7 +387,7 @@ public class BaseCommand extends ListenerAdapter {
      * @param characterHeight height of the characters
      * @return coordinates for the drawString() method of Graphics2D which will place the text centered on the X axis, above the point on the radius
      */
-    private Pair<Integer, Integer> calculateTextPositionOnCircle(Pair<Integer, Integer> center, int radius, int angle, double awayFromCenter, String text, int characterWidth, int characterHeight) {
+    private static Pair<Integer, Integer> calculateTextPositionOnCircle(Pair<Integer, Integer> center, int radius, int angle, double awayFromCenter, String text, int characterWidth, int characterHeight) {
         int x = (int) (Math.round(Math.sin((double) angle * Math.PI / 180.0) * radius * awayFromCenter) + center.getLeft());
         x -= text.length() * characterWidth / 2;
         int y = (int) Math.round(Math.cos((double) angle * Math.PI / 180.0) * radius * awayFromCenter) + center.getRight();
@@ -404,7 +404,7 @@ public class BaseCommand extends ListenerAdapter {
      * @param characterHeight height of the characters
      * @return coordinates for the drawString() method of Graphics2D which will place the percentage label centered under the text label
      */
-    private Pair<Integer, Integer> calculatePercentagePosition(Pair<Integer, Integer> labelOrigin, String label, String percentageLabel, int characterWidth, int characterHeight) {
+    private static Pair<Integer, Integer> calculatePercentagePosition(Pair<Integer, Integer> labelOrigin, String label, String percentageLabel, int characterWidth, int characterHeight) {
         int x = labelOrigin.getLeft() + (label.length() - percentageLabel.length()) * characterWidth / 2;
         int y = labelOrigin.getRight() + characterHeight;
         return Pair.of(x, y);
