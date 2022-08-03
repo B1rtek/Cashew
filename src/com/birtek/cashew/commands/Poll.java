@@ -27,6 +27,11 @@ public class Poll extends BaseCommand {
             add(Emoji.fromUnicode("3️⃣"));
             add(Emoji.fromUnicode("4️⃣"));
             add(Emoji.fromUnicode("5️⃣"));
+            add(Emoji.fromUnicode("6️⃣"));
+            add(Emoji.fromUnicode("7️⃣"));
+            add(Emoji.fromUnicode("8️⃣"));
+            add(Emoji.fromUnicode("9️⃣"));
+            add(Emoji.fromUnicode("\uD83D\uDD1F"));
         }
     };
 
@@ -51,7 +56,7 @@ public class Poll extends BaseCommand {
             }
             String timeString = calculateTargetTime(time, unit);
             ArrayList<String> options = new ArrayList<>();
-            for (int i = 1; i <= 5; i++) {
+            for (int i = 1; i <= 10; i++) {
                 String optionName = "option" + i;
                 String option = event.getOption(optionName, null, OptionMapping::getAsString);
                 if (option != null) options.add(option);
