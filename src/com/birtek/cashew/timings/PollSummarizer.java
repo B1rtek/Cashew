@@ -67,10 +67,11 @@ public class PollSummarizer implements Runnable {
         Color color1 = new Color(randomReadableRGB(false), randomReadableRGB(false), randomReadableRGB(false));
         Color color2 = new Color(randomReadableRGB(true), randomReadableRGB(true), randomReadableRGB(true));
         ArrayList<Color> interpolatedColors = new ArrayList<>();
+        int gradientSteps = Math.max(steps, 5);
         for (int i = 1; i <= steps; i++) {
-            int targetR = color1.getRed() + (color2.getRed() - color1.getRed()) / steps * (steps - i);
-            int targetG = color1.getGreen() + (color2.getGreen() - color1.getGreen()) / steps * (steps - i);
-            int targetB = color1.getBlue() + (color2.getBlue() - color1.getBlue()) / steps * (steps - i);
+            int targetR = color1.getRed() + (color2.getRed() - color1.getRed()) / gradientSteps * (gradientSteps - i);
+            int targetG = color1.getGreen() + (color2.getGreen() - color1.getGreen()) / gradientSteps * (gradientSteps - i);
+            int targetB = color1.getBlue() + (color2.getBlue() - color1.getBlue()) / gradientSteps * (gradientSteps - i);
             interpolatedColors.add(new Color(targetR, targetG, targetB));
         }
         return interpolatedColors;
