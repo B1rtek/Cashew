@@ -193,7 +193,7 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
                 specificHelpEmbed.addField("Works in DMs", "No", true);
                 specificHelpEmbed.setTitle("Poll");
-                specificHelpEmbed.addField("`/poll <title> <option1> <option2> [option3..5] [timetovote] [unit]`", "Creates a poll. Poll can have between two and five options inclusive. By default polls have time to vote set to 24 hours, this can be changed by setting the `timetovote` and `unit` options.", false);
+                specificHelpEmbed.addField("`/poll <title> <option1> <option2> [option3..10] [timetovote] [unit]`", "Creates a poll. Poll can have between two and ten options inclusive. By default polls have time to vote set to 24 hours, this can be changed by setting the `timetovote` and `unit` options.", false);
             }
             case "reactions" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
