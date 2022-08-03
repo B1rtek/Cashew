@@ -103,7 +103,7 @@ public class BirthdayRemindersManager {
         }
         Instant instantOfNextRun = timeOfNextRun.toInstant();
         Duration diff = Duration.between(Instant.now(), instantOfNextRun);
-        return (int) diff.toSeconds();
+        return (int) diff.toSeconds() + 1;
     }
 
     private void createDefaultsMap(ArrayList<BirthdayReminderDefaults> defaultsList) {

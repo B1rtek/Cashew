@@ -91,7 +91,7 @@ public class RemindersManager {
         }
         Instant instantOfExecution = timeOfExecution.toInstant();
         Duration diff = Duration.between(Instant.now(), instantOfExecution);
-        return (int) diff.toSeconds();
+        return (int) diff.toSeconds() + 1;
     }
 
     /**
