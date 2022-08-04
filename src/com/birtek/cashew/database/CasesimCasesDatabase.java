@@ -1,5 +1,6 @@
 package com.birtek.cashew.database;
 
+import com.birtek.cashew.commands.CaseSim;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,6 +121,48 @@ public class CasesimCasesDatabase extends CasesimDatabase {
             return getSkinsFromResultSet(preparedStatement.executeQuery());
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at CasesimCasesDatabase.getCaseKnives()");
+            return null;
+        }
+    }
+
+    /**
+     * Obtains a SkinInfo object for the skin with the given ID
+     *
+     * @param id ID of the skin to obtain
+     * @return a SkinInfo object corresponding to the given ID, or null if the skin wasn't found or if an error occurred
+     */
+    public SkinInfo getSkinById(int id) {
+        try {
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Skins WHERE _id = ?");
+            preparedStatement.setInt(1, id);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new SkinInfo(results.getInt(1), results.getInt(2), results.getString(3), CaseSim.SkinRarity.values()[results.getInt(4)], results.getFloat(5), results.getFloat(6), results.getString(7), results.getString(8), results.getString(9), results.getString(10), results.getString(11), results.getString(12), results.getString(13), results.getString(14), results.getString(15), results.getString(16), results.getString(17), results.getString(18));
+            }
+            return null;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CasesimCasesDatabase.getSkinById()");
+            return null;
+        }
+    }
+
+    /**
+     * Obtains a SkinInfo object for the knife with the given ID
+     *
+     * @param id ID of the knife to obtain
+     * @return a SkinInfo object corresponding to the given ID, or null if the knife wasn't found or if an error occurred
+     */
+    public SkinInfo getKnifeById(int id) {
+        try {
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Knives WHERE _id = ?");
+            preparedStatement.setInt(1, id);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new SkinInfo(results.getInt(1), results.getInt(2), results.getString(3), CaseSim.SkinRarity.values()[results.getInt(4)], results.getFloat(5), results.getFloat(6), results.getString(7), results.getString(8), results.getString(9), results.getString(10), results.getString(11), results.getString(12), results.getString(13), results.getString(14), results.getString(15), results.getString(16), results.getString(17), results.getString(18));
+            }
+            return null;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CasesimCasesDatabase.getKnifeById()");
             return null;
         }
     }
