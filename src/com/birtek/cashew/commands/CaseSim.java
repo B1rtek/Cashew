@@ -2,11 +2,14 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.database.*;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -374,7 +377,22 @@ public class CaseSim extends BaseCommand {
     }
 
     private void inventory(SlashCommandInteractionEvent event) {
-        event.reply("This doesn't work yet").setEphemeral(true).queue();
+        EmbedBuilder inventoryEmbed = new EmbedBuilder();
+        inventoryEmbed.setTitle(event.getUser().getName() + "'s inventory");
+        inventoryEmbed.setFooter("Page 1 out of 10");
+        for(int i=0; i<10; i++) {
+            inventoryEmbed.addField("Item name", "Condition (Float)", false);
+        }
+        SelectMenu.Builder menuBuilder = SelectMenu.create(event.getUser().getId() + ":casesim:inventory")
+                .setPlaceholder("Choose the weapon to interact with") // shows the placeholder indicating what this menu is for
+                .setRequiredRange(1, 1); // only one can be selected
+        for(int i=1; i<=10; i++) {
+            menuBuilder.addOption(String.valueOf(i), String.valueOf(i));
+        }
+        event.replyEmbeds(inventoryEmbed.build()).addActionRow(menuBuilder.build()).addActionRow(
+                Button.success(event.getUser().getId() + ":casesim:inventory:show", "Show"),
+                Button.danger(event.getUser().getId() + ":casesim:inventory:delete", "Delete")
+        ).queue();
     }
 
     @Override
@@ -426,7 +444,48 @@ public class CaseSim extends BaseCommand {
                         event.reply("This is not your item!").setEphemeral(true).queue();
                     }
                 }
+                case "inventory" -> {
+                    switch(buttonID[3]) {
+                        case "show" -> {
+                            event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
+                        }
+                        case "delete" -> {
+                            event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
+                        }
+                    }
+                }
             }
+        }
+    }
+
+    @Override
+    public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
+        String[] menuID = event.getComponentId().split(":");
+        if (menuID.length < 3) return;
+        if (menuID[1].equals("casesim") && menuID[2].equals("inventory")) {
+            if(!event.getUser().getId().equals(menuID[0])) {
+                event.reply("It's not your inventory").setEphemeral(true).queue();
+                return;
+            }
+            MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
+            EmbedBuilder selectedInventoryEmbed = new EmbedBuilder();
+            selectedInventoryEmbed.setTitle(inventoryEmbed.getTitle());
+            selectedInventoryEmbed.setFooter(Objects.requireNonNull(inventoryEmbed.getFooter()).getText());
+            int index = 1;
+            for(MessageEmbed.Field field: inventoryEmbed.getFields()) {
+                String fieldName = field.getName();
+                assert fieldName != null;
+                if(fieldName.startsWith("[SEL] ")) {
+                    fieldName = fieldName.substring(6);
+                }
+                if(String.valueOf(index).equals(event.getSelectedOptions().get(0).getValue())) {
+                    selectedInventoryEmbed.addField("[SEL] " + fieldName, Objects.requireNonNull(field.getValue()), field.isInline());
+                } else {
+                    selectedInventoryEmbed.addField(fieldName, Objects.requireNonNull(field.getValue()), field.isInline());
+                }
+                index++;
+            }
+            event.editMessageEmbeds(selectedInventoryEmbed.build()).queue();
         }
     }
 }
