@@ -94,6 +94,28 @@ public class CasesimCollectionsDatabase extends CasesimDatabase {
     }
 
     /**
+     * Gets a {@link CaseInfo CaseInfos} for the specified collection id
+     *
+     * @param collectionID id of the collection requested
+     * @return {@link CaseInfo CaseInfo} object containing all information about the chosen collection, or null if the
+     * collection wasn't found or an error occurred
+     */
+    public CaseInfo getCollectionByID(int collectionID) {
+        try {
+            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT * FROM Collections WHERE _id = ?");
+            preparedStatement.setInt(1, collectionID);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), 0);
+            }
+            return null;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CasesimCollectionsDatabase.getCollectionByID()");
+            return null;
+        }
+    }
+
+    /**
      * Gets a list of {@link SkinInfo SkinInfos} for all skins in the collection
      *
      * @param collectionInfo {@link CaseInfo CaseInfo} of the collection requested

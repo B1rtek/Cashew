@@ -94,6 +94,28 @@ public class CasesimCasesDatabase extends CasesimDatabase {
     }
 
     /**
+     * Gets a {@link CaseInfo CaseInfos} for the specified case id
+     *
+     * @param caseID id of the case requested
+     * @return {@link CaseInfo CaseInfo} object containing all information about the chosen case, or null if the case
+     * wasn't found or an error occurred
+     */
+    public CaseInfo getCaseByID(int caseID) {
+        try {
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Cases WHERE _id = ?");
+            preparedStatement.setInt(1, caseID);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getInt(5));
+            }
+            return null;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CasesimCasesDatabase.getCaseByID()");
+            return null;
+        }
+    }
+
+    /**
      * Gets a list of {@link SkinInfo SkinInfos} for all skins in the case
      *
      * @param caseInfo {@link CaseInfo CaseInfo} of the case requested
