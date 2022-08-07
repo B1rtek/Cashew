@@ -222,37 +222,38 @@ public class CaseSim extends BaseCommand {
         return buttonID;
     }
 
-    private void sendSkinOpeningEmbed(SlashCommandInteractionEvent event, CaseInfo caseInfo, float floatValue, SkinInfo skin, String itemOrigin, boolean statTrak) {
-        EmbedBuilder containerUnboxEmbed = new EmbedBuilder();
-        containerUnboxEmbed.setAuthor(caseInfo.caseName(), caseInfo.caseUrl(), caseInfo.imageUrl());
-        containerUnboxEmbed.setTitle((statTrak ? "StatTrak™ " : "") + skin.name());
-        containerUnboxEmbed.setFooter(skin.description());
-        containerUnboxEmbed.addField("Condition: " + getConditionFromFloat(floatValue), String.valueOf(floatValue), true);
-        containerUnboxEmbed.addField("Finish style", skin.finishStyle(), true);
-        containerUnboxEmbed.setImage(getImageUrlFromFloat(floatValue, skin));
-        containerUnboxEmbed.setDescription(skin.flavorText());
-        containerUnboxEmbed.setColor(getColorFromRarity(skin.rarity()));
-
-        event.replyEmbeds(containerUnboxEmbed.build()).addActionRow(
+    private void sendSkinOpeningEmbed(SlashCommandInteractionEvent event, CaseInfo caseInfo, SkinData skinData, SkinInfo skin) {
+        MessageEmbed containerUnboxEmbed = generateItemEmbed(skinData, skin, caseInfo);
+        event.replyEmbeds(containerUnboxEmbed).addActionRow(
                 Button.link(skin.stashUrl(), "CSGO Stash"),
-                Button.primary(createInspectButtonID(event.getUser().getId(), floatValue, skin), "Inspect URL"),
-                Button.success(createSaveToInvButtonID(event.getUser().getId(), itemOrigin, floatValue, skin, statTrak), "Save to inventory")
+                Button.primary(createInspectButtonID(event.getUser().getId(), skinData.floatValue(), skin), "Inspect URL"),
+                Button.success(createSaveToInvButtonID(event.getUser().getId(), String.valueOf(skinData.containterType()), skinData.floatValue(), skin, skinData.statTrak()), "Save to inventory")
         ).queue();
     }
 
     private void sendItemOpeningEmbed(SlashCommandInteractionEvent event, CaseInfo capsuleInfo, SkinInfo item) {
-        EmbedBuilder capsuleUnboxEmbed = new EmbedBuilder();
-        capsuleUnboxEmbed.setAuthor(capsuleInfo.caseName(), capsuleInfo.caseUrl(), capsuleInfo.imageUrl());
-        capsuleUnboxEmbed.setTitle(item.name());
-        capsuleUnboxEmbed.setImage(getImageUrlFromFloat(0.0f, item));
-        capsuleUnboxEmbed.setColor(getColorFromRarity(item.rarity()));
+        MessageEmbed capsuleUnboxEmbed = generateItemEmbed(new SkinData("", 4, 0, 0, false), item, capsuleInfo);
 
-
-        event.replyEmbeds(capsuleUnboxEmbed.build()).addActionRow(
+        event.replyEmbeds(capsuleUnboxEmbed).addActionRow(
                 Button.link(item.stashUrl(), "CSGO Stash"),
                 Button.primary(createInspectButtonID(event.getUser().getId(), 0.0f, item), "Inspect URL"),
-                Button.success(createSaveToInvButtonID(event.getUser().getId(), "capsule", 0.0f, item, false), "Save to inventory")
+                Button.success(createSaveToInvButtonID(event.getUser().getId(), "4", 0.0f, item, false), "Save to inventory")
         ).queue();
+    }
+
+    private MessageEmbed generateItemEmbed(SkinData skinData, SkinInfo skinInfo, CaseInfo caseInfo) {
+        EmbedBuilder containerUnboxEmbed = new EmbedBuilder();
+        containerUnboxEmbed.setAuthor(caseInfo.caseName(), caseInfo.caseUrl(), caseInfo.imageUrl());
+        containerUnboxEmbed.setTitle((skinData.statTrak() ? "StatTrak™ " : "") + skinInfo.name());
+        containerUnboxEmbed.setImage(getImageUrlFromFloat(skinData.floatValue(), skinInfo));
+        containerUnboxEmbed.setColor(getColorFromRarity(skinInfo.rarity()));
+        if(skinData.containterType() < 4) {
+            containerUnboxEmbed.setFooter(skinInfo.description());
+            containerUnboxEmbed.addField("Condition: " + getConditionFromFloat(skinData.floatValue()), String.valueOf(skinData.floatValue()), true);
+            containerUnboxEmbed.addField("Finish style", skinInfo.finishStyle(), true);
+            containerUnboxEmbed.setDescription(skinInfo.flavorText());
+        }
+        return containerUnboxEmbed.build();
     }
 
     private void openCase(SlashCommandInteractionEvent event) {
@@ -302,7 +303,8 @@ public class CaseSim extends BaseCommand {
         boolean statTrak = random.nextInt(10) == 0;
 
         // at this point all values are known, send back the result
-        sendSkinOpeningEmbed(event, caseInfo, floatValue, skin, "case", statTrak);
+        SkinData skinData = new SkinData("", rarity == SkinRarity.EXTRAORDINARY ? 2 : 1, skin.id(), floatValue, statTrak);
+        sendSkinOpeningEmbed(event, caseInfo, skinData, skin);
     }
 
     private void openCollection(SlashCommandInteractionEvent event) {
@@ -339,7 +341,7 @@ public class CaseSim extends BaseCommand {
         float floatValue = getSkinFloat(skin);
 
         // at this point all values are known, send back the result
-        sendSkinOpeningEmbed(event, collectionInfo, floatValue, skin, "collection", false);
+        sendSkinOpeningEmbed(event, collectionInfo, new SkinData("", 3, 0, floatValue, false), skin);
     }
 
     private void openCapsule(SlashCommandInteractionEvent event) {
@@ -408,12 +410,12 @@ public class CaseSim extends BaseCommand {
             menuBuilder.addOption(item.getRight().name(), item.getRight().name());
         }
         ArrayList<Button> invControls = new ArrayList<>();
+        invControls.add(Button.success(event.getUser().getId() + ":casesim:inventory:show:" + requestedUser.getId(), "Show"));
         if (requestedUser.getId().equals(event.getUser().getId())) {
-            invControls.add(Button.success(event.getUser().getId() + ":casesim:inventory:show", "Show"));
             invControls.add(Button.danger(event.getUser().getId() + ":casesim:inventory:delete", "Delete"));
         }
-        invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pageprev", Emoji.fromUnicode("◀️")));
-        invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pagenext", Emoji.fromUnicode("▶️")));
+        invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pageprev:" + requestedUser.getId(), Emoji.fromUnicode("◀️")));
+        invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pagenext:" + requestedUser.getId(), Emoji.fromUnicode("▶️")));
         event.replyEmbeds(inventoryEmbed.build()).addActionRow(menuBuilder.build()).addActionRow(invControls).setEphemeral(!inventoryStats.isPublic()).queue();
     }
 
@@ -486,6 +488,12 @@ public class CaseSim extends BaseCommand {
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         //userID:casesim:inspect:inspectURL
         //userID:casesim:savetoinv:origin:skinID:float:stattrak(0/1)
+        //userID:casesim:inventory:show:inventoryUserID
+        //userID:casesim:inventory:delete
+        //userID:casesim:inventory:pagenext:inventoryUserID
+        //userID:casesim:inventory:pageprev:inventoryUserID
+        //userID:casesim:inventory:makepublic
+        //userID:casesim:inventory:back:inventoryUserID
         String[] buttonID = event.getComponentId().split(":");
         if (buttonID.length < 4) return;
         if (buttonID[1].equals("casesim")) {
@@ -504,16 +512,60 @@ public class CaseSim extends BaseCommand {
                 }
                 case "inventory" -> {
                     switch (buttonID[3]) {
-                        case "show" -> {
+                        case "show" -> inventoryShow(event, buttonID);
+                        case "delete" -> {
                             event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
                         }
-                        case "delete" -> {
+                        case "pagenext" -> {
+                            event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
+                        }
+                        case "pageprev" -> {
+                            event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
+                        }
+                        case "makepublic" -> {
                             event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
                         }
                     }
                 }
             }
         }
+    }
+
+    private void inventoryShow(ButtonInteractionEvent event, String[] buttonID) {
+        // get the selected item index
+        MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
+        int selectedItemIndex = -1, index = 0;
+        for (MessageEmbed.Field field : inventoryEmbed.getFields()) {
+            if (Objects.requireNonNull(field.getName()).startsWith("__")) {
+                selectedItemIndex = index;
+                break;
+            }
+            index++;
+        }
+        if (selectedItemIndex == -1) {
+            event.reply("Choose an item first").setEphemeral(true).queue();
+            return;
+        }
+        int pageNumber = Integer.parseInt(Objects.requireNonNull(Objects.requireNonNull(inventoryEmbed.getFooter()).getText()).split("\\s+")[1]);
+        selectedItemIndex = (pageNumber - 1) * 10 + selectedItemIndex;
+        // get the item
+        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
+        Pair<SkinData, SkinInfo> item = database.getItemByIndex(buttonID[0], buttonID[4], selectedItemIndex);
+        if (item == null) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
+        }
+        if (item.getRight() == null) {
+            if (item.getLeft() == null) {
+                event.reply("This inventory is private").setEphemeral(true).queue();
+            } else {
+                event.reply("This item doesn't exist").setEphemeral(true).queue();
+            }
+            return;
+        }
+        // display the item
+        //MessageEmbed itemEmbed = generateItemEmbed(item.getLeft(), item.getRight());
+        event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
     }
 
     @Override
@@ -530,20 +582,19 @@ public class CaseSim extends BaseCommand {
             MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
             EmbedBuilder selectedInventoryEmbed = new EmbedBuilder();
             selectedInventoryEmbed.setTitle(inventoryEmbed.getTitle());
+            selectedInventoryEmbed.setThumbnail(Objects.requireNonNull(inventoryEmbed.getThumbnail()).getUrl());
             selectedInventoryEmbed.setFooter(Objects.requireNonNull(inventoryEmbed.getFooter()).getText());
-            int index = 1;
             for (MessageEmbed.Field field : inventoryEmbed.getFields()) {
                 String fieldName = field.getName();
                 assert fieldName != null;
-                if (fieldName.startsWith("[SEL] ")) {
-                    fieldName = fieldName.substring(6);
+                if (fieldName.startsWith("__")) {
+                    fieldName = fieldName.substring(2, fieldName.length() - 2);
                 }
-                if (String.valueOf(index).equals(event.getSelectedOptions().get(0).getValue())) {
-                    selectedInventoryEmbed.addField("[SEL] " + fieldName, Objects.requireNonNull(field.getValue()), field.isInline());
+                if (fieldName.equals(event.getSelectedOptions().get(0).getValue())) {
+                    selectedInventoryEmbed.addField("__" + fieldName + "__", Objects.requireNonNull(field.getValue()), field.isInline());
                 } else {
                     selectedInventoryEmbed.addField(fieldName, Objects.requireNonNull(field.getValue()), field.isInline());
                 }
-                index++;
             }
             event.editMessageEmbeds(selectedInventoryEmbed.build()).queue();
         }
