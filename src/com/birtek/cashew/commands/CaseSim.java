@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
@@ -409,6 +410,23 @@ public class CaseSim extends BaseCommand {
         return inventoryEmbed.build();
     }
 
+    private Pair<ActionRow, ActionRow> getInventoryEmbedActionRows(User requestingUser, User requestedUser, MessageEmbed inventoryEmbed) {
+        SelectMenu.Builder itemSelectMenu = SelectMenu.create(requestingUser.getId() + ":casesim:inventory")
+                .setPlaceholder("Choose the weapon to interact with") // shows the placeholder indicating what this menu is for
+                .setRequiredRange(1, 1); // only one can be selected
+        for (MessageEmbed.Field item : inventoryEmbed.getFields()) {
+            itemSelectMenu.addOption(Objects.requireNonNull(item.getName()), item.getName());
+        }
+        ArrayList<Button> invControls = new ArrayList<>();
+        invControls.add(Button.success(requestingUser.getId() + ":casesim:inventory:show:" + requestedUser.getId(), "Show"));
+        if (requestedUser.getId().equals(requestingUser.getId())) {
+            invControls.add(Button.danger(requestingUser.getId() + ":casesim:inventory:delete", "Delete"));
+        }
+        invControls.add(Button.primary(requestingUser.getId() + ":casesim:inventory:pageprev:" + requestedUser.getId(), Emoji.fromUnicode("◀️")));
+        invControls.add(Button.primary(requestingUser.getId() + ":casesim:inventory:pagenext:" + requestedUser.getId(), Emoji.fromUnicode("▶️")));
+        return Pair.of(ActionRow.of(itemSelectMenu.build()), ActionRow.of(invControls));
+    }
+
     private void inventory(SlashCommandInteractionEvent event) {
         User requestedUser = event.getOption("user", event.getUser(), OptionMapping::getAsUser);
         MessageEmbed inventoryEmbed = getInventoryEmbed(requestedUser, event.getUser(), 1);
@@ -419,22 +437,10 @@ public class CaseSim extends BaseCommand {
             event.reply(Objects.requireNonNull(inventoryEmbed.getTitle())).setEphemeral(true).queue();
             return;
         }
-        SelectMenu.Builder menuBuilder = SelectMenu.create(event.getUser().getId() + ":casesim:inventory")
-                .setPlaceholder("Choose the weapon to interact with") // shows the placeholder indicating what this menu is for
-                .setRequiredRange(1, 1); // only one can be selected
-        for (MessageEmbed.Field item : inventoryEmbed.getFields()) {
-            menuBuilder.addOption(Objects.requireNonNull(item.getName()), item.getName());
-        }
-        ArrayList<Button> invControls = new ArrayList<>();
-        invControls.add(Button.success(event.getUser().getId() + ":casesim:inventory:show:" + requestedUser.getId(), "Show"));
-        if (requestedUser.getId().equals(event.getUser().getId())) {
-            invControls.add(Button.danger(event.getUser().getId() + ":casesim:inventory:delete", "Delete"));
-        }
-        invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pageprev:" + requestedUser.getId(), Emoji.fromUnicode("◀️")));
-        invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pagenext:" + requestedUser.getId(), Emoji.fromUnicode("▶️")));
+        Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), requestedUser, inventoryEmbed);
         CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
         CasesimInvStats inventoryStats = database.getInventoryStats(event.getUser().getId(), requestedUser.getId());
-        event.replyEmbeds(inventoryEmbed).addActionRow(menuBuilder.build()).addActionRow(invControls).setEphemeral(!inventoryStats.isPublic()).queue();
+        event.replyEmbeds(inventoryEmbed).addActionRows(actionRows.getLeft(), actionRows.getRight()).setEphemeral(!inventoryStats.isPublic()).queue();
     }
 
     private void stats(SlashCommandInteractionEvent event) {
@@ -548,7 +554,7 @@ public class CaseSim extends BaseCommand {
                             event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
                         }
                         case "back" -> {
-
+                            inventoryBack(event, buttonID);
                         }
                     }
                 }
@@ -621,6 +627,20 @@ public class CaseSim extends BaseCommand {
         ).queue();
     }
 
+    private void inventoryBack(ButtonInteractionEvent event, String[] buttonID) {
+        User requestedUser = event.getJDA().getUserById(buttonID[4]);
+        MessageEmbed inventoryEmbed = getInventoryEmbed(requestedUser, event.getUser(), Integer.parseInt(buttonID[5]));
+        if (inventoryEmbed == null) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
+        } else if (inventoryEmbed.getFields().isEmpty()) {
+            event.reply(Objects.requireNonNull(inventoryEmbed.getTitle())).setEphemeral(true).queue();
+            return;
+        }
+        Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), requestedUser, inventoryEmbed);
+        event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
+    }
+
     @Override
     public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
         String[] menuID = event.getComponentId().split(":");
@@ -630,8 +650,6 @@ public class CaseSim extends BaseCommand {
                 event.reply("It's not your inventory").setEphemeral(true).queue();
                 return;
             }
-            SelectMenu itemChoiceMenu = event.getSelectMenu();
-
             MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
             EmbedBuilder selectedInventoryEmbed = new EmbedBuilder();
             selectedInventoryEmbed.setTitle(inventoryEmbed.getTitle());
