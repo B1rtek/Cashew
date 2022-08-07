@@ -247,7 +247,7 @@ public class CaseSim extends BaseCommand {
         containerUnboxEmbed.setTitle((skinData.statTrak() ? "StatTrak™ " : "") + skinInfo.name());
         containerUnboxEmbed.setImage(getImageUrlFromFloat(skinData.floatValue(), skinInfo));
         containerUnboxEmbed.setColor(getColorFromRarity(skinInfo.rarity()));
-        if(skinData.containterType() < 4) {
+        if (skinData.containterType() < 4) {
             containerUnboxEmbed.setFooter(skinInfo.description());
             containerUnboxEmbed.addField("Condition: " + getConditionFromFloat(skinData.floatValue()), String.valueOf(skinData.floatValue()), true);
             containerUnboxEmbed.addField("Finish style", skinInfo.finishStyle(), true);
@@ -380,34 +380,50 @@ public class CaseSim extends BaseCommand {
         sendItemOpeningEmbed(event, capsuleInfo, skin);
     }
 
+    private MessageEmbed getInventoryEmbed(User requestedUser, User requestingUser, int pageNumber) {
+        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
+        ArrayList<Pair<SkinData, SkinInfo>> inventory = new ArrayList<>();
+        while (inventory.isEmpty() && pageNumber > 0) {
+            inventory = database.getInventoryPage(requestingUser.getId(), requestedUser.getId(), pageNumber);
+            if (inventory == null) return null;
+            pageNumber--;
+        }
+        pageNumber++;
+        String userString = requestedUser.getId().equals(requestingUser.getId()) ? "Your" : requestedUser.getName() + "'s";
+        EmbedBuilder inventoryEmbed = new EmbedBuilder();
+        if (inventory.isEmpty()) {
+            inventoryEmbed.setTitle(userString + " inventory is empty!");
+            return inventoryEmbed.build();
+        } else if (inventory.size() == 1 && inventory.get(0).getLeft() == null) {
+            inventoryEmbed.setTitle(userString + " inventory is private!");
+            return inventoryEmbed.build();
+        }
+        CasesimInvStats inventoryStats = database.getInventoryStats(requestingUser.getId(), requestedUser.getId());
+        int pageCount = inventoryStats.itemsInInventory() / 10 + inventoryStats.itemsInInventory() % 10 == 0 ? 0 : 1;
+        inventoryEmbed.setTitle(userString + " inventory");
+        inventoryEmbed.setThumbnail(requestedUser.getEffectiveAvatarUrl());
+        inventoryEmbed.setFooter("Page " + pageNumber + " out of " + pageCount);
+        for (Pair<SkinData, SkinInfo> item : inventory) {
+            inventoryEmbed.addField(item.getRight().name(), getConditionFromFloat(item.getLeft().floatValue()) + " (" + item.getLeft().floatValue() + ")", false);
+        }
+        return inventoryEmbed.build();
+    }
+
     private void inventory(SlashCommandInteractionEvent event) {
         User requestedUser = event.getOption("user", event.getUser(), OptionMapping::getAsUser);
-        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
-        ArrayList<Pair<SkinData, SkinInfo>> inventory = database.getInventoryPage(event.getUser().getId(), requestedUser.getId(), 1);
-        if (inventory == null) {
+        MessageEmbed inventoryEmbed = getInventoryEmbed(requestedUser, event.getUser(), 1);
+        if (inventoryEmbed == null) {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
-        }
-        String userString = requestedUser.getId().equals(event.getUser().getId()) ? "Your" : requestedUser.getName() + "'s";
-        if (inventory.isEmpty()) {
-            event.reply(userString + " inventory is empty!").setEphemeral(true).queue();
-            return;
-        } else if (inventory.size() == 1 && inventory.get(0).getLeft() == null) {
-            event.reply(userString + " inventory is private!").setEphemeral(true).queue();
+        } else if (inventoryEmbed.getFields().isEmpty()) {
+            event.reply(Objects.requireNonNull(inventoryEmbed.getTitle())).setEphemeral(true).queue();
             return;
         }
-        CasesimInvStats inventoryStats = database.getInventoryStats(event.getUser().getId(), requestedUser.getId());
-        int pageCount = inventoryStats.itemsInInventory() / 10 + inventoryStats.itemsInInventory() % 10 == 0 ? 0 : 1;
-        EmbedBuilder inventoryEmbed = new EmbedBuilder();
-        inventoryEmbed.setTitle(userString + " inventory");
-        inventoryEmbed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
-        inventoryEmbed.setFooter("Page 1 out of " + pageCount);
         SelectMenu.Builder menuBuilder = SelectMenu.create(event.getUser().getId() + ":casesim:inventory")
                 .setPlaceholder("Choose the weapon to interact with") // shows the placeholder indicating what this menu is for
                 .setRequiredRange(1, 1); // only one can be selected
-        for (Pair<SkinData, SkinInfo> item : inventory) {
-            inventoryEmbed.addField(item.getRight().name(), getConditionFromFloat(item.getLeft().floatValue()) + " (" + item.getLeft().floatValue() + ")", false);
-            menuBuilder.addOption(item.getRight().name(), item.getRight().name());
+        for (MessageEmbed.Field item : inventoryEmbed.getFields()) {
+            menuBuilder.addOption(Objects.requireNonNull(item.getName()), item.getName());
         }
         ArrayList<Button> invControls = new ArrayList<>();
         invControls.add(Button.success(event.getUser().getId() + ":casesim:inventory:show:" + requestedUser.getId(), "Show"));
@@ -416,7 +432,9 @@ public class CaseSim extends BaseCommand {
         }
         invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pageprev:" + requestedUser.getId(), Emoji.fromUnicode("◀️")));
         invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pagenext:" + requestedUser.getId(), Emoji.fromUnicode("▶️")));
-        event.replyEmbeds(inventoryEmbed.build()).addActionRow(menuBuilder.build()).addActionRow(invControls).setEphemeral(!inventoryStats.isPublic()).queue();
+        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
+        CasesimInvStats inventoryStats = database.getInventoryStats(event.getUser().getId(), requestedUser.getId());
+        event.replyEmbeds(inventoryEmbed).addActionRow(menuBuilder.build()).addActionRow(invControls).setEphemeral(!inventoryStats.isPublic()).queue();
     }
 
     private void stats(SlashCommandInteractionEvent event) {
@@ -511,6 +529,10 @@ public class CaseSim extends BaseCommand {
                     }
                 }
                 case "inventory" -> {
+                    if (!event.getUser().getId().equals(buttonID[0])) {
+                        event.reply("It's not your inventory").setEphemeral(true).queue();
+                        return;
+                    }
                     switch (buttonID[3]) {
                         case "show" -> inventoryShow(event, buttonID);
                         case "delete" -> {
@@ -524,6 +546,9 @@ public class CaseSim extends BaseCommand {
                         }
                         case "makepublic" -> {
                             event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
+                        }
+                        case "back" -> {
+
                         }
                     }
                 }
@@ -583,7 +608,7 @@ public class CaseSim extends BaseCommand {
                 caseInfo = capsulesDatabase.getCapsuleByID(item.getRight().caseId());
             }
         }
-        if(caseInfo == null) {
+        if (caseInfo == null) {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
         }
