@@ -344,7 +344,7 @@ public class CasesimInventoryDatabase {
             if (inventory == null) return null;
             ArrayList<SkinData> skinDatas = new ArrayList<>();
             JSONArray itemsArray = inventory.getJSONArray("items");
-            if (itemsArray.length() >= index) {
+            if (itemsArray.length() <= index) {
                 return Pair.of(new SkinData("", -1, -1, 0, false), null);
             }
             JSONObject item = itemsArray.getJSONObject(index);

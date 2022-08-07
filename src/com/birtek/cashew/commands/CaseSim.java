@@ -493,7 +493,7 @@ public class CaseSim extends BaseCommand {
         //userID:casesim:inventory:pagenext:inventoryUserID
         //userID:casesim:inventory:pageprev:inventoryUserID
         //userID:casesim:inventory:makepublic
-        //userID:casesim:inventory:back:inventoryUserID
+        //userID:casesim:inventory:back:inventoryUserID:page
         String[] buttonID = event.getComponentId().split(":");
         if (buttonID.length < 4) return;
         if (buttonID[1].equals("casesim")) {
@@ -563,9 +563,37 @@ public class CaseSim extends BaseCommand {
             }
             return;
         }
+        // get the item CaseInfo
+        CaseInfo caseInfo = null;
+        switch (item.getLeft().containterType()) {
+            case 1 -> {
+                CasesimCasesDatabase casesDatabase = CasesimCasesDatabase.getInstance();
+                caseInfo = casesDatabase.getCaseByID(item.getRight().caseId());
+            }
+            case 2 -> {
+                CasesimCasesDatabase casesDatabase = CasesimCasesDatabase.getInstance();
+                caseInfo = casesDatabase.getCaseByKnifeGroup(item.getRight().caseId());
+            }
+            case 3 -> {
+                CasesimCollectionsDatabase collectionsDatabase = CasesimCollectionsDatabase.getInstance();
+                caseInfo = collectionsDatabase.getCollectionByID(item.getRight().caseId());
+            }
+            case 4 -> {
+                CasesimCapsulesDatabase capsulesDatabase = CasesimCapsulesDatabase.getInstance();
+                caseInfo = capsulesDatabase.getCapsuleByID(item.getRight().caseId());
+            }
+        }
+        if(caseInfo == null) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
+        }
         // display the item
-        //MessageEmbed itemEmbed = generateItemEmbed(item.getLeft(), item.getRight());
-        event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
+        MessageEmbed itemEmbed = generateItemEmbed(item.getLeft(), item.getRight(), caseInfo);
+        event.editMessageEmbeds(itemEmbed).setActionRow(
+                Button.link(item.getRight().stashUrl(), "CSGO Stash"),
+                Button.primary(createInspectButtonID(event.getUser().getId(), item.getLeft().floatValue(), item.getRight()), "Inspect URL"),
+                Button.secondary(event.getUser().getId() + ":casesim:inventory:back:" + buttonID[4] + ":" + pageNumber, "Back")
+        ).queue();
     }
 
     @Override
