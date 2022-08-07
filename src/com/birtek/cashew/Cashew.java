@@ -142,7 +142,10 @@ public class Cashew {
                                         .addOption(STRING, "collection", "Name of the collection to open", true, true),
                                 new SubcommandData("opencapsule", "Opens a CS:GO Capsule")
                                         .addOption(STRING, "capsule", "Name of the capsule to open", true, true),
-                                new SubcommandData("inventory", "Manage your CaseSim 4.0 inventory")),
+                                new SubcommandData("inventory", "Manage your CaseSim 4.0 inventory")
+                                        .addOption(USER, "user", "User to check the inventory of (by default yours)", false, false),
+                                new SubcommandData("stats", "Shows CaseSim 4.0 stats")
+                                        .addOption(USER, "user", "User to check the stats of", false, false)),
                 Commands.slash("birthday", "Birthday reminder system command")
                         .addSubcommands(
                                 new SubcommandData("set", "Set your birthday date and the reminder")
