@@ -3,6 +3,8 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.database.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -216,14 +218,14 @@ public class CaseSim extends BaseCommand {
 
     private String createSaveToInvButtonID(String userID, String itemOrigin, float floatValue, SkinInfo skin, boolean statTrak) {
         String buttonID = userID + ":casesim:savetoinv:" + itemOrigin + ":";
-        buttonID += skin.id() + ":" + floatValue + ":" + (statTrak?"1":"0");
+        buttonID += skin.id() + ":" + floatValue + ":" + (statTrak ? "1" : "0");
         return buttonID;
     }
 
     private void sendSkinOpeningEmbed(SlashCommandInteractionEvent event, CaseInfo caseInfo, float floatValue, SkinInfo skin, String itemOrigin, boolean statTrak) {
         EmbedBuilder containerUnboxEmbed = new EmbedBuilder();
         containerUnboxEmbed.setAuthor(caseInfo.caseName(), caseInfo.caseUrl(), caseInfo.imageUrl());
-        containerUnboxEmbed.setTitle((statTrak?"StatTrak™ ":"")+skin.name());
+        containerUnboxEmbed.setTitle((statTrak ? "StatTrak™ " : "") + skin.name());
         containerUnboxEmbed.setFooter(skin.description());
         containerUnboxEmbed.addField("Condition: " + getConditionFromFloat(floatValue), String.valueOf(floatValue), true);
         containerUnboxEmbed.addField("Finish style", skin.finishStyle(), true);
@@ -377,22 +379,77 @@ public class CaseSim extends BaseCommand {
     }
 
     private void inventory(SlashCommandInteractionEvent event) {
-        EmbedBuilder inventoryEmbed = new EmbedBuilder();
-        inventoryEmbed.setTitle(event.getUser().getName() + "'s inventory");
-        inventoryEmbed.setFooter("Page 1 out of 10");
-        for(int i=0; i<10; i++) {
-            inventoryEmbed.addField("Item name", "Condition (Float)", false);
+        User requestedUser = event.getOption("user", event.getUser(), OptionMapping::getAsUser);
+        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
+        ArrayList<Pair<SkinData, SkinInfo>> inventory = database.getInventoryPage(event.getUser().getId(), requestedUser.getId(), 1);
+        if (inventory == null) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
         }
+        String userString = requestedUser.getId().equals(event.getUser().getId()) ? "Your" : requestedUser.getName() + "'s";
+        if (inventory.isEmpty()) {
+            event.reply(userString + " inventory is empty!").setEphemeral(true).queue();
+            return;
+        } else if (inventory.size() == 1 && inventory.get(0).getLeft() == null) {
+            event.reply(userString + " inventory is private!").setEphemeral(true).queue();
+            return;
+        }
+        CasesimInvStats inventoryStats = database.getInventoryStats(event.getUser().getId(), requestedUser.getId());
+        int pageCount = inventoryStats.itemsInInventory() / 10 + inventoryStats.itemsInInventory() % 10 == 0 ? 0 : 1;
+        EmbedBuilder inventoryEmbed = new EmbedBuilder();
+        inventoryEmbed.setTitle(userString + " inventory");
+        inventoryEmbed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
+        inventoryEmbed.setFooter("Page 1 out of " + pageCount);
         SelectMenu.Builder menuBuilder = SelectMenu.create(event.getUser().getId() + ":casesim:inventory")
                 .setPlaceholder("Choose the weapon to interact with") // shows the placeholder indicating what this menu is for
                 .setRequiredRange(1, 1); // only one can be selected
-        for(int i=1; i<=10; i++) {
-            menuBuilder.addOption(String.valueOf(i), String.valueOf(i));
+        for (Pair<SkinData, SkinInfo> item : inventory) {
+            inventoryEmbed.addField(item.getRight().name(), getConditionFromFloat(item.getLeft().floatValue()) + " (" + item.getLeft().floatValue() + ")", false);
+            menuBuilder.addOption(item.getRight().name(), item.getRight().name());
         }
-        event.replyEmbeds(inventoryEmbed.build()).addActionRow(menuBuilder.build()).addActionRow(
-                Button.success(event.getUser().getId() + ":casesim:inventory:show", "Show"),
-                Button.danger(event.getUser().getId() + ":casesim:inventory:delete", "Delete")
-        ).queue();
+        ArrayList<Button> invControls = new ArrayList<>();
+        if (requestedUser.getId().equals(event.getUser().getId())) {
+            invControls.add(Button.success(event.getUser().getId() + ":casesim:inventory:show", "Show"));
+            invControls.add(Button.danger(event.getUser().getId() + ":casesim:inventory:delete", "Delete"));
+        }
+        invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pageprev", Emoji.fromUnicode("◀️")));
+        invControls.add(Button.primary(event.getUser().getId() + ":casesim:inventory:pagenext", Emoji.fromUnicode("▶️")));
+        event.replyEmbeds(inventoryEmbed.build()).addActionRow(menuBuilder.build()).addActionRow(invControls).setEphemeral(!inventoryStats.isPublic()).queue();
+    }
+
+    private void stats(SlashCommandInteractionEvent event) {
+        User requestedUser = event.getOption("user", event.getUser(), OptionMapping::getAsUser);
+        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
+        CasesimInvStats stats = database.getInventoryStats(event.getUser().getId(), requestedUser.getId());
+        if (stats == null) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
+        }
+        String userString = requestedUser.getId().equals(event.getUser().getId()) ? "Your" : requestedUser.getName() + "'s";
+        if (stats.itemsInInventory() == -1) {
+            event.reply(userString + " inventory is private!").setEphemeral(true).queue();
+            return;
+        }
+        MessageEmbed statsEmbed = generateInventoryStatsEmbed(event.getUser(), stats, userString, requestedUser.getId().equals(event.getUser().getId()));
+        if (requestedUser.getId().equals(event.getUser().getId())) {
+            event.replyEmbeds(statsEmbed).addActionRow(Button.primary(event.getUser().getId() + ":casesim:inventory:makepublic", "Make " + (!stats.isPublic() ? "public" : "private"))).setEphemeral(!stats.isPublic()).queue();
+        } else {
+            event.replyEmbeds(statsEmbed).queue();
+        }
+    }
+
+    private MessageEmbed generateInventoryStatsEmbed(User user, CasesimInvStats stats, String userString, boolean asPrivate) {
+        EmbedBuilder statsEmbed = new EmbedBuilder();
+        statsEmbed.setTitle(userString + " Casesim stats");
+        statsEmbed.setThumbnail(user.getEffectiveAvatarUrl());
+        statsEmbed.addField("Cases opened", String.valueOf(stats.casesOpened()), false);
+        statsEmbed.addField("Collections opened", String.valueOf(stats.collectionsOpened()), false);
+        statsEmbed.addField("Capsules opened", String.valueOf(stats.capsulesOpened()), false);
+        statsEmbed.addField("Items in the inventory", String.valueOf(stats.itemsInInventory()), false);
+        if (asPrivate) {
+            statsEmbed.setFooter("Inventory visibility: " + (stats.isPublic() ? "public" : "private"));
+        }
+        return statsEmbed.build();
     }
 
     @Override
@@ -403,6 +460,7 @@ public class CaseSim extends BaseCommand {
                 case "opencollection" -> openCollection(event);
                 case "opencapsule" -> openCapsule(event);
                 case "inventory" -> inventory(event);
+                case "stats" -> stats(event);
             }
         }
     }
@@ -445,7 +503,7 @@ public class CaseSim extends BaseCommand {
                     }
                 }
                 case "inventory" -> {
-                    switch(buttonID[3]) {
+                    switch (buttonID[3]) {
                         case "show" -> {
                             event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
                         }
@@ -463,22 +521,24 @@ public class CaseSim extends BaseCommand {
         String[] menuID = event.getComponentId().split(":");
         if (menuID.length < 3) return;
         if (menuID[1].equals("casesim") && menuID[2].equals("inventory")) {
-            if(!event.getUser().getId().equals(menuID[0])) {
+            if (!event.getUser().getId().equals(menuID[0])) {
                 event.reply("It's not your inventory").setEphemeral(true).queue();
                 return;
             }
+            SelectMenu itemChoiceMenu = event.getSelectMenu();
+
             MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
             EmbedBuilder selectedInventoryEmbed = new EmbedBuilder();
             selectedInventoryEmbed.setTitle(inventoryEmbed.getTitle());
             selectedInventoryEmbed.setFooter(Objects.requireNonNull(inventoryEmbed.getFooter()).getText());
             int index = 1;
-            for(MessageEmbed.Field field: inventoryEmbed.getFields()) {
+            for (MessageEmbed.Field field : inventoryEmbed.getFields()) {
                 String fieldName = field.getName();
                 assert fieldName != null;
-                if(fieldName.startsWith("[SEL] ")) {
+                if (fieldName.startsWith("[SEL] ")) {
                     fieldName = fieldName.substring(6);
                 }
-                if(String.valueOf(index).equals(event.getSelectedOptions().get(0).getValue())) {
+                if (String.valueOf(index).equals(event.getSelectedOptions().get(0).getValue())) {
                     selectedInventoryEmbed.addField("[SEL] " + fieldName, Objects.requireNonNull(field.getValue()), field.isInline());
                 } else {
                     selectedInventoryEmbed.addField(fieldName, Objects.requireNonNull(field.getValue()), field.isInline());
