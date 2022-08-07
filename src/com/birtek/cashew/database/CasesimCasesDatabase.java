@@ -95,6 +95,7 @@ public class CasesimCasesDatabase extends CasesimDatabase {
 
     /**
      * Gets a list of {@link SkinInfo SkinInfos} for all skins in the case
+     *
      * @param caseInfo {@link CaseInfo CaseInfo} of the case requested
      * @return ArrayList of {@link SkinInfo SkinInfos} for all skins in the requested case
      */
@@ -111,6 +112,7 @@ public class CasesimCasesDatabase extends CasesimDatabase {
 
     /**
      * Gets a list of {@link SkinInfo SkinInfos} for all knives in the case
+     *
      * @param caseInfo {@link CaseInfo CaseInfo} of the case requested
      * @return ArrayList of {@link SkinInfo SkinInfos} for all knives in the requested case
      */
@@ -163,6 +165,27 @@ public class CasesimCasesDatabase extends CasesimDatabase {
             return null;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at CasesimCasesDatabase.getKnifeById()");
+            return null;
+        }
+    }
+
+    /**
+     * Gets a CaseInfo object for the first case with the provided KnifeGroup
+     *
+     * @param knifeGroup knifeGroup to obtain the first case with
+     * @return a {@link CaseInfo CaseInfo) object of the corresponding case or null if an error occurred
+     */
+    public CaseInfo getCaseByKnifeGroup(int knifeGroup) {
+        try {
+            PreparedStatement preparedStatement = casesimCasesConnection.prepareStatement("SELECT * FROM Cases WHERE knifeGroup = ? ORDER BY _id DESC LIMIT 1");
+            preparedStatement.setInt(1, knifeGroup);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), results.getInt(5));
+            }
+            return null;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CasesimCasesDatabase.getCaseByKnifeGroup()");
             return null;
         }
     }
