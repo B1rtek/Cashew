@@ -542,12 +542,8 @@ public class CaseSim extends BaseCommand {
                     switch (buttonID[3]) {
                         case "show" -> inventoryShow(event, buttonID);
                         case "delete" -> inventoryDelete(event, buttonID);
-                        case "pagenext" -> {
-                            event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
-                        }
-                        case "pageprev" -> {
-                            event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
-                        }
+                        case "pagenext" -> inventorySwitchPage(event, buttonID, true);
+                        case "pageprev" -> inventorySwitchPage(event, buttonID, false);
                         case "makepublic" -> {
                             event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
                         }
@@ -562,7 +558,7 @@ public class CaseSim extends BaseCommand {
 
     private void saveToInventory(ButtonInteractionEvent event, String[] buttonID) {
         int itemOrigin;
-        if(isNumeric(buttonID[3])) {
+        if (isNumeric(buttonID[3])) {
             itemOrigin = Integer.parseInt(buttonID[3]);
         } else {
             itemOrigin = switch (buttonID[3]) {
@@ -573,13 +569,13 @@ public class CaseSim extends BaseCommand {
                 default -> -1;
             };
         }
-        if(itemOrigin == -1) {
+        if (itemOrigin == -1) {
             event.reply("An error occurred while determining the item type. If you see this, contact the bot creator through /feedback").setEphemeral(true).queue();
         }
         SkinData addedSkinData = new SkinData(event.getMessageId(), itemOrigin, Integer.parseInt(buttonID[4]), Float.parseFloat(buttonID[5]), buttonID[6].equals("1"));
         CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
         int result = database.addToInventory(event.getUser().getId(), addedSkinData);
-        String message = switch(result) {
+        String message = switch (result) {
             case 1 -> "Item successfully obtained!";
             case 0 -> "Your inventory is full!";
             case -2 -> "You have already obtained this item";
@@ -612,7 +608,7 @@ public class CaseSim extends BaseCommand {
         // get the selected item index
         MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
         int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
-        if(selectedItemIndex == -1) {
+        if (selectedItemIndex == -1) {
             event.reply("Select an item first").setEphemeral(true).queue();
             return;
         }
@@ -669,13 +665,13 @@ public class CaseSim extends BaseCommand {
         // get the selected item index
         MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
         int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
-        if(selectedItemIndex == -1) {
+        if (selectedItemIndex == -1) {
             event.reply("Select an item first").setEphemeral(true).queue();
             return;
         }
         // remove it
         CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
-        if(!database.removeItemByIndex(event.getUser().getId(), selectedItemIndex)) {
+        if (!database.removeItemByIndex(event.getUser().getId(), selectedItemIndex)) {
             event.reply("Something went wrong").setEphemeral(true).queue();
             return;
         }
@@ -690,6 +686,22 @@ public class CaseSim extends BaseCommand {
             return;
         }
         Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), event.getUser(), inventoryEmbed);
+        event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
+    }
+
+    private void inventorySwitchPage(ButtonInteractionEvent event, String[] buttonID, boolean next) {
+        User requestedUser = event.getJDA().getUserById(buttonID[4]);
+        MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
+        int pageNumber = getPageNumber(inventoryEmbed) + (next ? 1 : -1);
+        inventoryEmbed = getInventoryEmbed(requestedUser, event.getUser(), pageNumber);
+        if (inventoryEmbed == null) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
+        } else if (inventoryEmbed.getFields().isEmpty()) {
+            event.reply(Objects.requireNonNull(inventoryEmbed.getTitle())).setEphemeral(true).queue();
+            return;
+        }
+        Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), requestedUser, inventoryEmbed);
         event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
