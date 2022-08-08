@@ -541,9 +541,7 @@ public class CaseSim extends BaseCommand {
                     }
                     switch (buttonID[3]) {
                         case "show" -> inventoryShow(event, buttonID);
-                        case "delete" -> {
-                            event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
-                        }
+                        case "delete" -> inventoryDelete(event, buttonID);
                         case "pagenext" -> {
                             event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
                         }
@@ -590,9 +588,11 @@ public class CaseSim extends BaseCommand {
         event.reply(message).setEphemeral(true).queue();
     }
 
-    private void inventoryShow(ButtonInteractionEvent event, String[] buttonID) {
-        // get the selected item index
-        MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
+    private int getPageNumber(MessageEmbed inventoryEmbed) {
+        return Integer.parseInt(Objects.requireNonNull(Objects.requireNonNull(inventoryEmbed.getFooter()).getText()).split("\\s+")[1]);
+    }
+
+    private int getSelectedItemIndex(MessageEmbed inventoryEmbed) {
         int selectedItemIndex = -1, index = 0;
         for (MessageEmbed.Field field : inventoryEmbed.getFields()) {
             if (Objects.requireNonNull(field.getName()).startsWith("__")) {
@@ -601,12 +601,21 @@ public class CaseSim extends BaseCommand {
             }
             index++;
         }
-        if (selectedItemIndex == -1) {
-            event.reply("Choose an item first").setEphemeral(true).queue();
+        if (selectedItemIndex != -1) {
+            int pageNumber = getPageNumber(inventoryEmbed);
+            selectedItemIndex = (pageNumber - 1) * 10 + selectedItemIndex;
+        }
+        return selectedItemIndex;
+    }
+
+    private void inventoryShow(ButtonInteractionEvent event, String[] buttonID) {
+        // get the selected item index
+        MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
+        int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
+        if(selectedItemIndex == -1) {
+            event.reply("Select an item first").setEphemeral(true).queue();
             return;
         }
-        int pageNumber = Integer.parseInt(Objects.requireNonNull(Objects.requireNonNull(inventoryEmbed.getFooter()).getText()).split("\\s+")[1]);
-        selectedItemIndex = (pageNumber - 1) * 10 + selectedItemIndex;
         // get the item
         CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
         Pair<SkinData, SkinInfo> item = database.getItemByIndex(buttonID[0], buttonID[4], selectedItemIndex);
@@ -647,12 +656,41 @@ public class CaseSim extends BaseCommand {
             return;
         }
         // display the item
+        int pageNumber = getPageNumber(inventoryEmbed);
         MessageEmbed itemEmbed = generateItemEmbed(item.getLeft(), item.getRight(), caseInfo);
         event.editMessageEmbeds(itemEmbed).setActionRow(
                 Button.link(item.getRight().stashUrl(), "CSGO Stash"),
                 Button.primary(createInspectButtonID(event.getUser().getId(), item.getLeft().floatValue(), item.getRight()), "Inspect URL"),
                 Button.secondary(event.getUser().getId() + ":casesim:inventory:back:" + buttonID[4] + ":" + pageNumber, "Back")
         ).queue();
+    }
+
+    private void inventoryDelete(ButtonInteractionEvent event, String[] buttonID) {
+        // get the selected item index
+        MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
+        int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
+        if(selectedItemIndex == -1) {
+            event.reply("Select an item first").setEphemeral(true).queue();
+            return;
+        }
+        // remove it
+        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
+        if(!database.removeItemByIndex(event.getUser().getId(), selectedItemIndex)) {
+            event.reply("Something went wrong").setEphemeral(true).queue();
+            return;
+        }
+        // load the inventory again
+        int pageNumber = getPageNumber(inventoryEmbed);
+        inventoryEmbed = getInventoryEmbed(event.getUser(), event.getUser(), pageNumber);
+        if (inventoryEmbed == null) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
+        } else if (inventoryEmbed.getFields().isEmpty()) {
+            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setActionRows().queue();
+            return;
+        }
+        Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), event.getUser(), inventoryEmbed);
+        event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
     private void inventoryBack(ButtonInteractionEvent event, String[] buttonID) {

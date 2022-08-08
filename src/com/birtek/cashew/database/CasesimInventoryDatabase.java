@@ -389,7 +389,7 @@ public class CasesimInventoryDatabase {
         if (inventory == null) return false;
         try {
             JSONArray items = inventory.getJSONArray("items");
-            if (items.length() >= index) return false;
+            if (items.length() <= index) return false;
             items.remove(index);
             inventory.put("items", items);
         } catch (JSONException e) {
