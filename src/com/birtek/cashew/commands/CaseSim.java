@@ -529,7 +529,7 @@ public class CaseSim extends BaseCommand {
                 }
                 case "savetoinv" -> {
                     if (buttonID[0].equals(event.getUser().getId())) {
-                        event.reply("Saving to inventory doesn't work yet, come back later!").setEphemeral(true).queue();
+                        saveToInventory(event, buttonID);
                     } else {
                         event.reply("This is not your item!").setEphemeral(true).queue();
                     }
@@ -560,6 +560,34 @@ public class CaseSim extends BaseCommand {
                 }
             }
         }
+    }
+
+    private void saveToInventory(ButtonInteractionEvent event, String[] buttonID) {
+        int itemOrigin;
+        if(isNumeric(buttonID[3])) {
+            itemOrigin = Integer.parseInt(buttonID[3]);
+        } else {
+            itemOrigin = switch (buttonID[3]) {
+                case "case" -> 1;
+                case "knife" -> 2;
+                case "collection" -> 3;
+                case "capsule" -> 4;
+                default -> -1;
+            };
+        }
+        if(itemOrigin == -1) {
+            event.reply("An error occurred while determining the item type. If you see this, contact the bot creator through /feedback").setEphemeral(true).queue();
+        }
+        SkinData addedSkinData = new SkinData(event.getMessageId(), itemOrigin, Integer.parseInt(buttonID[4]), Float.parseFloat(buttonID[5]), buttonID[6].equals("1"));
+        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
+        int result = database.addToInventory(event.getUser().getId(), addedSkinData);
+        String message = switch(result) {
+            case 1 -> "Item successfully obtained!";
+            case 0 -> "Your inventory is full!";
+            case -2 -> "You have already obtained this item";
+            default -> "Something went wrong, try again later";
+        };
+        event.reply(message).setEphemeral(true).queue();
     }
 
     private void inventoryShow(ButtonInteractionEvent event, String[] buttonID) {
