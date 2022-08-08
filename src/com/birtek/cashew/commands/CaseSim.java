@@ -429,6 +429,13 @@ public class CaseSim extends BaseCommand {
         float floatValue = getSkinFloat(skin);
         boolean statTrak = random.nextInt(10) == 0;
 
+        // add count to the opened cases count
+        CasesimInventoryDatabase inventoryDatabase = CasesimInventoryDatabase.getInstance();
+        if(!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 1)) {
+            event.reply("An error occurred while updating your opening stats, try again later").setEphemeral(true).queue();
+            return;
+        }
+
         // at this point all values are known, send back the result
         SkinData skinData = new SkinData("", rarity == SkinRarity.EXTRAORDINARY ? 2 : 1, skin.id(), floatValue, statTrak);
         sendSkinOpeningEmbed(event, caseInfo, skinData, skin);
@@ -470,6 +477,13 @@ public class CaseSim extends BaseCommand {
         SkinInfo skin = getSkinOfRarity(rarity, collectionSkins);
         float floatValue = getSkinFloat(skin);
 
+        // add count to the opened cases count
+        CasesimInventoryDatabase inventoryDatabase = CasesimInventoryDatabase.getInstance();
+        if(!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 3)) {
+            event.reply("An error occurred while updating your opening stats, try again later").setEphemeral(true).queue();
+            return;
+        }
+
         // at this point all values are known, send back the result
         sendSkinOpeningEmbed(event, collectionInfo, new SkinData("", 3, 0, floatValue, false), skin);
     }
@@ -508,6 +522,13 @@ public class CaseSim extends BaseCommand {
         // roll all random values
         SkinRarity rarity = getRarityFromPercent(percentages);
         SkinInfo skin = getSkinOfRarity(rarity, capsuleItems);
+
+        // add count to the opened cases count
+        CasesimInventoryDatabase inventoryDatabase = CasesimInventoryDatabase.getInstance();
+        if(!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 4)) {
+            event.reply("An error occurred while updating your opening stats, try again later").setEphemeral(true).queue();
+            return;
+        }
 
         // at this point all values are known, send back the result
         sendItemOpeningEmbed(event, capsuleInfo, skin);
