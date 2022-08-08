@@ -1,5 +1,6 @@
 package com.birtek.cashew.database;
 
+import com.birtek.cashew.commands.CaseSim;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +94,28 @@ public class CasesimCollectionsDatabase extends CasesimDatabase {
     }
 
     /**
+     * Gets a {@link CaseInfo CaseInfos} for the specified collection id
+     *
+     * @param collectionID id of the collection requested
+     * @return {@link CaseInfo CaseInfo} object containing all information about the chosen collection, or null if the
+     * collection wasn't found or an error occurred
+     */
+    public CaseInfo getCollectionByID(int collectionID) {
+        try {
+            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT * FROM Collections WHERE _id = ?");
+            preparedStatement.setInt(1, collectionID);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new CaseInfo(results.getInt(1), results.getString(2), results.getString(3), results.getString(4), 0);
+            }
+            return null;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CasesimCollectionsDatabase.getCollectionByID()");
+            return null;
+        }
+    }
+
+    /**
      * Gets a list of {@link SkinInfo SkinInfos} for all skins in the collection
      *
      * @param collectionInfo {@link CaseInfo CaseInfo} of the collection requested
@@ -105,6 +128,27 @@ public class CasesimCollectionsDatabase extends CasesimDatabase {
             return getSkinsFromResultSet(preparedStatement.executeQuery());
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at CasesimCollectionsDatabase.getCollectionSkins()");
+            return null;
+        }
+    }
+
+    /**
+     * Obtains a SkinInfo object for the skin with the given ID
+     *
+     * @param id ID of the skin to obtain
+     * @return a SkinInfo object corresponding to the given ID, or null if the skin wasn't found or if an error occurred
+     */
+    public SkinInfo getSkinById(int id) {
+        try {
+            PreparedStatement preparedStatement = casesimCollectionsConnection.prepareStatement("SELECT * FROM Skins WHERE _id = ?");
+            preparedStatement.setInt(1, id);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new SkinInfo(results.getInt(1), results.getInt(2), results.getString(3), CaseSim.SkinRarity.values()[results.getInt(4)], results.getFloat(5), results.getFloat(6), results.getString(7), results.getString(8), results.getString(9), results.getString(10), results.getString(11), results.getString(12), results.getString(13), results.getString(14), results.getString(15), results.getString(16), results.getString(17), results.getString(18));
+            }
+            return null;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CasesimCollectionsDatabase.getSkinById()");
             return null;
         }
     }
