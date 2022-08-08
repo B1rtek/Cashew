@@ -38,10 +38,16 @@ public class CaseSim extends BaseCommand {
         EXTRAORDINARY
     }
 
+    /**
+     * Creates the CaseSim command object and caches containers
+     */
     public CaseSim() {
         cacheContainers();
     }
 
+    /**
+     * Caches container options for options autocompletion
+     */
     private void cacheContainers() {
         CasesimCasesDatabase casesDatabase = CasesimCasesDatabase.getInstance();
         CasesimCollectionsDatabase collectionsDatabase = CasesimCollectionsDatabase.getInstance();
@@ -54,6 +60,12 @@ public class CaseSim extends BaseCommand {
         if (capsulesChoices.isEmpty()) LOGGER.warn("Failed to cache capsule choices!");
     }
 
+    /**
+     * Finds all rarities that can be obtained from the given list of skins
+     *
+     * @param skins ArrayList of {@link SkinInfo SkinInfos} representing skins
+     * @return an ArrayList of {@link SkinRarity SkinRarities} representing all rarities that can be obtained
+     */
     private ArrayList<SkinRarity> findPossibleRarities(ArrayList<SkinInfo> skins) {
         ArrayList<SkinRarity> rarities = new ArrayList<>();
         for (SkinInfo skin : skins) {
@@ -64,6 +76,13 @@ public class CaseSim extends BaseCommand {
         return rarities;
     }
 
+    /**
+     * Returns the full name of the container based on the typed in string
+     *
+     * @param choicesList list of all possible choices
+     * @param typed       String typed by a user which might refer to a container
+     * @return name of the first container that matched the typed String
+     */
     private String getSelectedContainerName(ArrayList<String> choicesList, String typed) {
         ArrayList<String> matchingCases = autocompleteFromList(choicesList, typed);
         if (matchingCases.isEmpty()) {
@@ -72,6 +91,15 @@ public class CaseSim extends BaseCommand {
         return matchingCases.get(0);
     }
 
+    /**
+     * Calculates odds based on the available rarities
+     *
+     * @param rarities       ArrayList of {@link SkinRarity SkinRarities} representing all obtainable rarities in the
+     *                       container
+     * @param collectionOdds if set to true, odds will be based on collection odds instead of case odds
+     * @return an ArrayList of the same length as the rarities list with prefix sums of percentages that when gotten,
+     * correspond to the rarity with the same index
+     */
     private ArrayList<Double> calculatePercentages(ArrayList<SkinRarity> rarities, boolean collectionOdds) {
         ArrayList<Double> percentages;
         int rarityIndex;
@@ -131,6 +159,14 @@ public class CaseSim extends BaseCommand {
         return percentages;
     }
 
+    /**
+     * Obtains the {@link SkinRarity SkinRarity} from the percentages list generated with
+     * {@link #calculatePercentages(ArrayList, boolean) calculatePercentages}
+     *
+     * @param percentages list generated with
+     *                    {@link #calculatePercentages(ArrayList, boolean) calculatePercentages}
+     * @return {@link SkinRarity SkinRarity} of the item that will be obtained
+     */
     private SkinRarity getRarityFromPercent(ArrayList<Double> percentages) {
         double rarityPercent = random.nextDouble();
         int rarityIndex = 0;
@@ -138,6 +174,13 @@ public class CaseSim extends BaseCommand {
         return SkinRarity.values()[rarityIndex];
     }
 
+    /**
+     * Obtains a random {@link SkinInfo SkinInfo} object from the list with the selected {@link SkinRarity SkinRarity}
+     *
+     * @param rarity {@link SkinRarity SkinRarity} of which the skin will be chosen
+     * @param skins  ArrayList of {@link SkinInfo SkinInfos} from the container
+     * @return a random {@link SkinInfo SkinInfo} object from the list with rarity matching the choice
+     */
     private SkinInfo getSkinOfRarity(SkinRarity rarity, ArrayList<SkinInfo> skins) {
         ArrayList<SkinInfo> skinsOfRarity = new ArrayList<>();
         for (SkinInfo skin : skins) {
@@ -166,6 +209,13 @@ public class CaseSim extends BaseCommand {
         }
     };
 
+    /**
+     * Obtains a random float value for the {@link SkinInfo SkinInfo} respecting it's float range, the float gaps and
+     * the quality probabilities
+     *
+     * @param skin {@link SkinInfo SkinInfo} representing an item with its own float range
+     * @return a random float value for this skin
+     */
     private float getSkinFloat(SkinInfo skin) {
         // roll quality value
         int qualityInt = random.nextInt(100);
@@ -177,6 +227,12 @@ public class CaseSim extends BaseCommand {
         return baseFloat * (skin.maxFloat() - skin.minFloat()) + skin.minFloat();
     }
 
+    /**
+     * Gets the String representation of the given float value
+     *
+     * @param floatValue float value to obtain the name for
+     * @return String representation of the given float value as the corresponding quality name
+     */
     private String getConditionFromFloat(float floatValue) {
         if (floatValue <= 0.07) return "Factory New";
         else if (floatValue <= 0.15) return "Minimal Wear";
@@ -185,12 +241,26 @@ public class CaseSim extends BaseCommand {
         else return "Battle-Scarred";
     }
 
+    /**
+     * Gets the url of the item's image
+     *
+     * @param floatValue float value to obtain the image for
+     * @param skin       {@link SkinInfo SkinInfo} object to obtain the image of
+     * @return String with the url of the item's image corresponding to the given float value
+     */
     private String getImageUrlFromFloat(float floatValue, SkinInfo skin) {
         if (floatValue <= 0.15) return skin.wearImg1();
         else if (floatValue <= 0.45) return skin.wearImg2();
         else return skin.wearImg3();
     }
 
+    /**
+     * Gets the inspect url of the skin
+     *
+     * @param floatValue float value to obtain the inspect link for
+     * @param skin       {@link SkinInfo SkinInfo} object to obtain the inspect link for
+     * @return String with the inspect url of the item's image corresponding to the given float value
+     */
     private String getInspectUrlFromFloat(float floatValue, SkinInfo skin) {
         if (floatValue <= 0.07) return skin.inspectFN();
         else if (floatValue <= 0.15) return skin.inspectMW();
@@ -199,6 +269,12 @@ public class CaseSim extends BaseCommand {
         else return skin.inspectBS();
     }
 
+    /**
+     * Gets an integer representing a color based on the provided {@link SkinRarity SkinRarity}
+     *
+     * @param rarity {@link SkinRarity SkinRarity} to get the color for
+     * @return an integer representing a color value matching the given {@link SkinRarity SkinRarity}
+     */
     private int getColorFromRarity(SkinRarity rarity) {
         return switch (rarity) {
             case CONSUMER_GRADE -> 0xAFAFAF;
@@ -211,18 +287,47 @@ public class CaseSim extends BaseCommand {
         };
     }
 
+    /**
+     * Creates and ID for the inspect button placed under the dropped item embed
+     *
+     * @param userID     ID of the user who opened the container
+     * @param floatValue float value of the opened item
+     * @param skin       {@link SkinInfo SkinInfo} object representing the opened item
+     * @return String containing the ID of the inspect button
+     */
     private String createInspectButtonID(String userID, float floatValue, SkinInfo skin) {
         String buttonID = userID + ":casesim:inspect:";
         buttonID += getInspectUrlFromFloat(floatValue, skin).substring(67);
         return buttonID;
     }
 
+    /**
+     * Creates and ID for the save to inventory button placed under the dropped item embed
+     *
+     * @param userID     ID of the user who opened the container
+     * @param itemOrigin a single character representing the item origin - "1" is case, "2" is knife, "3" is collection
+     *                   and "4" is capsule
+     * @param floatValue float value of the opened item
+     * @param skin       {@link SkinInfo SkinInfo} object representing the opened item
+     * @param statTrak   set to true if the obtained item had StatTrak on it
+     * @return String containing the ID of the save to inventory button
+     */
     private String createSaveToInvButtonID(String userID, String itemOrigin, float floatValue, SkinInfo skin, boolean statTrak) {
         String buttonID = userID + ":casesim:savetoinv:" + itemOrigin + ":";
         buttonID += skin.id() + ":" + floatValue + ":" + (statTrak ? "1" : "0");
         return buttonID;
     }
 
+    /**
+     * Sends the {@link MessageEmbed embed} containing the dropped skin along with the action row containing buttons for
+     * inspection and saving to inventory. This method is NOT used for capsule drops, for that see
+     * {@link #sendItemOpeningEmbed(SlashCommandInteractionEvent, CaseInfo, SkinInfo) sendItemOpeningEmbed}
+     *
+     * @param event    {@link SlashCommandInteractionEvent event} that triggered the case opening
+     * @param caseInfo {@link CaseInfo CaseInfo} object representing the container from which the item was opened
+     * @param skinData {@link SkinData SkinData} object with all values unique to this copy of the item
+     * @param skin     {@link SkinInfo SkinInfo} object representing this item
+     */
     private void sendSkinOpeningEmbed(SlashCommandInteractionEvent event, CaseInfo caseInfo, SkinData skinData, SkinInfo skin) {
         MessageEmbed containerUnboxEmbed = generateItemEmbed(skinData, skin, caseInfo);
         event.replyEmbeds(containerUnboxEmbed).addActionRow(
@@ -232,6 +337,15 @@ public class CaseSim extends BaseCommand {
         ).queue();
     }
 
+    /**
+     * Sends the {@link MessageEmbed embed} containing the dropped item along with the action row containing buttons for
+     * inspection and saving to inventory. This method is NOT used for non-capsule drops, for that see
+     * {@link #sendSkinOpeningEmbed(SlashCommandInteractionEvent, CaseInfo, SkinData, SkinInfo) sendSkinOpeningEmbed()}
+     *
+     * @param event       {@link SlashCommandInteractionEvent event} that triggered the capsule opening
+     * @param capsuleInfo {@link CaseInfo CaseInfo} object representing the capsule from which the item was opened
+     * @param item        {@link SkinInfo SkinInfo} object representing this item
+     */
     private void sendItemOpeningEmbed(SlashCommandInteractionEvent event, CaseInfo capsuleInfo, SkinInfo item) {
         MessageEmbed capsuleUnboxEmbed = generateItemEmbed(new SkinData("", 4, 0, 0, false), item, capsuleInfo);
 
@@ -242,6 +356,15 @@ public class CaseSim extends BaseCommand {
         ).queue();
     }
 
+    /**
+     * Generates an {@link MessageEmbed embed} that shows all information about the item
+     *
+     * @param skinData {@link SkinData SkinData} object with all values unique to this copy of the item
+     * @param skinInfo {@link SkinInfo SkinInfo} object representing this item
+     * @param caseInfo {@link CaseInfo CaseInfo} object representing the container from which the item was opened
+     * @return a {@link MessageEmbed MessageEmbed} showing the origin container of this item, an image of this item, its
+     * quality, float, description and finish (with some of those omitted for capsule drops as they don't have them)
+     */
     private MessageEmbed generateItemEmbed(SkinData skinData, SkinInfo skinInfo, CaseInfo caseInfo) {
         EmbedBuilder containerUnboxEmbed = new EmbedBuilder();
         containerUnboxEmbed.setAuthor(caseInfo.caseName(), caseInfo.caseUrl(), caseInfo.imageUrl());
@@ -257,6 +380,9 @@ public class CaseSim extends BaseCommand {
         return containerUnboxEmbed.build();
     }
 
+    /**
+     * Handles the case opening process
+     */
     private void openCase(SlashCommandInteractionEvent event) {
         // Find the selected case name
         String typed = event.getOption("case", "", OptionMapping::getAsString);
@@ -308,6 +434,9 @@ public class CaseSim extends BaseCommand {
         sendSkinOpeningEmbed(event, caseInfo, skinData, skin);
     }
 
+    /**
+     * Handles the collection opening process
+     */
     private void openCollection(SlashCommandInteractionEvent event) {
         // Find the selected case name
         String typed = event.getOption("collection", "", OptionMapping::getAsString);
@@ -345,6 +474,9 @@ public class CaseSim extends BaseCommand {
         sendSkinOpeningEmbed(event, collectionInfo, new SkinData("", 3, 0, floatValue, false), skin);
     }
 
+    /**
+     * Handles the capsule opening process
+     */
     private void openCapsule(SlashCommandInteractionEvent event) {
         // Find the selected case name
         String typed = event.getOption("capsule", "", OptionMapping::getAsString);
@@ -381,6 +513,22 @@ public class CaseSim extends BaseCommand {
         sendItemOpeningEmbed(event, capsuleInfo, skin);
     }
 
+    /**
+     * Creates an {@link MessageEmbed embed} representing a user's inventory page. Needs to either have requestedUser
+     * and the last three arguments set to null, or it set to null and the last three filled with relevant information
+     *
+     * @param requestedUser      {@link User User} object representing the user whose inventory was requested. If set to
+     *                           null, userName, requestedUserID and requestedThumbnail will be used instead
+     * @param requestingUser     {@link User User} object representing the user who requested the inventory. Used to check
+     *                           whether the user can access the requested inventory
+     * @param pageNumber         number of the requested page, counting from 1
+     * @param userName           name of the user to display if the requestedUser parameter was set to null
+     * @param requestedUserID    ID of the requestedUser if the requestedUser parameter was set to null
+     * @param requestedThumbnail URL of the thumbnail to display in the embed if the requestedUser parameter was set to
+     *                           null
+     * @return a {@link MessageEmbed MessageEmbed} containing the requested inventory page, thumbnail and page count,
+     * null if an error occurred, or an error message passed in an embed with no fields in the title field
+     */
     private MessageEmbed getInventoryEmbed(User requestedUser, User requestingUser, int pageNumber, String userName, String requestedUserID, String requestedThumbnail) {
         CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
         ArrayList<Pair<SkinData, SkinInfo>> inventory = new ArrayList<>();
@@ -405,7 +553,7 @@ public class CaseSim extends BaseCommand {
         inventoryEmbed.setTitle(userString + " inventory");
         if (requestedUser != null) {
             inventoryEmbed.setThumbnail(requestedUser.getEffectiveAvatarUrl());
-        } else if (requestedThumbnail != null){
+        } else if (requestedThumbnail != null) {
             inventoryEmbed.setThumbnail(requestedThumbnail);
         }
         inventoryEmbed.setFooter("Page " + pageNumber + " out of " + pageCount);
@@ -415,6 +563,19 @@ public class CaseSim extends BaseCommand {
         return inventoryEmbed.build();
     }
 
+    /**
+     * Creates a pair of {@link ActionRow ActionRows}, one with a {@link SelectMenu SelectMenu} for selecting the items
+     * in the inventory, other one with buttons for interacting with the item (show, delete, page switching)
+     *
+     * @param requestingUser    {@link User User} object representing the user who requested the inventory. Used to check
+     *                          whether the user can access the requested inventory
+     * @param requestedUser     {@link User User} object representing the user whose inventory was requested. If set to
+     *                          null, requestedUserName and requestedUserID will be used instead
+     * @param inventoryEmbed    inventoryEmbed to which these ActionRows will be added
+     * @param requestedUserName name of the user to display if the requestedUser parameter was set to null
+     * @param requestedUserID   ID of the requestedUser if the requestedUser parameter was set to null
+     * @return a pair of {@link ActionRow ActionRows} that should be placed under the inventory embed
+     */
     private Pair<ActionRow, ActionRow> getInventoryEmbedActionRows(User requestingUser, User requestedUser, MessageEmbed inventoryEmbed, String requestedUserName, String requestedUserID) {
         requestedUserID = requestedUser == null ? requestedUserID : requestedUser.getId();
         SelectMenu.Builder itemSelectMenu = SelectMenu.create(requestingUser.getId() + ":casesim:inventory")
@@ -435,6 +596,9 @@ public class CaseSim extends BaseCommand {
         return Pair.of(ActionRow.of(itemSelectMenu.build()), ActionRow.of(invControls));
     }
 
+    /**
+     * Shows the inventory, or replies with a corresponding error message if it couldn't be obtained
+     */
     private void inventory(SlashCommandInteractionEvent event) {
         User requestedUser = event.getOption("user", event.getUser(), OptionMapping::getAsUser);
         MessageEmbed inventoryEmbed = getInventoryEmbed(requestedUser, event.getUser(), 1, null, null, null);
@@ -452,6 +616,9 @@ public class CaseSim extends BaseCommand {
         event.replyEmbeds(inventoryEmbed).addActionRows(actionRows.getLeft(), actionRows.getRight()).setEphemeral(!inventoryStats.isPublic()).queue();
     }
 
+    /**
+     * Shows the inventory stats, or replies with a corresponding error message if they couldn't be obtained
+     */
     private void stats(SlashCommandInteractionEvent event) {
         User requestedUser = event.getOption("user", event.getUser(), OptionMapping::getAsUser);
         CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
@@ -473,6 +640,18 @@ public class CaseSim extends BaseCommand {
         }
     }
 
+    /**
+     * Generates an {@link MessageEmbed embed} with user's CaseSim stats in it, as well as the information whether the
+     * inventory is set as private if the stats were requested by their owner
+     *
+     * @param user       {@link User User} object representing the user whose stats were requested
+     * @param stats      {@link CasesimInvStats CasesimInvStats} object with user's stats
+     * @param userString a String containing the name to display in the title of the embed
+     * @param asPrivate  set to true if the user generating the embed is the one who owns the stats
+     * @return a {@link MessageEmbed MessageEmbed} with stats telling how many containers of which type the user has
+     * opened, the amount of items in their inventory and an information about inventory visibility if the stats were
+     * requested by their owner
+     */
     private MessageEmbed generateInventoryStatsEmbed(User user, CasesimInvStats stats, String userString, boolean asPrivate) {
         EmbedBuilder statsEmbed = new EmbedBuilder();
         statsEmbed.setTitle(userString + " Casesim stats");
@@ -517,6 +696,10 @@ public class CaseSim extends BaseCommand {
         }
     }
 
+    /**
+     * Chooses the right action according to the ID of the button, and blocks actions that weren't initiated by the
+     * user whose ID is included in the button ID
+     */
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         //userID:casesim:inspect:inspectURL
@@ -545,15 +728,15 @@ public class CaseSim extends BaseCommand {
                 }
                 case "inventory" -> {
                     if (!event.getUser().getId().equals(buttonID[0])) {
-                        event.reply("It's not your inventory").setEphemeral(true).queue();
+                        event.reply("It's not your inventory!").setEphemeral(true).queue();
                         return;
                     }
                     switch (buttonID[3]) {
                         case "show" -> inventoryShow(event, buttonID);
-                        case "delete" -> inventoryDelete(event, buttonID);
+                        case "delete" -> inventoryDelete(event);
                         case "pagenext" -> inventorySwitchPage(event, buttonID, true);
                         case "pageprev" -> inventorySwitchPage(event, buttonID, false);
-                        case "makepublic" -> inventoryMakePublic(event, buttonID);
+                        case "makepublic" -> inventoryMakePublic(event);
                         case "back" -> inventoryBack(event, buttonID);
                     }
                 }
@@ -561,6 +744,13 @@ public class CaseSim extends BaseCommand {
         }
     }
 
+    /**
+     * Handles saving items to the inventory, triggered by the save to inventory item under unboxing embeds. Replies
+     * with an ephemeral message stating either success or failure in saving the item
+     *
+     * @param event    {@link ButtonInteractionEvent event} that triggered this action
+     * @param buttonID ID of the button which was pressed
+     */
     private void saveToInventory(ButtonInteractionEvent event, String[] buttonID) {
         int itemOrigin;
         if (isNumeric(buttonID[3])) {
@@ -589,10 +779,22 @@ public class CaseSim extends BaseCommand {
         event.reply(message).setEphemeral(true).queue();
     }
 
+    /**
+     * Gets the current page number from an inventory embed
+     *
+     * @param inventoryEmbed {@link MessageEmbed MessageEmbed} with someone's inventory
+     * @return integer with the page number (counting from 1)
+     */
     private int getPageNumber(MessageEmbed inventoryEmbed) {
         return Integer.parseInt(Objects.requireNonNull(Objects.requireNonNull(inventoryEmbed.getFooter()).getText()).split("\\s+")[1]);
     }
 
+    /**
+     * Returns the index of the selected item from the inventory embed
+     *
+     * @param inventoryEmbed {@link MessageEmbed MessageEmbed} with someone's inventory
+     * @return index of the selected (underlined) item, counting from zero
+     */
     private int getSelectedItemIndex(MessageEmbed inventoryEmbed) {
         int selectedItemIndex = -1, index = 0;
         for (MessageEmbed.Field field : inventoryEmbed.getFields()) {
@@ -609,6 +811,14 @@ public class CaseSim extends BaseCommand {
         return selectedItemIndex;
     }
 
+    /**
+     * Handles showing items from the inventory by displaying an embed identical to the one that's shown when the item
+     * is unboxed. If the inventory was set to private in the meantime, it'll be closed. If an error occurred, a message
+     * with it will be sent as an ephemeral reply to the embed
+     *
+     * @param event    {@link ButtonInteractionEvent event} that triggered this action
+     * @param buttonID ID of the button which was pressed
+     */
     private void inventoryShow(ButtonInteractionEvent event, String[] buttonID) {
         // get the selected item index
         MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
@@ -626,7 +836,7 @@ public class CaseSim extends BaseCommand {
         }
         if (item.getRight() == null) {
             if (item.getLeft() == null) {
-                event.reply("This inventory is private").setEphemeral(true).queue();
+                event.editMessage("This inventory is private").setEmbeds().setActionRows().queue();
             } else {
                 event.reply("This item doesn't exist").setEphemeral(true).queue();
             }
@@ -670,7 +880,13 @@ public class CaseSim extends BaseCommand {
         ).queue();
     }
 
-    private void inventoryDelete(ButtonInteractionEvent event, String[] buttonID) {
+    /**
+     * Handles deleting items from the inventory, and displays a refreshed inventory page after it's done. If an error
+     * occurred, a message with it will be sent as an ephemeral reply to the embed
+     *
+     * @param event {@link ButtonInteractionEvent event} that triggered this action
+     */
+    private void inventoryDelete(ButtonInteractionEvent event) {
         // get the selected item index
         MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
         int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
@@ -698,6 +914,15 @@ public class CaseSim extends BaseCommand {
         event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
+    /**
+     * Handles switching between inventory pages, and displays a refreshed inventory page after it's done. If the
+     * inventory was set to private in the meantime, it'll be closedIf an error occurred, a message with it will be sent
+     * as an ephemeral reply to the embed
+     *
+     * @param event    {@link ButtonInteractionEvent event} that triggered this action
+     * @param buttonID ID of the button which was pressed
+     * @param next     if set to true, will switch to the next page, otherwise it'll go one page back
+     */
     private void inventorySwitchPage(ButtonInteractionEvent event, String[] buttonID, boolean next) {
         String thumbnail = Objects.requireNonNull(event.getMessage().getEmbeds().get(0).getThumbnail()).getUrl();
         StringBuilder requestedUserName = new StringBuilder(buttonID[5]);
@@ -722,15 +947,21 @@ public class CaseSim extends BaseCommand {
         event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
-    private void inventoryMakePublic(ButtonInteractionEvent event, String[] buttonID) {
+    /**
+     * Handles changing the inventory visibility, and displays a refreshed stats page after it's done. If an error
+     * occurred, a message with it will be sent as an ephemeral reply to the embed
+     *
+     * @param event {@link ButtonInteractionEvent event} that triggered this action
+     */
+    private void inventoryMakePublic(ButtonInteractionEvent event) {
         CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
         CasesimInvStats stats = database.getInventoryStats(event.getUser().getId(), event.getUser().getId());
-        if(stats == null) {
+        if (stats == null) {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
         }
         // change the setting
-        if(!database.setInventoryVisibility(event.getUser().getId(), !stats.isPublic())) {
+        if (!database.setInventoryVisibility(event.getUser().getId(), !stats.isPublic())) {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
         }
@@ -740,6 +971,14 @@ public class CaseSim extends BaseCommand {
         event.editMessageEmbeds(statsEmbed).setActionRow(Button.primary(event.getUser().getId() + ":casesim:inventory:makepublic", "Make " + (!stats.isPublic() ? "public" : "private"))).queue();
     }
 
+    /**
+     * Handles returning to the inventory after inspecting the item, and displays a refreshed inventory page after it's
+     * done. If the inventory was set to private in the meantime, it'll be closed. If an error occurred, a message with
+     * it will be sent as an ephemeral reply to the embed
+     *
+     * @param event    {@link ButtonInteractionEvent event} that triggered this action
+     * @param buttonID ID of the button which was pressed
+     */
     private void inventoryBack(ButtonInteractionEvent event, String[] buttonID) {
         StringBuilder requestedUserName = new StringBuilder(buttonID[6]);
         for (int i = 7; i < buttonID.length; i++) {
@@ -757,6 +996,9 @@ public class CaseSim extends BaseCommand {
         event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
+    /**
+     * Handles underlining the selected items in the inventory
+     */
     @Override
     public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
         String[] menuID = event.getComponentId().split(":");
@@ -770,7 +1012,7 @@ public class CaseSim extends BaseCommand {
             EmbedBuilder selectedInventoryEmbed = new EmbedBuilder();
             selectedInventoryEmbed.setTitle(inventoryEmbed.getTitle());
             MessageEmbed.Thumbnail thumbnail = inventoryEmbed.getThumbnail();
-            if(thumbnail != null) {
+            if (thumbnail != null) {
                 selectedInventoryEmbed.setThumbnail(thumbnail.getUrl());
             } else {
                 selectedInventoryEmbed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
