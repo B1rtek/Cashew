@@ -553,9 +553,7 @@ public class CaseSim extends BaseCommand {
                         case "delete" -> inventoryDelete(event, buttonID);
                         case "pagenext" -> inventorySwitchPage(event, buttonID, true);
                         case "pageprev" -> inventorySwitchPage(event, buttonID, false);
-                        case "makepublic" -> {
-                            event.reply("throw new NotImplementedException();").setEphemeral(true).queue();
-                        }
+                        case "makepublic" -> inventoryMakePublic(event, buttonID);
                         case "back" -> inventoryBack(event, buttonID);
                     }
                 }
@@ -722,6 +720,24 @@ public class CaseSim extends BaseCommand {
         }
         Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), null, inventoryEmbed, requestedUserName.toString(), buttonID[4]);
         event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
+    }
+
+    private void inventoryMakePublic(ButtonInteractionEvent event, String[] buttonID) {
+        CasesimInventoryDatabase database = CasesimInventoryDatabase.getInstance();
+        CasesimInvStats stats = database.getInventoryStats(event.getUser().getId(), event.getUser().getId());
+        if(stats == null) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
+        }
+        // change the setting
+        if(!database.setInventoryVisibility(event.getUser().getId(), !stats.isPublic())) {
+            event.reply("Something went wrong, try again later").setEphemeral(true).queue();
+            return;
+        }
+        stats.setPublic(!stats.isPublic());
+        // edit the embed accordingly and send it back
+        MessageEmbed statsEmbed = generateInventoryStatsEmbed(event.getUser(), stats, "Your", true);
+        event.editMessageEmbeds(statsEmbed).setActionRow(Button.primary(event.getUser().getId() + ":casesim:inventory:makepublic", "Make " + (!stats.isPublic() ? "public" : "private"))).queue();
     }
 
     private void inventoryBack(ButtonInteractionEvent event, String[] buttonID) {
