@@ -622,7 +622,8 @@ public class CaseSim extends BaseCommand {
      */
     private void inventory(SlashCommandInteractionEvent event) {
         User requestedUser = event.getOption("user", event.getUser(), OptionMapping::getAsUser);
-        MessageEmbed inventoryEmbed = getInventoryEmbed(requestedUser, event.getUser(), 1, null, null, null);
+        int pageNumber = event.getOption("page", 1, OptionMapping::getAsInt);
+        MessageEmbed inventoryEmbed = getInventoryEmbed(requestedUser, event.getUser(), pageNumber, null, null, null);
         if (inventoryEmbed == null) {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;

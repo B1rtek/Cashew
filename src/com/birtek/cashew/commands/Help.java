@@ -83,7 +83,7 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.addField("`/casesim opencase <case>`", "Opens the selected case", false);
                 specificHelpEmbed.addField("`/casesim opencollection <collection>`", "Opens the selected collection", false);
                 specificHelpEmbed.addField("`/casesim opencapsule <capsule>`", "Opens the selected capsule", false);
-                specificHelpEmbed.addField("`/casesim inventory [user]`", "Shows the selected user's inventory, by default yours. You can inspect and delete items in your inventory", false);
+                specificHelpEmbed.addField("`/casesim inventory [user] [page]`", "Shows the selected user's inventory, by default yours. You can select the page to open, by default the first one is shown. You can inspect and delete items in your inventory", false);
                 specificHelpEmbed.addField("`/casesim stats [user]`", "Shows the selected user's CaseSim stats, by default yours. You can change the visibility of your inventory here", false);
             }
             case "clear" -> {
