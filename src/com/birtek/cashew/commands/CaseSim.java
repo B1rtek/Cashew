@@ -715,7 +715,7 @@ public class CaseSim extends BaseCommand {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
         } else if (inventoryEmbed.getFields().isEmpty()) {
-            event.reply(Objects.requireNonNull(inventoryEmbed.getTitle())).setEphemeral(true).queue();
+            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setActionRows().queue();
             return;
         }
         Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), null, inventoryEmbed, requestedUserName.toString(), buttonID[4]);
@@ -750,7 +750,7 @@ public class CaseSim extends BaseCommand {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
         } else if (inventoryEmbed.getFields().isEmpty()) {
-            event.reply(Objects.requireNonNull(inventoryEmbed.getTitle())).setEphemeral(true).queue();
+            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setActionRows().queue();
             return;
         }
         Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), null, inventoryEmbed, requestedUserName.toString(), buttonID[4]);
