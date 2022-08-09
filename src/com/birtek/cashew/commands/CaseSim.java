@@ -333,7 +333,8 @@ public class CaseSim extends BaseCommand {
         event.replyEmbeds(containerUnboxEmbed).addActionRow(
                 Button.link(skin.stashUrl(), "CSGO Stash"),
                 Button.primary(createInspectButtonID(event.getUser().getId(), skinData.floatValue(), skin), "Inspect URL"),
-                Button.success(createSaveToInvButtonID(event.getUser().getId(), String.valueOf(skinData.containterType()), skinData.floatValue(), skin, skinData.statTrak()), "Save to inventory")
+                Button.success(createSaveToInvButtonID(event.getUser().getId(), String.valueOf(skinData.containterType()), skinData.floatValue(), skin, skinData.statTrak()), "Save to inventory"),
+                Button.secondary(event.getUser().getId() + ":casesim:close", Emoji.fromUnicode("❌"))
         ).queue();
     }
 
@@ -352,7 +353,8 @@ public class CaseSim extends BaseCommand {
         event.replyEmbeds(capsuleUnboxEmbed).addActionRow(
                 Button.link(item.stashUrl(), "CSGO Stash"),
                 Button.primary(createInspectButtonID(event.getUser().getId(), 0.0f, item), "Inspect URL"),
-                Button.success(createSaveToInvButtonID(event.getUser().getId(), "4", 0.0f, item, false), "Save to inventory")
+                Button.success(createSaveToInvButtonID(event.getUser().getId(), "4", 0.0f, item, false), "Save to inventory"),
+                Button.secondary(event.getUser().getId() + ":casesim:close", Emoji.fromUnicode("❌"))
         ).queue();
     }
 
@@ -614,6 +616,7 @@ public class CaseSim extends BaseCommand {
         }
         invControls.add(Button.primary(requestingUser.getId() + ":casesim:inventory:pageprev:" + requestedUserID + ":" + requestedUserName, Emoji.fromUnicode("◀️")));
         invControls.add(Button.primary(requestingUser.getId() + ":casesim:inventory:pagenext:" + requestedUserID + ":" + requestedUserName, Emoji.fromUnicode("▶️")));
+        invControls.add(Button.secondary(requestingUser.getId() + ":casesim:close", Emoji.fromUnicode("❌")));
         return Pair.of(ActionRow.of(itemSelectMenu.build()), ActionRow.of(invControls));
     }
 
@@ -656,7 +659,10 @@ public class CaseSim extends BaseCommand {
         }
         MessageEmbed statsEmbed = generateInventoryStatsEmbed(event.getUser(), stats, userString, requestedUser.getId().equals(event.getUser().getId()));
         if (requestedUser.getId().equals(event.getUser().getId())) {
-            event.replyEmbeds(statsEmbed).addActionRow(Button.primary(event.getUser().getId() + ":casesim:inventory:makepublic", "Make " + (!stats.isPublic() ? "public" : "private"))).setEphemeral(!stats.isPublic()).queue();
+            event.replyEmbeds(statsEmbed).addActionRow(
+                    Button.primary(event.getUser().getId() + ":casesim:inventory:makepublic", "Make " + (!stats.isPublic() ? "public" : "private")),
+                    Button.secondary(event.getUser().getId() + ":casesim:close", Emoji.fromUnicode("❌"))
+            ).setEphemeral(!stats.isPublic()).queue();
         } else {
             event.replyEmbeds(statsEmbed).queue();
         }
@@ -732,8 +738,9 @@ public class CaseSim extends BaseCommand {
         //userID:casesim:inventory:pageprev:inventoryUserID:fullusername, might be more than one segment
         //userID:casesim:inventory:makepublic
         //userID:casesim:inventory:back:inventoryUserID:page:fullusername, might be more than one segment
+        //userID:casesim:close
         String[] buttonID = event.getComponentId().split(":");
-        if (buttonID.length < 4) return;
+        if (buttonID.length < 3) return;
         if (buttonID[1].equals("casesim")) {
             switch (buttonID[2]) {
                 case "inspect" -> {
@@ -746,6 +753,13 @@ public class CaseSim extends BaseCommand {
                         saveToInventory(event, buttonID);
                     } else {
                         event.reply("This is not your item!").setEphemeral(true).queue();
+                    }
+                }
+                case "close" -> {
+                    if(buttonID[0].equals(event.getUser().getId())) {
+                        event.getMessage().delete().queue();
+                    } else {
+                        event.reply("This is not your embed").setEphemeral(true).queue();
                     }
                 }
                 case "inventory" -> {
