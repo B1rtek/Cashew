@@ -41,7 +41,12 @@ public class BestNeko extends BaseCommand {
      * @return ID of the neko from the database, or 0 if that neko doesn't exist
      */
     private int getNekoID(String neko) {
-        return nekos.indexOf(neko) + 1;
+        int index = 1;
+        for(String nekoName: nekos) {
+            if(nekoName.equalsIgnoreCase(neko)) return index;
+            index++;
+        }
+        return 0;
     }
 
     /**
@@ -92,7 +97,7 @@ public class BestNeko extends BaseCommand {
                 }
                 BestNekoDatabase database = BestNekoDatabase.getInstance();
                 if (database.setNeko(event.getUser().getId(), id)) {
-                    event.reply("Favourite neko successfully set to " + neko + "!").setEphemeral(true).queue();
+                    event.reply("Favourite neko successfully set to " + getNekoName(id) + "!").setEphemeral(true).queue();
                 } else {
                     event.reply("Something went wrong while setting your favourite neko, try again later").setEphemeral(true).queue();
                 }
@@ -111,6 +116,10 @@ public class BestNeko extends BaseCommand {
             } else if (Objects.equals(event.getSubcommandName(), "chart")) {
                 BestNekoDatabase database = BestNekoDatabase.getInstance();
                 ArrayList<Pair<String, Integer>> distribution = database.getNekosDistribution();
+                if(distribution.isEmpty()) {
+                    event.reply("No one chose their favourite neko yet!").setEphemeral(true).queue();
+                    return;
+                }
                 BestNekoGifsDatabase gifsDatabase = BestNekoGifsDatabase.getInstance();
                 HashMap<String, Color> nekoColors = gifsDatabase.getNekoColors();
                 String chartName = "Favourite nekos distribution chart";
@@ -132,6 +141,7 @@ public class BestNeko extends BaseCommand {
                 }
                 piechartEmbed.setImage("attachment://piechart.png");
                 piechartEmbed.setColor(nekoColors.get(distribution.get(0).getLeft()));
+                piechartEmbed.setFooter("Total votes: " + (int) total);
                 event.replyFile(bestNekoPiechart, "piechart.png").addEmbeds(piechartEmbed.build()).queue();
             } else {
                 event.reply("No subcommand specified (how???)").setEphemeral(true).queue();
