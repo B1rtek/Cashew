@@ -111,6 +111,10 @@ public class BestNeko extends BaseCommand {
             } else if (Objects.equals(event.getSubcommandName(), "chart")) {
                 BestNekoDatabase database = BestNekoDatabase.getInstance();
                 ArrayList<Pair<String, Integer>> distribution = database.getNekosDistribution();
+                if(distribution.isEmpty()) {
+                    event.reply("No one chose their favourite neko yet!").setEphemeral(true).queue();
+                    return;
+                }
                 BestNekoGifsDatabase gifsDatabase = BestNekoGifsDatabase.getInstance();
                 HashMap<String, Color> nekoColors = gifsDatabase.getNekoColors();
                 String chartName = "Favourite nekos distribution chart";
@@ -132,6 +136,7 @@ public class BestNeko extends BaseCommand {
                 }
                 piechartEmbed.setImage("attachment://piechart.png");
                 piechartEmbed.setColor(nekoColors.get(distribution.get(0).getLeft()));
+                piechartEmbed.setFooter("Total votes: " + (int) total);
                 event.replyFile(bestNekoPiechart, "piechart.png").addEmbeds(piechartEmbed.build()).queue();
             } else {
                 event.reply("No subcommand specified (how???)").setEphemeral(true).queue();
