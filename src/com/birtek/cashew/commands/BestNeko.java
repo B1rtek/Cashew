@@ -41,7 +41,12 @@ public class BestNeko extends BaseCommand {
      * @return ID of the neko from the database, or 0 if that neko doesn't exist
      */
     private int getNekoID(String neko) {
-        return nekos.indexOf(neko) + 1;
+        int index = 1;
+        for(String nekoName: nekos) {
+            if(nekoName.equalsIgnoreCase(neko)) return index;
+            index++;
+        }
+        return 0;
     }
 
     /**
@@ -92,7 +97,7 @@ public class BestNeko extends BaseCommand {
                 }
                 BestNekoDatabase database = BestNekoDatabase.getInstance();
                 if (database.setNeko(event.getUser().getId(), id)) {
-                    event.reply("Favourite neko successfully set to " + neko + "!").setEphemeral(true).queue();
+                    event.reply("Favourite neko successfully set to " + getNekoName(id) + "!").setEphemeral(true).queue();
                 } else {
                     event.reply("Something went wrong while setting your favourite neko, try again later").setEphemeral(true).queue();
                 }
