@@ -12,6 +12,12 @@ import java.net.URLConnection;
 
 public class DadJoke extends BaseCommand {
 
+    /**
+     * Creates a request for icanhazdadjoke.com and receives the reply from the api
+     *
+     * @return text of the joke gotten from icanhazdadjoke.com, or an error message, both will be displayed in the same
+     * way
+     */
     private String getADadJoke() {
         URL dadJokeURL;
         try {
