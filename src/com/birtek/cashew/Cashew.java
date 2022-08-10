@@ -92,14 +92,17 @@ public class Cashew {
                                 .addOption(STRING, "reaction", "Reaction to get the info about", true, true))
                         .setGuildOnly(true),
                 Commands.slash("cuddle", "Cuddle someone!")
-                        .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true),
+                        .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true)
+                        .setGuildOnly(true),
                 Commands.slash("hug", "Hug someone!")
-                        .addOption(STRING, "tohug", "A person (or a group of people) to hug", true),
+                        .addOption(STRING, "tohug", "A person (or a group of people) to hug", true)
+                        .setGuildOnly(true),
                 Commands.slash("pat", "Pat someone!")
-                        .addOption(STRING, "topat", "A person (or a group of people) to pat", true),
-//                        .addOption(STRING, "patdevice", "Set to \"hand\" if you want the ruler pat gif", false, true),
+                        .addOption(STRING, "topat", "A person (or a group of people) to pat", true)
+                        .setGuildOnly(true),
                 Commands.slash("kiss", "Kiss someone!")
-                        .addOption(STRING, "tokiss", "A person (or a group of people) to kiss", true),
+                        .addOption(STRING, "tokiss", "A person (or a group of people) to kiss", true)
+                        .setGuildOnly(true),
                 Commands.slash("kromer", "Sends you a random kromer gif"),
                 Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
                         .addSubcommands(new SubcommandData("modify", "Modifies user's social credit score")
