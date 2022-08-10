@@ -5,6 +5,9 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.util.Random;
 
+/**
+ * Used by the old OpenCase and OpenCollections commands which were replaced by /casesim
+ */
 public class BaseOpeningCommand extends BaseCommand {
     protected String getCaseItemCondition() {
         Random random = new Random();
