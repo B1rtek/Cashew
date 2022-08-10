@@ -1,9 +1,7 @@
 package com.birtek.cashew.commands;
 
-import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.CountingDatabase;
 import com.birtek.cashew.database.CountingInfo;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -12,50 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class Counting extends BaseCommand {
-
-    Permission[] countingCommandPermissions = {
-            Cashew.moderatorPermission
-    };
-
-//    @Override
-//    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-//        String[] args = event.getMessage().getContentRaw().split("\\s+");
-//        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "counting")) {
-//            if (checkPermissions(event, countingCommandPermissions)) {
-//                String argument = parseInput(args);
-//                if (argument.equalsIgnoreCase("reset")) {
-//                    CountingDatabase database = CountingDatabase.getInstance();
-//                    CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-//                    if (countingInfo != null) {
-//                        if (database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId())) {
-//                            event.getMessage().reply("Counter has been reset.").mentionRepliedUser(false).queue();
-//                        } else {
-//                            event.getMessage().reply("Something went wrong").queue();
-//                        }
-//                    } else {
-//                        event.getMessage().reply("Something went wrong").queue();
-//                    }
-//                } else if (argument.equalsIgnoreCase("setcount")) {
-//                    int newCount = parseSecondArgument(args);
-//                    CountingDatabase database = CountingDatabase.getInstance();
-//                    CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-//                    if (countingInfo != null) {
-//                        if (database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId())) {
-//                            event.getMessage().reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").mentionRepliedUser(false).queue();
-//                        } else {
-//                            event.getMessage().reply("Something went wrong").queue();
-//                        }
-//                    } else {
-//                        event.getMessage().reply("Something went wrong").queue();
-//                    }
-//                } else {
-//                    if (saveToDatabase(argument.toLowerCase(Locale.ROOT), event.getChannel().getId())) {
-//                        event.getMessage().reply("Counting has been turned " + args[1] + " in this channel.").mentionRepliedUser(false).queue();
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
