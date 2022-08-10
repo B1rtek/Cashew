@@ -49,18 +49,18 @@ public class BaseCuddlyCommand extends BaseCommand {
      *
      * @param cuddlyString String generated from
      *                     {@link #purifyFromMentionsAndMerge(String[], Guild, boolean) purifyFromMentionsAndMerge()}
-     * @param author
-     * @param authorName
-     * @param cuddlyGifs
-     * @param action
-     * @param reactions
-     * @return
+     * @param author       {@link Member server member} who executed the command
+     * @param cuddlyGifs   an array of {@link EmbedGif EmbedGifs}, which contain both the gif url and their theme color
+     * @param action       String placed between the executor's name and the rest of the input, int this case
+     *                     "cuddles/pats" etc so together it creates "B1rtek pats Cashew"
+     * @param reactions    an array of Strings like "owo" or "uwu" that are randomly appended at the end of the message
+     * @return a {@link MessageEmbed MessageEmbed} with a gif and a message containing the performed cuddly action
      */
-    protected MessageEmbed createCuddlyEmbed(String cuddlyString, Member author, String authorName, EmbedGif[] cuddlyGifs, String action, String[] reactions) {
+    protected MessageEmbed createCuddlyEmbed(String cuddlyString, Member author, EmbedGif[] cuddlyGifs, String action, String[] reactions) {
         Random random = new Random();
         int gifNumber = random.nextInt(cuddlyGifs.length);
         EmbedBuilder cuddleEmbed = new EmbedBuilder();
-        cuddlyString = authorName + " " + action + " " + cuddlyString + "! " + reactions[random.nextInt(reactions.length)];
+        cuddlyString = author.getEffectiveName() + " " + action + " " + cuddlyString + "! " + reactions[random.nextInt(reactions.length)];
         cuddleEmbed.setColor(cuddlyGifs[gifNumber].getColor());
         cuddleEmbed.setImage(cuddlyGifs[gifNumber].getGifURL());
         cuddleEmbed.setTitle(cuddlyString);
@@ -68,15 +68,24 @@ public class BaseCuddlyCommand extends BaseCommand {
         return cuddleEmbed.build();
     }
 
+    /**
+     * Gets a cuddly embed and then responds with it. Used with the prefix versions of the command, will be removed in
+     * the future when prefix commands are abandoned for good
+     *
+     * @param event        {@link MessageReceivedEvent event} received when the message with the command was spotted
+     * @param cuddlyString String generated from
+     *                     {@link #purifyFromMentionsAndMerge(String[], Guild, boolean) purifyFromMentionsAndMerge()}
+     * @param gifs         an array of {@link EmbedGif EmbedGifs}, which contain both the gif url and their theme color
+     * @param action       String placed between the executor's name and the rest of the input, int this case
+     *                     "cuddles/pats" etc so together it creates "B1rtek pats Cashew"
+     * @param reactions    an array of Strings like "owo" or "uwu" that are randomly appended at the end of the message
+     */
     protected void sendCuddlyEmbedFromPrefix(MessageReceivedEvent event, String cuddlyString, EmbedGif[] gifs, String action, String[] reactions) {
-        String author;
         MessageEmbed cuddlyEmbed;
         if (event.isWebhookMessage()) {
-            author = event.getAuthor().getName();
-            cuddlyEmbed = createCuddlyEmbed(cuddlyString, Objects.requireNonNull(event.getMember()), author, gifs, action, reactions);
+            cuddlyEmbed = createCuddlyEmbed(cuddlyString, Objects.requireNonNull(event.getMember()), gifs, action, reactions);
         } else {
-            author = Objects.requireNonNull(event.getMember()).getEffectiveName();
-            cuddlyEmbed = createCuddlyEmbed(cuddlyString, event.getMember(), author, gifs, action, reactions);
+            cuddlyEmbed = createCuddlyEmbed(cuddlyString, Objects.requireNonNull(event.getMember()), gifs, action, reactions);
         }
         event.getMessage().replyEmbeds(cuddlyEmbed).queue();
     }

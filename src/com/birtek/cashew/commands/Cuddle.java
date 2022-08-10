@@ -51,9 +51,8 @@ public class Cuddle extends BaseCuddlyCommand {
         if (event.getName().equals("cuddle")) {
             String[] cuddlyStringSplit = event.getOption("tocuddle", "", OptionMapping::getAsString).split("\\s+");
             String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
-            String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
             if (!cuddlyString.isEmpty()) {
-                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getMember(), author, cuddleGifs, action, reactions)).queue();
+                event.replyEmbeds(createCuddlyEmbed(cuddlyString, Objects.requireNonNull(event.getMember()), cuddleGifs, action, reactions)).queue();
             } else {
                 event.reply("You can't cuddle no one!").setEphemeral(true).queue();
             }

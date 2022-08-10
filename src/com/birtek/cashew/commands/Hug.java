@@ -58,9 +58,8 @@ public class Hug extends BaseCuddlyCommand {
         if (event.getName().equals("hug")) {
             String[] cuddlyStringSplit = event.getOption("tohug", "", OptionMapping::getAsString).split("\\s+");
             String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
-            String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
             if (!cuddlyString.isEmpty()) {
-                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getMember(), author, hugGifs, action, reactions)).queue();
+                event.replyEmbeds(createCuddlyEmbed(cuddlyString, Objects.requireNonNull(event.getMember()), hugGifs, action, reactions)).queue();
             } else {
                 event.reply("You can't hug no one!").setEphemeral(true).queue();
             }
