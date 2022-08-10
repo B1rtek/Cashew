@@ -73,22 +73,6 @@ public class Counting extends BaseCommand {
         }
     }
 
-    private String parseInput(String[] args) {
-        if (args.length >= 2) {
-            return args[1];
-        } else {
-            return "";
-        }
-    }
-
-    private int parseSecondArgument(String[] args) {
-        if (args.length >= 3) {
-            return Integer.parseInt(args[2]);
-        } else {
-            return 0;
-        }
-    }
-
     private boolean saveToDatabase(String argument, String channelID) {
         CountingDatabase database = CountingDatabase.getInstance();
         return database.setCountingStatus(argument.equals("on"), channelID);
