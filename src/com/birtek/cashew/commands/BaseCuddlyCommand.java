@@ -11,6 +11,15 @@ import java.util.Random;
 
 public class BaseCuddlyCommand extends BaseCommand {
 
+    /**
+     * Merges the string array into one string while turning all mentions into their effective member names
+     *
+     * @param splitWithMentions array of strings, the result of .split("\\s+")ting the command input
+     * @param guild             {@link Guild Server} in which the command was executed
+     * @param ignoreFirst       if set to true, will ignore the first element of the string array, used to omit the $command
+     *                          part in case of prefix commands being used
+     * @return String with merged and processed pings from the command input
+     */
     public String purifyFromMentionsAndMerge(String[] splitWithMentions, Guild guild, boolean ignoreFirst) {
         int start = ignoreFirst ? 1 : 0;
         for (int i = start; i < splitWithMentions.length; i++) {
@@ -35,6 +44,18 @@ public class BaseCuddlyCommand extends BaseCommand {
         return result.toString();
     }
 
+    /**
+     * Creates an {@link MessageEmbed embed} with a gif and a message saying "someone cuddles/pats/other someone else!"
+     *
+     * @param cuddlyString String generated from
+     *                     {@link #purifyFromMentionsAndMerge(String[], Guild, boolean) purifyFromMentionsAndMerge()}
+     * @param author
+     * @param authorName
+     * @param cuddlyGifs
+     * @param action
+     * @param reactions
+     * @return
+     */
     protected MessageEmbed createCuddlyEmbed(String cuddlyString, Member author, String authorName, EmbedGif[] cuddlyGifs, String action, String[] reactions) {
         Random random = new Random();
         int gifNumber = random.nextInt(cuddlyGifs.length);
@@ -43,7 +64,7 @@ public class BaseCuddlyCommand extends BaseCommand {
         cuddleEmbed.setColor(cuddlyGifs[gifNumber].getColor());
         cuddleEmbed.setImage(cuddlyGifs[gifNumber].getGifURL());
         cuddleEmbed.setTitle(cuddlyString);
-        cuddleEmbed.setFooter("by "+author.getEffectiveName(), author.getEffectiveAvatarUrl());
+        cuddleEmbed.setFooter("by " + author.getEffectiveName(), author.getEffectiveAvatarUrl());
         return cuddleEmbed.build();
     }
 
