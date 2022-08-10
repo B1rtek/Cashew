@@ -23,12 +23,12 @@ public class Kiss extends BaseCuddlyCommand {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        if(!event.isFromGuild()) {
-            event.getMessage().reply("This command doesn't work in DMs").mentionRepliedUser(false).queue();
-            return;
-        }
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "kiss")) {
+            if(!event.isFromGuild()) {
+                event.getMessage().reply("This command doesn't work in DMs").mentionRepliedUser(false).queue();
+                return;
+            }
             String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
             if (cuddlyString.isEmpty()) {
                 event.getMessage().reply("You can't kiss no one!").mentionRepliedUser(false).queue();

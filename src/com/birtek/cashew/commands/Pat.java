@@ -34,12 +34,12 @@ public class Pat extends BaseCuddlyCommand {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        if(!event.isFromGuild()) {
-            event.getMessage().reply("This command doesn't work in DMs").mentionRepliedUser(false).queue();
-            return;
-        }
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "pat")) {
+            if(!event.isFromGuild()) {
+                event.getMessage().reply("This command doesn't work in DMs").mentionRepliedUser(false).queue();
+                return;
+            }
             String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
             if (cuddlyString.isEmpty()) {
                 event.getMessage().reply("You can't pat no one!").mentionRepliedUser(false).queue();
@@ -53,7 +53,6 @@ public class Pat extends BaseCuddlyCommand {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("pat")) {
             String[] cuddlyStringSplit = event.getOption("topat", "", OptionMapping::getAsString).split("\\s+");
-            String patDevice = event.getOption("patdevice", "hand", OptionMapping::getAsString);
             String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
             if (!cuddlyString.isEmpty()) {
                 EmbedGif[] matchingGifs = Arrays.copyOfRange(patGifs, 0, 9);
