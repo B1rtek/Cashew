@@ -1,15 +1,12 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Objects;
 
 public class Pat extends BaseCuddlyCommand {
@@ -35,10 +32,6 @@ public class Pat extends BaseCuddlyCommand {
 
     String action = "pats";
 
-    private EmbedGif[] selectGifsByDevice(String patDevice) {
-        return !patDevice.toLowerCase(Locale.ROOT).equals("ruler") ? Arrays.copyOfRange(patGifs, 0, 9) : Arrays.copyOfRange(patGifs, 9, 12);
-    }
-
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if(!event.isFromGuild()) {
@@ -63,32 +56,10 @@ public class Pat extends BaseCuddlyCommand {
             String patDevice = event.getOption("patdevice", "hand", OptionMapping::getAsString);
             String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
             if (!cuddlyString.isEmpty()) {
-                EmbedGif[] matchingGifs = selectGifsByDevice(patDevice);
+                EmbedGif[] matchingGifs = Arrays.copyOfRange(patGifs, 0, 9);
                 event.replyEmbeds(createCuddlyEmbed(cuddlyString, Objects.requireNonNull(event.getMember()), matchingGifs, action, reactions)).queue();
             } else {
                 event.reply("You can't pat no one!").setEphemeral(true).queue();
-            }
-        }
-    }
-
-    @Override
-    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if (event.getName().startsWith("pat")) {
-            if (event.getFocusedOption().getName().equals("patdevice")) {
-                String typed = event.getOption("patdevice", "", OptionMapping::getAsString);
-                ArrayList<String> matching = new ArrayList<>();
-                ArrayList<String> options = new ArrayList<>() {
-                    {
-                        add("hand");
-                        add("ruler");
-                    }
-                };
-                for (String device : options) {
-                    if (device.toLowerCase(Locale.ROOT).contains(typed.toLowerCase(Locale.ROOT))) {
-                        matching.add(device);
-                    }
-                }
-                event.replyChoiceStrings(matching).queue();
             }
         }
     }
