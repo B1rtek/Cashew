@@ -185,6 +185,9 @@ public class Korwin extends BaseCommand {
             "https://cdn.discordapp.com/attachments/857711843282649158/921167498219495524/korwin21.png"
     };
 
+    /**
+     * Creates an {@link MessageEmbed embed} with a randomly generated JKM quote from parts in the arrays above
+     */
     private MessageEmbed generateAKorwinQuote() {
         Random random = new Random();
         EmbedBuilder korwinEmbed = new EmbedBuilder();
@@ -209,7 +212,7 @@ public class Korwin extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if(event.getName().equals("korwin")) {
+        if (event.getName().equals("korwin")) {
             event.replyEmbeds(generateAKorwinQuote()).queue();
         }
     }
