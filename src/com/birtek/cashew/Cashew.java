@@ -200,7 +200,11 @@ public class Cashew {
                         .setGuildOnly(true),
                 Commands.slash("roll", "Roll a dice")
                         .addOption(INTEGER,"sides", "Number of sides of the dice, 6 by default", false, false)
-                        .addOption(INTEGER, "rolls", "Number of rolls to perform", false, false)
+                        .addOption(INTEGER, "rolls", "Number of rolls to perform", false, false),
+                Commands.slash("cmdset", "Enable or disable commands")
+                        .addOption(STRING, "toggle", "New state of the command - either ON or OFF", true, true)
+                        .addOption(STRING, "command", "Command to change the settings of - leave blank to apply to all commands", false, true)
+                        .addOption(CHANNEL, "channel", "Channel to apply the setting to - leave blank to apply to all channels", false, false)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
