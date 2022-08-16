@@ -1,9 +1,6 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.database.Reaction;
-import com.birtek.cashew.database.ReactionsDatabase;
-import com.birtek.cashew.database.ReactionsSettings;
-import com.birtek.cashew.database.ReactionsSettingsDatabase;
+import com.birtek.cashew.database.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

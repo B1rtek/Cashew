@@ -37,8 +37,8 @@ public class Settings {
         this.serverID = serverID;
     }
 
-    protected void setAllOptions(ArrayList<String> options) {
-        allOptions.put(this.getClass(), options);
+    protected static void setAllOptions(Class<?> classID, ArrayList<String> options) {
+        allOptions.put(classID, options);
     }
 
     /**
