@@ -433,7 +433,7 @@ public class CaseSim extends BaseCommand {
 
         // add count to the opened cases count
         CasesimInventoryDatabase inventoryDatabase = CasesimInventoryDatabase.getInstance();
-        if(!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 1)) {
+        if (!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 1)) {
             event.reply("An error occurred while updating your opening stats, try again later").setEphemeral(true).queue();
             return;
         }
@@ -481,7 +481,7 @@ public class CaseSim extends BaseCommand {
 
         // add count to the opened cases count
         CasesimInventoryDatabase inventoryDatabase = CasesimInventoryDatabase.getInstance();
-        if(!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 3)) {
+        if (!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 3)) {
             event.reply("An error occurred while updating your opening stats, try again later").setEphemeral(true).queue();
             return;
         }
@@ -527,7 +527,7 @@ public class CaseSim extends BaseCommand {
 
         // add count to the opened cases count
         CasesimInventoryDatabase inventoryDatabase = CasesimInventoryDatabase.getInstance();
-        if(!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 4)) {
+        if (!inventoryDatabase.addOpenedContainer(event.getUser().getId(), 4)) {
             event.reply("An error occurred while updating your opening stats, try again later").setEphemeral(true).queue();
             return;
         }
@@ -581,7 +581,7 @@ public class CaseSim extends BaseCommand {
         }
         inventoryEmbed.setFooter("Page " + pageNumber + " out of " + pageCount);
         for (Pair<SkinData, SkinInfo> item : inventory) {
-            inventoryEmbed.addField(item.getRight().name(), getConditionFromFloat(item.getLeft().floatValue()) + " (" + item.getLeft().floatValue() + ")", false);
+            inventoryEmbed.addField(item.getRight().name(), item.getLeft().containterType() != 4 ? (getConditionFromFloat(item.getLeft().floatValue()) + " (" + item.getLeft().floatValue() + ")") : "", false);
         }
         return inventoryEmbed.build();
     }
@@ -616,7 +616,7 @@ public class CaseSim extends BaseCommand {
         }
         invControls.add(Button.primary(requestingUser.getId() + ":casesim:inventory:pageprev:" + requestedUserID + ":" + requestedUserName, Emoji.fromUnicode("◀️")));
         invControls.add(Button.primary(requestingUser.getId() + ":casesim:inventory:pagenext:" + requestedUserID + ":" + requestedUserName, Emoji.fromUnicode("▶️")));
-        if(!asEphemeral) {
+        if (!asEphemeral) {
             invControls.add(Button.secondary(requestingUser.getId() + ":casesim:close", Emoji.fromUnicode("❌")));
         }
         return Pair.of(ActionRow.of(itemSelectMenu.build()), ActionRow.of(invControls));
@@ -666,7 +666,7 @@ public class CaseSim extends BaseCommand {
         if (requestedUser.getId().equals(event.getUser().getId())) {
             statsEmbedButtons.add(Button.primary(event.getUser().getId() + ":casesim:inventory:makepublic", "Make " + (!stats.isPublic() ? "public" : "private")));
         }
-        if(!asEphemeral) {
+        if (!asEphemeral) {
             statsEmbedButtons.add(Button.secondary(event.getUser().getId() + ":casesim:close", Emoji.fromUnicode("❌")));
         }
         event.replyEmbeds(statsEmbed).addActionRow(statsEmbedButtons).setEphemeral(asEphemeral).queue();
@@ -701,6 +701,10 @@ public class CaseSim extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("casesim")) {
+            if (cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             switch (Objects.requireNonNull(event.getSubcommandName())) {
                 case "opencase" -> openCase(event);
                 case "opencollection" -> openCollection(event);
@@ -760,7 +764,7 @@ public class CaseSim extends BaseCommand {
                     }
                 }
                 case "close" -> {
-                    if(buttonID[0].equals(event.getUser().getId())) {
+                    if (buttonID[0].equals(event.getUser().getId())) {
                         event.getMessage().delete().queue();
                     } else {
                         event.reply("This is not your embed").setEphemeral(true).queue();
@@ -772,7 +776,7 @@ public class CaseSim extends BaseCommand {
                         return;
                     }
                     switch (buttonID[3]) {
-                        case "show" -> inventoryShow(event, buttonID);
+                        case "show" -> inventoryShow(event, buttonID, event.getMessage().isEphemeral());
                         case "delete" -> inventoryDelete(event);
                         case "pagenext" -> inventorySwitchPage(event, buttonID, true);
                         case "pageprev" -> inventorySwitchPage(event, buttonID, false);
@@ -859,7 +863,7 @@ public class CaseSim extends BaseCommand {
      * @param event    {@link ButtonInteractionEvent event} that triggered this action
      * @param buttonID ID of the button which was pressed
      */
-    private void inventoryShow(ButtonInteractionEvent event, String[] buttonID) {
+    private void inventoryShow(ButtonInteractionEvent event, String[] buttonID, boolean asEphemeral) {
         // get the selected item index
         MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
         int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
@@ -913,11 +917,17 @@ public class CaseSim extends BaseCommand {
         for (int i = 6; i < buttonID.length; i++) {
             requestedUserName.append(":").append(buttonID[i]);
         }
-        event.editMessageEmbeds(itemEmbed).setActionRow(
-                Button.link(item.getRight().stashUrl(), "CSGO Stash"),
-                Button.primary(createInspectButtonID(event.getUser().getId(), item.getLeft().floatValue(), item.getRight()), "Inspect URL"),
-                Button.secondary(event.getUser().getId() + ":casesim:inventory:back:" + buttonID[4] + ":" + pageNumber + ":" + requestedUserName, "Back")
-        ).queue();
+        ArrayList<Button> invControls = new ArrayList<>() {
+            {
+                add(Button.link(item.getRight().stashUrl(), "CSGO Stash"));
+                add(Button.primary(createInspectButtonID(event.getUser().getId(), item.getLeft().floatValue(), item.getRight()), "Inspect URL"));
+                add(Button.secondary(event.getUser().getId() + ":casesim:inventory:back:" + buttonID[4] + ":" + pageNumber + ":" + requestedUserName, "Back"));
+            }
+        };
+        if (!asEphemeral) {
+            invControls.add(Button.secondary(event.getUser().getId() + ":casesim:close", Emoji.fromUnicode("❌")));
+        }
+        event.editMessageEmbeds(itemEmbed).setActionRow(invControls).queue();
     }
 
     /**
@@ -1010,7 +1020,7 @@ public class CaseSim extends BaseCommand {
         MessageEmbed statsEmbed = generateInventoryStatsEmbed(event.getUser(), stats, "Your", true);
         ArrayList<Button> statsEmbedButtons = new ArrayList<>();
         statsEmbedButtons.add(Button.primary(event.getUser().getId() + ":casesim:inventory:makepublic", "Make " + (!stats.isPublic() ? "public" : "private")));
-        if(!event.getMessage().isEphemeral()) {
+        if (!event.getMessage().isEphemeral()) {
             statsEmbedButtons.add(Button.secondary(event.getUser().getId() + ":casesim:close", Emoji.fromUnicode("❌")));
         }
         event.editMessageEmbeds(statsEmbed).setActionRow(statsEmbedButtons).queue();

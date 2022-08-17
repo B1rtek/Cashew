@@ -1,15 +1,13 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
+import com.birtek.cashew.database.EmbedGif;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Objects;
 
 public class Pat extends BaseCuddlyCommand {
@@ -35,14 +33,18 @@ public class Pat extends BaseCuddlyCommand {
 
     String action = "pats";
 
-    private EmbedGif[] selectGifsByDevice(String patDevice) {
-        return !patDevice.toLowerCase(Locale.ROOT).equals("ruler") ? Arrays.copyOfRange(patGifs, 0, 9) : Arrays.copyOfRange(patGifs, 9, 12);
-    }
-
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "pat")) {
+            if(!event.isFromGuild()) {
+                event.getMessage().reply("This command doesn't work in DMs").mentionRepliedUser(false).queue();
+                return;
+            }
+            if(cantBeExecutedPrefix(event, "pat", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
             if (cuddlyString.isEmpty()) {
                 event.getMessage().reply("You can't pat no one!").mentionRepliedUser(false).queue();
@@ -55,37 +57,17 @@ public class Pat extends BaseCuddlyCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("pat")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             String[] cuddlyStringSplit = event.getOption("topat", "", OptionMapping::getAsString).split("\\s+");
-            String patDevice = event.getOption("patdevice", "hand", OptionMapping::getAsString);
             String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
-            String author = Objects.requireNonNull(event.getMember()).getEffectiveName();
             if (!cuddlyString.isEmpty()) {
-                EmbedGif[] matchingGifs = selectGifsByDevice(patDevice);
-                event.replyEmbeds(createCuddlyEmbed(cuddlyString, event.getMember(), author, matchingGifs, action, reactions)).queue();
+                EmbedGif[] matchingGifs = Arrays.copyOfRange(patGifs, 0, 9);
+                event.replyEmbeds(createCuddlyEmbed(cuddlyString, Objects.requireNonNull(event.getMember()), matchingGifs, action, reactions)).queue();
             } else {
                 event.reply("You can't pat no one!").setEphemeral(true).queue();
-            }
-        }
-    }
-
-    @Override
-    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if (event.getName().startsWith("pat")) {
-            if (event.getFocusedOption().getName().equals("patdevice")) {
-                String typed = event.getOption("patdevice", "", OptionMapping::getAsString);
-                ArrayList<String> matching = new ArrayList<>();
-                ArrayList<String> options = new ArrayList<>() {
-                    {
-                        add("hand");
-                        add("ruler");
-                    }
-                };
-                for (String device : options) {
-                    if (device.toLowerCase(Locale.ROOT).contains(typed.toLowerCase(Locale.ROOT))) {
-                        matching.add(device);
-                    }
-                }
-                event.replyChoiceStrings(matching).queue();
             }
         }
     }

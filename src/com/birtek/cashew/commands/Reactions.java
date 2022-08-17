@@ -52,6 +52,10 @@ public class Reactions extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("reactions")) {
+            if(cantBeExecuted(event, true)) {
+                event.reply("This command is only available to server moderators").setEphemeral(true).queue();
+                return;
+            }
             String reaction = event.getOption("reaction", "", OptionMapping::getAsString);
             if (Objects.equals(event.getSubcommandName(), "set")) {
                 int reactionID = 0;
@@ -62,10 +66,6 @@ public class Reactions extends BaseCommand {
                         return;
                     }
                     reactionID = chosenReaction.id();
-                }
-                if (!checkSlashCommandPermissions(event, modPermissions)) {
-                    event.reply("This command can only be used by server moderators").setEphemeral(true).queue();
-                    return;
                 }
                 GuildChannel channel = event.getOption("channel", null, OptionMapping::getAsChannel);
                 String channelID = "all";

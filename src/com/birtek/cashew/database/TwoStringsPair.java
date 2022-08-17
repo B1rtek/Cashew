@@ -1,4 +1,4 @@
-package com.birtek.cashew.commands;
+package com.birtek.cashew.database;
 
 public class TwoStringsPair {
     private final String first, second;

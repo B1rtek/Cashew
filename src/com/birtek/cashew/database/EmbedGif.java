@@ -1,4 +1,4 @@
-package com.birtek.cashew.commands;
+package com.birtek.cashew.database;
 
 public class EmbedGif {
 

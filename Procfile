@@ -1,1 +1,1 @@
-worker: java -jar build/libs/Cashew-2.22.1-all.jar
+worker: java -jar build/libs/Cashew-2.23-all.jar

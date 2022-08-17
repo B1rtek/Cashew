@@ -63,6 +63,10 @@ public class Birthday extends BaseCommand {
                 event.reply("Birthday reminders command doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
+            if (cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             switch (Objects.requireNonNull(event.getSubcommandName())) {
                 case "set" -> {
                     String month = event.getOption("month", "", OptionMapping::getAsString);
@@ -126,21 +130,21 @@ public class Birthday extends BaseCommand {
                     }
                 }
                 case "setdefault" -> {
-                    if (checkSlashCommandPermissions(event, modPermissions)) {
-                        MessageChannel channel = (MessageChannel) event.getOption("channel", null, OptionMapping::getAsChannel);
-                        if (channel == null) {
-                            event.reply("Invalid channel specified").setEphemeral(true).queue();
-                            return;
-                        }
-                        boolean override = Objects.equals(event.getOption("type", "default", OptionMapping::getAsString), "override");
-                        BirthdayReminderDefaults defaults = new BirthdayReminderDefaults(Objects.requireNonNull(event.getGuild()).getId(), channel.getId(), override);
-                        if (Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults)) {
-                            event.reply("Default settings changed!").setEphemeral(true).queue();
-                        } else {
-                            event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
-                        }
+                    if (cantBeExecuted(event, true)) {
+                        event.reply("This command is only available to server moderators").setEphemeral(true).queue();
+                        return;
+                    }
+                    MessageChannel channel = (MessageChannel) event.getOption("channel", null, OptionMapping::getAsChannel);
+                    if (channel == null) {
+                        event.reply("Invalid channel specified").setEphemeral(true).queue();
+                        return;
+                    }
+                    boolean override = Objects.equals(event.getOption("type", "default", OptionMapping::getAsString), "override");
+                    BirthdayReminderDefaults defaults = new BirthdayReminderDefaults(Objects.requireNonNull(event.getGuild()).getId(), channel.getId(), override);
+                    if (Cashew.birthdayRemindersManager.updateBirthdayRemindersDefaults(defaults)) {
+                        event.reply("Default settings changed!").setEphemeral(true).queue();
                     } else {
-                        event.reply("You do not have permission to use this command").setEphemeral(true).queue();
+                        event.reply("Something went wrong while executing this command").setEphemeral(true).queue();
                     }
                 }
                 case "check" -> {

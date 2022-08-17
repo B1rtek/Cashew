@@ -14,8 +14,10 @@ import java.util.Objects;
 
 public class Help extends BaseCommand {
 
-    private final ArrayList<String> commands = new ArrayList<>() {
+    public static final ArrayList<String> commands = new ArrayList<>() {
         {
+            add("cmdset");
+            add("help");
             add("bestneko");
             add("birthday");
             add("boburnham");
@@ -26,7 +28,6 @@ public class Help extends BaseCommand {
             add("dadjoke");
             add("feedback");
             add("gifts");
-            add("help");
             add("hug");
             add("info");
             add("insp");
@@ -93,6 +94,13 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.setDescription("A tool for moderators able to remove many messages at once.");
                 specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear <amount(unsigned int<100)>`", "Removes the given amount of recent messages. Messages older than 2 weeks can't be removed.", false);
                 specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "clear range <ranges>`", "Removes recent messages in the given range. For example, `" + Cashew.COMMAND_PREFIX + "clear range 1 3-9 -4 -6-8` will remove the first recent message, and all recent messages from 3rd to 9th excluding the 4th and all from 6th to 8th.", false);
+            }
+            case "cmdset" -> {
+                specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+                specificHelpEmbed.addField("Works in DMs", "No", true);
+                specificHelpEmbed.setTitle("CmdSet");
+                specificHelpEmbed.setDescription("Turns on or off Cashew's commands");
+                specificHelpEmbed.addField("`/reactions set <toggle> [reaction] [#channel]`", "Turns the selected command on or off. Leaving the reaction field blank applies the setting to all commands, leaving the channel blank applies the setting to all channels, both can be combined. Can only be used by moderators. Moderators can still use the command even if it's turned off.", false);
             }
             case "counting" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);

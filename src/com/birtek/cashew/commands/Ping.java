@@ -12,6 +12,10 @@ public class Ping extends BaseCommand {
         String pingMessage = "Pong!";
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "ping")) {
+            if(cantBeExecutedPrefix(event, "ping", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             long lastMeasured = System.nanoTime();
             event.getMessage().reply(pingMessage).mentionRepliedUser(false).queue(response ->
                     response.editMessage(pingMessage + " Time = " + Math.round((System.nanoTime() - lastMeasured) / 1000000.0) + " ms").queue());
@@ -20,11 +24,15 @@ public class Ping extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        String pingMessage = "Pong!";
         if (event.getName().equals("ping")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             long lastMeasured = System.nanoTime();
+            String pingMessage = "Pong!";
             event.reply(pingMessage).flatMap(v ->
-                            event.getHook().editOriginal(pingMessage + " Time = " + Math.round((System.nanoTime() - lastMeasured) / 1000000.0) + " ms"))
+                            event.getHook().editOriginal(pingMessage + "Time = " + Math.round((System.nanoTime() - lastMeasured) / 1000000.0) + " ms"))
                     .queue();
         }
     }

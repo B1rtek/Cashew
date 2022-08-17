@@ -185,6 +185,9 @@ public class Korwin extends BaseCommand {
             "https://cdn.discordapp.com/attachments/857711843282649158/921167498219495524/korwin21.png"
     };
 
+    /**
+     * Creates an {@link MessageEmbed embed} with a randomly generated JKM quote from parts in the arrays above
+     */
     private MessageEmbed generateAKorwinQuote() {
         Random random = new Random();
         EmbedBuilder korwinEmbed = new EmbedBuilder();
@@ -203,13 +206,21 @@ public class Korwin extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "korwin")) {
+            if(cantBeExecutedPrefix(event, "korwin", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             event.getChannel().sendMessageEmbeds(generateAKorwinQuote()).queue();
         }
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if(event.getName().equals("korwin")) {
+        if (event.getName().equals("korwin")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             event.replyEmbeds(generateAKorwinQuote()).queue();
         }
     }

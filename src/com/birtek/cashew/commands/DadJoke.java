@@ -12,6 +12,12 @@ import java.net.URLConnection;
 
 public class DadJoke extends BaseCommand {
 
+    /**
+     * Creates a request for icanhazdadjoke.com and receives the reply from the api
+     *
+     * @return text of the joke gotten from icanhazdadjoke.com, or an error message, both will be displayed in the same
+     * way
+     */
     private String getADadJoke() {
         URL dadJokeURL;
         try {
@@ -33,6 +39,10 @@ public class DadJoke extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "dadjoke")) {
+            if(cantBeExecutedPrefix(event, "dadjoke", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             event.getMessage().reply(getADadJoke()).mentionRepliedUser(false).queue();
         }
     }
@@ -40,6 +50,10 @@ public class DadJoke extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("dadjoke")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             event.reply(getADadJoke()).queue();
         }
     }

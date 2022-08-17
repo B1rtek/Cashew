@@ -3,7 +3,6 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.database.LeaderboardRecord;
 import com.birtek.cashew.database.SocialCreditDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -20,10 +19,6 @@ import java.util.Random;
 import static java.lang.Math.abs;
 
 public class SocialCredit extends BaseCommand {
-
-    Permission[] socialCreditCommandPermissions = {
-            Permission.MESSAGE_SEND
-    };
 
     String[] socialCreditGainURLs = {
             "https://cdn.discordapp.com/attachments/852811110158827533/897521731621769296/e65a53e6b7a5e0-945-560-18-26-1481-888.png",
@@ -61,14 +56,17 @@ public class SocialCredit extends BaseCommand {
         }
     };
 
-    String extractUserID(String maybeUserID) {
-        if (!maybeUserID.startsWith("<@!") || !maybeUserID.endsWith(">") || maybeUserID.length() != 22) {
-            return "";
-        } else {
-            return maybeUserID.substring(3, 21);
-        }
-    }
-
+    /**
+     * Modifies the social credit score of a user and returns an {@link MessageEmbed embed} describing that
+     *
+     * @param userID             ID of the user whose social credit score is being changed
+     * @param server             {@link Guild server} on which the change happened
+     * @param socialCreditChange the amount of social credit to add (if it's negative it'll be deducted) to the score
+     * @param reason             String with a reason for the change that will appear in the embed, optional
+     * @return a {@link MessageEmbed MessageEmbed} with a message like "Cashew gains 420 social credit! ;)" and a random
+     * image of a leader of a country shaking hands with Xi Jinping if the user gained credit, or a deepfried image of
+     * him if the credit is being lost
+     */
     private MessageEmbed modifySocialCredit(String userID, Guild server, long socialCreditChange, String reason) {
         SocialCreditDatabase database = SocialCreditDatabase.getInstance();
         database.addSocialCredit(userID, server.getId(), socialCreditChange);
@@ -92,6 +90,13 @@ public class SocialCredit extends BaseCommand {
         return socialCreditEmbed.build();
     }
 
+    /**
+     * Checks the social credit score of a user and returns it in a sentence
+     *
+     * @param userID ID of the user whose score is being checked
+     * @param server {@link Guild server} from which the credit will be checked
+     * @return a String like "User **B1rtek** has 1337 social credit.", with the name of the user in bold
+     */
     private String checkSocialCredit(String userID, Guild server) {
         SocialCreditDatabase database = SocialCreditDatabase.getInstance();
         long socialCredit = database.getSocialCredit(userID, server.getId());
@@ -99,53 +104,52 @@ public class SocialCredit extends BaseCommand {
         return "User **" + effectiveUserName + "** has " + socialCredit + " social credit.";
     }
 
-//    @Override
-//    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-//        String[] args = event.getMessage().getContentRaw().split("\\s+");
-//        if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "socialcredit") || args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "soc")) {
-//            if (checkPermissions(event, socialCreditCommandPermissions)) {
-//                if (event.isWebhookMessage()) return;
-//                boolean youFailed = false;
-//                if (args.length == 1) {
-//                    String message = "$socialcredit " + event.getMessage().getAuthor().getId();
-//                    args = message.split("\\s+");
-//                } else {
-//                    args[1] = extractUserID(args[1]);
-//                    if (args[1].isEmpty()) {
-//                        youFailed = true;
-//                    }
-//                }
-//                if (!youFailed) {
-//                    if (args.length == 2) {
-//                        event.getMessage().reply(checkSocialCredit(args[1], event.getGuild())).mentionRepliedUser(false).queue();
-//                    } else if (args.length == 3) {
-//                        if (checkPermissions(event, manageServerPermission)) {
-//                            long socialCreditChange = 0;
-//                            try {
-//                                socialCreditChange = Long.parseLong(args[2]);
-//                            } catch (NumberFormatException e) {
-//                                youFailed = true;
-//                            }
-//                            if (!youFailed) {
-//                                MessageEmbed socialCreditEmbed = modifySocialCredit(args[1], event.getGuild(), socialCreditChange, "");
-//                                event.getChannel().sendMessageEmbeds(socialCreditEmbed).queue();
-//                            }
-//                        } else {
-//                            youFailed = true;
-//                        }
-//                    } else {
-//                        youFailed = true;
-//                    }
-//                }
-//                if (youFailed) {
-//                    if (!checkPermissions(event, manageServerPermission)) {
-//                        int amountLost = loseSocialCredit(event.getAuthor().getId(), Objects.requireNonNull(event.getGuild()).getId());
-//                        event.getMessage().reply("You lose " + amountLost + " social credit for misuse of the social credit system.").mentionRepliedUser(false).queue();
-//                    }
-//                }
-//            }
-//        }
-//    }
+    /**
+     * Generates an embed with the social credit leaderboard
+     *
+     * @param event           {@link SlashCommandInteractionEvent event} that triggered the leaderboard generation, can be replied
+     *                        to with error messages in case something goes wrong
+     * @param top             if set to true, the leaderboard is for highest social credit, otherwise it's for lowest
+     * @param leaderboardPage an ArrayList of {@link LeaderboardRecord LeaderboardRecords} making up the page of the
+     *                        leaderboard
+     * @param callersStats    {@link LeaderboardRecord LeaderboardRecord} of the user who generated the leaderboard
+     * @param pageNumber      the number of the generated page
+     * @param totalPages      the total number of pages in the leaderboard
+     */
+    private void generateAndSendLeaderboardEmbed(SlashCommandInteractionEvent event, boolean top, ArrayList<LeaderboardRecord> leaderboardPage, LeaderboardRecord callersStats, int pageNumber, int totalPages) {
+        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, "Social Credit", event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), new Color(0xd63737));
+        if (generatedTableImage == null) {
+            event.reply("Something went wrong while generating the leaderboard table image").setEphemeral(true).queue();
+            return;
+        }
+        EmbedBuilder leaderboardEmbed = new EmbedBuilder();
+        leaderboardEmbed.setTitle("Leaderboard for " + (top ? "highest" : "lowest") + " social credit");
+        if (callersStats.place() != 0) {
+            leaderboardEmbed.addField("Your position", "#" + callersStats.place() + " with " + callersStats.count() + " credit", false);
+        } else {
+            leaderboardEmbed.addField("Your position", "You don't have a social credit record", false);
+        }
+        leaderboardEmbed.setThumbnail(event.getGuild().getIconUrl());
+        leaderboardEmbed.setColor(new Color(0xd63737));
+        leaderboardEmbed.setImage("attachment://leaderboard.png");
+        leaderboardEmbed.setFooter("Page " + pageNumber + " out of " + totalPages);
+        event.replyFile(generatedTableImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
+    }
+
+    /**
+     * Makes a user lose social credit if they try to modify social credit score of a user while not being a moderator
+     *
+     * @param userID   ID of the user who committed that blunder
+     * @param serverID ID of the server on which the score will be modified
+     * @return the amount of credit lost, which is a random integer between 1 and 100 inclusive
+     */
+    private int loseSocialCredit(String userID, String serverID) {
+        SocialCreditDatabase database = SocialCreditDatabase.getInstance();
+        Random random = new Random();
+        int amountLost = random.nextInt(100) + 1;
+        database.addSocialCredit(userID, serverID, -amountLost);
+        return amountLost;
+    }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
@@ -154,9 +158,13 @@ public class SocialCredit extends BaseCommand {
                 event.reply("Social credit doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
             if (Objects.equals(event.getSubcommandName(), "modify")) {
-                if (!checkSlashCommandPermissions(event, modPermissions)) {
+                if (!cantBeExecuted(event, true)) {
                     int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
                     event.reply("You lose " + amountLost + " social credit for misuse of the social credit system.").queue();
                     return;
@@ -213,51 +221,12 @@ public class SocialCredit extends BaseCommand {
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if(event.getName().startsWith("socialcredit")) {
-            if(event.getFocusedOption().getName().equals("scoreboard")) {
+        if (event.getName().startsWith("socialcredit")) {
+            if (event.getFocusedOption().getName().equals("scoreboard")) {
                 String typed = event.getOption("scoreboard", "", OptionMapping::getAsString);
                 event.replyChoiceStrings(autocompleteFromList(socialCreditLeaderboardChoices, typed)).queue();
             }
         }
     }
 
-    /**
-     * Generates an embed with the social credit leaderboard
-     *
-     * @param event           {@link SlashCommandInteractionEvent event} that triggered the leaderboard generation, can be replied
-     *                        to with error messages in case something goes wrong
-     * @param top             if set to true, the leaderboard is for highest social credit, otherwise it's for lowest
-     * @param leaderboardPage an ArrayList of {@link LeaderboardRecord LeaderboardRecords} making up the page of the
-     *                        leaderboard
-     * @param callersStats    {@link LeaderboardRecord LeaderboardRecord} of the user who generated the leaderboard
-     * @param pageNumber      the number of the generated page
-     * @param totalPages      the total number of pages in the leaderboard
-     */
-    private void generateAndSendLeaderboardEmbed(SlashCommandInteractionEvent event, boolean top, ArrayList<LeaderboardRecord> leaderboardPage, LeaderboardRecord callersStats, int pageNumber, int totalPages) {
-        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, "Social Credit", event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), new Color(0xd63737));
-        if(generatedTableImage == null) {
-            event.reply("Something went wrong while generating the leaderboard table image").setEphemeral(true).queue();
-            return;
-        }
-        EmbedBuilder leaderboardEmbed = new EmbedBuilder();
-        leaderboardEmbed.setTitle("Leaderboard for " + (top?"highest":"lowest") + " social credit");
-        if(callersStats.place() != 0) {
-            leaderboardEmbed.addField("Your position", "#" + callersStats.place() + " with " + callersStats.count() + " credit", false);
-        } else {
-            leaderboardEmbed.addField("Your position", "You don't have a social credit record", false);
-        }
-        leaderboardEmbed.setThumbnail(event.getGuild().getIconUrl());
-        leaderboardEmbed.setColor(new Color(0xd63737));
-        leaderboardEmbed.setImage("attachment://leaderboard.png");
-        leaderboardEmbed.setFooter("Page " + pageNumber + " out of " + totalPages);
-        event.replyFile(generatedTableImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
-    }
-
-    private int loseSocialCredit(String userID, String serverID) {
-        SocialCreditDatabase database = SocialCreditDatabase.getInstance();
-        Random random = new Random();
-        int amountLost = random.nextInt(100) + 1;
-        database.addSocialCredit(userID, serverID, -amountLost);
-        return amountLost;
-    }
 }

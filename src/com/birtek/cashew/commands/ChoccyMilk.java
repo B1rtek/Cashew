@@ -8,6 +8,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * Replaced by /gifts
+ */
 public class ChoccyMilk extends BaseCommand {
 
     String choccyMilkURL = "https://cdn.discordapp.com/attachments/857711843282649158/952645669598945290/unknown.png";

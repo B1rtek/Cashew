@@ -25,6 +25,10 @@ public class Info extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("info")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             event.replyEmbeds(createInfoEmbed(event)).setEphemeral(false).queue();
         }
     }

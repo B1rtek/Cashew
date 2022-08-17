@@ -36,6 +36,7 @@ public class Cashew {
     public static RemindersManager remindersManager;
     public static PollManager pollManager;
     public static ReactionsSettingsManager reactionsSettingsManager;
+    public static CommandsSettingsManager commandsSettingsManager;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
 
@@ -47,7 +48,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), //commands
                         new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
                         new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
@@ -92,14 +93,17 @@ public class Cashew {
                                 .addOption(STRING, "reaction", "Reaction to get the info about", true, true))
                         .setGuildOnly(true),
                 Commands.slash("cuddle", "Cuddle someone!")
-                        .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true),
+                        .addOption(STRING, "tocuddle", "A person (or a group of people) to cuddle", true)
+                        .setGuildOnly(true),
                 Commands.slash("hug", "Hug someone!")
-                        .addOption(STRING, "tohug", "A person (or a group of people) to hug", true),
+                        .addOption(STRING, "tohug", "A person (or a group of people) to hug", true)
+                        .setGuildOnly(true),
                 Commands.slash("pat", "Pat someone!")
-                        .addOption(STRING, "topat", "A person (or a group of people) to pat", true),
-//                        .addOption(STRING, "patdevice", "Set to \"hand\" if you want the ruler pat gif", false, true),
+                        .addOption(STRING, "topat", "A person (or a group of people) to pat", true)
+                        .setGuildOnly(true),
                 Commands.slash("kiss", "Kiss someone!")
-                        .addOption(STRING, "tokiss", "A person (or a group of people) to kiss", true),
+                        .addOption(STRING, "tokiss", "A person (or a group of people) to kiss", true)
+                        .setGuildOnly(true),
                 Commands.slash("kromer", "Sends you a random kromer gif"),
                 Commands.slash("socialcredit", "The social credit system command, used to check and assign social credit")
                         .addSubcommands(new SubcommandData("modify", "Modifies user's social credit score")
@@ -197,7 +201,11 @@ public class Cashew {
                         .setGuildOnly(true),
                 Commands.slash("roll", "Roll a dice")
                         .addOption(INTEGER,"sides", "Number of sides of the dice, 6 by default", false, false)
-                        .addOption(INTEGER, "rolls", "Number of rolls to perform", false, false)
+                        .addOption(INTEGER, "rolls", "Number of rolls to perform", false, false),
+                Commands.slash("cmdset", "Enable or disable commands")
+                        .addOption(STRING, "toggle", "New state of the command - either ON or OFF", true, true)
+                        .addOption(STRING, "command", "Command to change the settings of - leave blank to apply to all commands", false, true)
+                        .addOption(CHANNEL, "channel", "Channel to apply the setting to - leave blank to apply to all channels", false, false)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
@@ -206,5 +214,6 @@ public class Cashew {
         pollManager = new PollManager();
         pollManager.start(jda);
         reactionsSettingsManager = new ReactionsSettingsManager();
+        commandsSettingsManager = new CommandsSettingsManager();
     }
 }

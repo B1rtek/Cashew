@@ -88,6 +88,10 @@ public class BestNeko extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("bestneko")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             if (Objects.equals(event.getSubcommandName(), "set")) {
                 String neko = event.getOption("neko", "Maple", OptionMapping::getAsString);
                 int id = getNekoID(neko);

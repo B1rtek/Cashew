@@ -15,6 +15,10 @@ public class Roll extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("roll")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             int sides = event.getOption("sides", 6, OptionMapping::getAsInt);
             int rolls = Math.min(event.getOption("rolls", 1, OptionMapping::getAsInt), 10000);
             long sum = 0;
