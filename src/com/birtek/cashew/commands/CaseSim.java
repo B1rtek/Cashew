@@ -776,7 +776,7 @@ public class CaseSim extends BaseCommand {
                         return;
                     }
                     switch (buttonID[3]) {
-                        case "show" -> inventoryShow(event, buttonID);
+                        case "show" -> inventoryShow(event, buttonID, event.getMessage().isEphemeral());
                         case "delete" -> inventoryDelete(event);
                         case "pagenext" -> inventorySwitchPage(event, buttonID, true);
                         case "pageprev" -> inventorySwitchPage(event, buttonID, false);
@@ -863,7 +863,7 @@ public class CaseSim extends BaseCommand {
      * @param event    {@link ButtonInteractionEvent event} that triggered this action
      * @param buttonID ID of the button which was pressed
      */
-    private void inventoryShow(ButtonInteractionEvent event, String[] buttonID) {
+    private void inventoryShow(ButtonInteractionEvent event, String[] buttonID, boolean asEphemeral) {
         // get the selected item index
         MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
         int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
@@ -917,11 +917,17 @@ public class CaseSim extends BaseCommand {
         for (int i = 6; i < buttonID.length; i++) {
             requestedUserName.append(":").append(buttonID[i]);
         }
-        event.editMessageEmbeds(itemEmbed).setActionRow(
-                Button.link(item.getRight().stashUrl(), "CSGO Stash"),
-                Button.primary(createInspectButtonID(event.getUser().getId(), item.getLeft().floatValue(), item.getRight()), "Inspect URL"),
-                Button.secondary(event.getUser().getId() + ":casesim:inventory:back:" + buttonID[4] + ":" + pageNumber + ":" + requestedUserName, "Back")
-        ).queue();
+        ArrayList<Button> invControls = new ArrayList<>() {
+            {
+                add(Button.link(item.getRight().stashUrl(), "CSGO Stash"));
+                add(Button.primary(createInspectButtonID(event.getUser().getId(), item.getLeft().floatValue(), item.getRight()), "Inspect URL"));
+                add(Button.secondary(event.getUser().getId() + ":casesim:inventory:back:" + buttonID[4] + ":" + pageNumber + ":" + requestedUserName, "Back"));
+            }
+        };
+        if (!asEphemeral) {
+            invControls.add(Button.secondary(event.getUser().getId() + ":casesim:close", Emoji.fromUnicode("❌")));
+        }
+        event.editMessageEmbeds(itemEmbed).setActionRow(invControls).queue();
     }
 
     /**
