@@ -24,7 +24,7 @@ public class CommandsSettingsManager {
      * shuts down
      */
     public CommandsSettingsManager() {
-        CommandsSettings.setAllCommands((ArrayList<String>) Help.commands.subList(2, Help.commands.size()-1));
+        CommandsSettings.setAllCommands(new ArrayList<>(Help.commands.subList(2, Help.commands.size() - 1)));
         CommandsSettingsDatabase database = CommandsSettingsDatabase.getInstance();
         settingsMap = database.getAllCommandsSettings();
         if (settingsMap == null) {
