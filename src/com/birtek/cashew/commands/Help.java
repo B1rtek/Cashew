@@ -14,8 +14,10 @@ import java.util.Objects;
 
 public class Help extends BaseCommand {
 
-    private final ArrayList<String> commands = new ArrayList<>() {
+    public static final ArrayList<String> commands = new ArrayList<>() {
         {
+            add("cmdset");
+            add("help");
             add("bestneko");
             add("birthday");
             add("boburnham");
@@ -26,7 +28,6 @@ public class Help extends BaseCommand {
             add("dadjoke");
             add("feedback");
             add("gifts");
-            add("help");
             add("hug");
             add("info");
             add("insp");
