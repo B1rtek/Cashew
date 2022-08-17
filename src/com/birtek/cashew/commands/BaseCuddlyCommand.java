@@ -1,5 +1,6 @@
 package com.birtek.cashew.commands;
 
+import com.birtek.cashew.database.EmbedGif;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
