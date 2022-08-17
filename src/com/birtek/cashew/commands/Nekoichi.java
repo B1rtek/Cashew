@@ -28,6 +28,10 @@ public class Nekoichi extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "nekoichi")) {
+            if(cantBeExecutedPrefix(event, "nekoichi", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             singNekoichi(event.getChannel());
         }
     }

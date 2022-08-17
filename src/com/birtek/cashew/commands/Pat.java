@@ -41,6 +41,10 @@ public class Pat extends BaseCuddlyCommand {
                 event.getMessage().reply("This command doesn't work in DMs").mentionRepliedUser(false).queue();
                 return;
             }
+            if(cantBeExecutedPrefix(event, "pat", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
             if (cuddlyString.isEmpty()) {
                 event.getMessage().reply("You can't pat no one!").mentionRepliedUser(false).queue();

@@ -206,6 +206,10 @@ public class Korwin extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "korwin")) {
+            if(cantBeExecutedPrefix(event, "korwin", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             event.getChannel().sendMessageEmbeds(generateAKorwinQuote()).queue();
         }
     }

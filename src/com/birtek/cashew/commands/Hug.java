@@ -45,6 +45,10 @@ public class Hug extends BaseCuddlyCommand {
                 event.getMessage().reply("This command doesn't work in DMs").mentionRepliedUser(false).queue();
                 return;
             }
+            if(cantBeExecutedPrefix(event, "hug", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             String cuddlyString = purifyFromMentionsAndMerge(args, event.getGuild(), true);
             if (cuddlyString.isEmpty()) {
                 event.getMessage().reply("You can't hug no one!").mentionRepliedUser(false).queue();

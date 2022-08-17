@@ -26,6 +26,10 @@ public class Kromer extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "kromer")) {
+            if(cantBeExecutedPrefix(event, "kromer", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             Random random = new Random();
             event.getMessage().reply(kromerGifs[random.nextInt(kromerGifs.length)]).mentionRepliedUser(false).queue();
         }

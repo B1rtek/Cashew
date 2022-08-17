@@ -34,6 +34,10 @@ public class Inspirobot extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "insp")) {
+            if(cantBeExecutedPrefix(event, "insp", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             event.getMessage().reply(getAnInspirobotQuote()).mentionRepliedUser(false).queue();
         }
     }

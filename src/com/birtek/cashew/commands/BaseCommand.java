@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ public class BaseCommand extends ListenerAdapter {
      *
      * @param event        {@link SlashCommandInteractionEvent event} that triggered one of the slash command event listeners
      * @param isModCommand if set to true, user will be checked against moderator permissions
-     * @return 1 if the command can be executed, 0 if the command is turned off, or if the user has no permissions to
+     * @return true if the command can be executed, false if the command is turned off, or if the user has no permissions to
      * execute the command
      */
     public static boolean cantBeExecuted(SlashCommandInteractionEvent event, boolean isModCommand) {
@@ -65,6 +66,26 @@ public class BaseCommand extends ListenerAdapter {
             return !Objects.requireNonNull(event.getMember()).hasPermission(Cashew.moderatorPermission);
         } else {
             return !Cashew.commandsSettingsManager.getCommandSettings(Objects.requireNonNull(event.getGuild()).getId(), event.getChannel().getId(), event.getName());
+        }
+    }
+
+    /**
+     * Checks whether the command can be executed by a user, used only by prefix commands which will later be removed at some point
+     *
+     * @param event        {@link MessageReceivedEvent event} that triggered one of the slash command event listeners
+     * @param command      name of the executed command
+     * @param isModCommand if set to true, user will be checked against moderator permissions
+     * @return true if the command can be executed, false if the command is turned off, or if the user has no permissions to
+     * execute the command
+     */
+    public static boolean cantBeExecutedPrefix(MessageReceivedEvent event, String command, boolean isModCommand) {
+        if (!event.isFromGuild()) {
+            return false;
+        }
+        if (isModCommand) {
+            return !Objects.requireNonNull(event.getMember()).hasPermission(Cashew.moderatorPermission);
+        } else {
+            return !Cashew.commandsSettingsManager.getCommandSettings(Objects.requireNonNull(event.getGuild()).getId(), event.getChannel().getId(), command);
         }
     }
 

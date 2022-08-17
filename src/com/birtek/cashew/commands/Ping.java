@@ -12,6 +12,10 @@ public class Ping extends BaseCommand {
         String pingMessage = "Pong!";
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "ping")) {
+            if(cantBeExecutedPrefix(event, "ping", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             long lastMeasured = System.nanoTime();
             event.getMessage().reply(pingMessage).mentionRepliedUser(false).queue(response ->
                     response.editMessage(pingMessage + " Time = " + Math.round((System.nanoTime() - lastMeasured) / 1000000.0) + " ms").queue());

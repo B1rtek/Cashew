@@ -51,6 +51,10 @@ public class BoBurnham extends BaseCommand {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String[] args = event.getMessage().getContentRaw().split("\\s+");
         if (args[0].equalsIgnoreCase(Cashew.COMMAND_PREFIX + "boburnham")) {
+            if(cantBeExecutedPrefix(event, "boburnham", false)) {
+                event.getMessage().reply("This command is turned off in this channel").mentionRepliedUser(false).queue();
+                return;
+            }
             boolean nsfw = false;
             if (args.length >= 2) {
                 if (args[1].equalsIgnoreCase("nsfw")) {
