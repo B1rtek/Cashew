@@ -8,6 +8,20 @@ import java.util.Iterator;
 
 /**
  * Class that stores settings for servers in JSON form
+ * {
+ * "all": true,
+ * "option1": {
+ * "all": false,
+ * "channel1": false,
+ * "channel2": true
+ * },
+ * "option2": {
+ * "all": true,
+ * "channel2": false
+ * }
+ * }
+ * There is a global setting, which is overriden by the option specific setting, and that one is
+ * overriden by option channel specific setting
  */
 public class Settings {
     protected static HashMap<Class<?>, ArrayList<String>> allOptions = new HashMap<>();
@@ -27,13 +41,14 @@ public class Settings {
     }
 
     /**
-     * Creates a new empty object with a JSON containing { "all": false } as settings
+     * Creates a new empty object with a JSON containing { "all": default } as settings
      *
-     * @param serverID ID of the server to which these settings belong to
+     * @param serverID     ID of the server to which these settings belong to
+     * @param defaultValue default value to put in the JSON
      */
-    public Settings(String serverID) {
+    public Settings(String serverID, boolean defaultValue) {
         this.settings = new JSONObject();
-        this.settings.put("all", false);
+        this.settings.put("all", defaultValue);
         this.serverID = serverID;
     }
 

@@ -23,7 +23,7 @@ public class ReactionsSettings extends Settings {
      * @param serverID ID of the server to which these settings belong to
      */
     public ReactionsSettings(String serverID) {
-        super(serverID);
+        super(serverID, false);
     }
 
     public static void setAllReactions(ArrayList<Reaction> reactions) {

@@ -4,45 +4,53 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class CommandsSettings {
-
-    private static ArrayList<String> allCommands;
-    private final String serverID;
-    private final JSONObject settings;
+public class CommandsSettings extends Settings {
 
     /**
      * Creates a CommandsSettings object from an existing JSON from the database, used by the
-     * {@link CommandsSettingsDatabase CommandsSettingsDatabase}
+     * {@link CommandsSettingsDatabase CommandsDatabase}
      *
      * @param jsonSettings a {@link JSONObject} with reactions settings for a server
      * @param serverID     ID of the server to which the settings belong
      */
     public CommandsSettings(JSONObject jsonSettings, String serverID) {
-        this.settings = jsonSettings;
-        this.serverID = serverID;
+        super(jsonSettings, serverID);
     }
 
     /**
-     * Creates a new empty object with a JSON containing { "all": false } as settings
+     * Creates a new empty object with a JSON containing { "all": true } as settings
      *
      * @param serverID ID of the server to which these settings belong to
      */
     public CommandsSettings(String serverID) {
-        this.settings = new JSONObject();
-        this.settings.put("all", false);
-        this.serverID = serverID;
+        super(serverID, true);
     }
 
     public static void setAllCommands(ArrayList<String> commands) {
-        allCommands = commands;
+        setAllOptions(CommandsSettings.class, commands);
     }
 
-    public JSONObject getSettings() {
-        return settings;
+    /**
+     * Retrieves the command setting from the JSON by first checking global setting, then the reaction and then the
+     * channel specific one
+     *
+     * @param command   command to check settings for
+     * @param channelID ID of the channel to check settings for
+     * @return boolean telling whether the command is turned on or off in that channel
+     */
+    public boolean getCommandSettings(String command, String channelID) {
+        return getOptionStatus(command, channelID);
     }
 
-    public String getServerID() {
-        return serverID;
+    /**
+     * Sets the command on or off in the specified channel
+     *
+     * @param command   command to change settings of, "all" all
+     * @param channelID ID of the channel to change the setting in, set to "all" to set it in all channels
+     * @param state     new settings state - true is on, false is off
+     */
+    public void setCommandSettings(String command, String channelID, boolean state) {
+        setOptionStatus(command, channelID, state);
     }
 
 }
