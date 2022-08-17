@@ -34,6 +34,10 @@ public class Kromer extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("kromer")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             Random random = new Random();
             event.reply(kromerGifs[random.nextInt(kromerGifs.length)]).queue();
         }

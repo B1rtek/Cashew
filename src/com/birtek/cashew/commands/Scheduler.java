@@ -113,36 +113,36 @@ public class Scheduler extends BaseCommand {
                 event.reply("Scheduler doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
-            if (checkSlashCommandPermissions(event, modPermissions)) {
-                if (event.getSubcommandName() == null) {
-                    event.reply("No command specified (how???)").setEphemeral(true).queue();
+            if (cantBeExecuted(event, true)) {
+                event.reply("This command is only available to server moderators").setEphemeral(true).queue();
+                return;
+            }
+            if (event.getSubcommandName() == null) {
+                event.reply("No command specified (how???)").setEphemeral(true).queue();
+            }
+            if (event.getSubcommandName().equals("add")) {
+                String channelID = event.getOption("channel", "its required bruh", OptionMapping::getAsString);
+                String timestamp = event.getOption("time", "its required bruh", OptionMapping::getAsString);
+                String message = event.getOption("content", "empty message", OptionMapping::getAsString);
+                if (isInvalidTimestamp(timestamp)) {
+                    event.reply("Invalid timestamp specified").setEphemeral(true).queue();
+                    return;
                 }
-                if (event.getSubcommandName().equals("add")) {
-                    String channelID = event.getOption("channel", "its required bruh", OptionMapping::getAsString);
-                    String timestamp = event.getOption("time", "its required bruh", OptionMapping::getAsString);
-                    String message = event.getOption("content", "empty message", OptionMapping::getAsString);
-                    if (isInvalidTimestamp(timestamp)) {
-                        event.reply("Invalid timestamp specified").setEphemeral(true).queue();
-                        return;
-                    }
-                    String response = schedulerAddMessages(message, timestamp, channelID, Objects.requireNonNull(event.getGuild()).getId());
-                    event.reply(response).setEphemeral(true).queue();
-                } else if (event.getSubcommandName().equals("list")) {
-                    int id = event.getOption("id", 0, OptionMapping::getAsInt);
-                    String response = schedulerListMessages(event.getGuild(), id);
-                    event.reply(response).queue();
-                } else if (event.getSubcommandName().equals("delete")) {
-                    int id = event.getOption("id", 0, OptionMapping::getAsInt);
-                    String definitely = event.getOption("all", "", OptionMapping::getAsString);
-                    if (!definitely.equals("definitely") && id == 0) {
-                        event.reply("No messages were deleted").setEphemeral(true).queue();
-                        return;
-                    }
-                    String response = schedulerDeleteMessages(event.getGuild(), id);
-                    event.reply(response).setEphemeral(true).queue();
+                String response = schedulerAddMessages(message, timestamp, channelID, Objects.requireNonNull(event.getGuild()).getId());
+                event.reply(response).setEphemeral(true).queue();
+            } else if (event.getSubcommandName().equals("list")) {
+                int id = event.getOption("id", 0, OptionMapping::getAsInt);
+                String response = schedulerListMessages(event.getGuild(), id);
+                event.reply(response).queue();
+            } else if (event.getSubcommandName().equals("delete")) {
+                int id = event.getOption("id", 0, OptionMapping::getAsInt);
+                String definitely = event.getOption("all", "", OptionMapping::getAsString);
+                if (!definitely.equals("definitely") && id == 0) {
+                    event.reply("No messages were deleted").setEphemeral(true).queue();
+                    return;
                 }
-            } else {
-                event.reply("You do not have permission to use this command").setEphemeral(true).queue();
+                String response = schedulerDeleteMessages(event.getGuild(), id);
+                event.reply(response).setEphemeral(true).queue();
             }
         }
     }

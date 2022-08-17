@@ -701,6 +701,10 @@ public class CaseSim extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("casesim")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             switch (Objects.requireNonNull(event.getSubcommandName())) {
                 case "opencase" -> openCase(event);
                 case "opencollection" -> openCollection(event);

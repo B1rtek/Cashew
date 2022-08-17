@@ -56,6 +56,10 @@ public class Feedback extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("feedback")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             String content = event.getOption("content", null, OptionMapping::getAsString);
             if (content == null) {
                 event.reply("Content cannot be null").setEphemeral(true).queue();

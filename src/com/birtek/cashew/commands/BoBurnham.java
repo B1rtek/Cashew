@@ -69,6 +69,10 @@ public class BoBurnham extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("boburnham")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             boolean nsfw = event.getOption("nsfw", "sfw", OptionMapping::getAsString).equals("nsfw");
             MessageEmbed quoteEmbed = getQuoteEmbed(nsfw);
             if (quoteEmbed != null) {

@@ -213,6 +213,10 @@ public class Korwin extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("korwin")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             event.replyEmbeds(generateAKorwinQuote()).queue();
         }
     }

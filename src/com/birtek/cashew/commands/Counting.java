@@ -18,48 +18,48 @@ public class Counting extends BaseCommand {
                 event.reply("Counting doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
-            if (checkSlashCommandPermissions(event, modPermissions)) {
-                if (Objects.equals(event.getSubcommandName(), "toggle")) {
-                    String toggle = event.getOption("toggle", "", OptionMapping::getAsString);
-                    if (!toggle.isEmpty() && (toggle.equals("on") || toggle.equals("off"))) {
-                        if (saveToDatabase(toggle, event.getChannel().getId())) {
-                            event.reply("Counting has been turned " + toggle + " in this channel.").queue();
-                        } else {
-                            event.reply("Something went wrong while toggling the counting game in this channel").setEphemeral(true).queue();
-                        }
-                    }
-                } else if (Objects.equals(event.getSubcommandName(), "setcount")) {
-                    int newCount = event.getOption("count", -2147483647, OptionMapping::getAsInt);
-                    if (newCount != -2147483647) {
-                        CountingDatabase database = CountingDatabase.getInstance();
-                        CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
-                        if (countingInfo != null) {
-                            if (database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId())) {
-                                event.reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").queue();
-                            } else {
-                                event.reply("Something went wrong while saving the new count").setEphemeral(true).queue();
-                            }
-                        } else {
-                            event.reply("Something went wrong while getting data from the database").setEphemeral(true).queue();
-                        }
+            if (cantBeExecuted(event, true)) {
+                event.reply("This command is only available to server moderators").setEphemeral(true).queue();
+                return;
+            }
+            if (Objects.equals(event.getSubcommandName(), "toggle")) {
+                String toggle = event.getOption("toggle", "", OptionMapping::getAsString);
+                if (!toggle.isEmpty() && (toggle.equals("on") || toggle.equals("off"))) {
+                    if (saveToDatabase(toggle, event.getChannel().getId())) {
+                        event.reply("Counting has been turned " + toggle + " in this channel.").queue();
                     } else {
-                        event.reply("No new count specified").setEphemeral(true).queue();
+                        event.reply("Something went wrong while toggling the counting game in this channel").setEphemeral(true).queue();
                     }
-                } else if (Objects.equals(event.getSubcommandName(), "reset")) {
+                }
+            } else if (Objects.equals(event.getSubcommandName(), "setcount")) {
+                int newCount = event.getOption("count", -2147483647, OptionMapping::getAsInt);
+                if (newCount != -2147483647) {
                     CountingDatabase database = CountingDatabase.getInstance();
                     CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
                     if (countingInfo != null) {
-                        if (database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId())) {
-                            event.reply("Counter has been reset.").queue();
+                        if (database.setCount(new CountingInfo(true, " ", newCount, " ", countingInfo.typosLeft()), event.getChannel().getId())) {
+                            event.reply("Counter has been set to ` " + newCount + " `. The next number is ` " + (newCount + 1) + " `!").queue();
                         } else {
-                            event.reply("Something went wrong while resetting the count").setEphemeral(true).queue();
+                            event.reply("Something went wrong while saving the new count").setEphemeral(true).queue();
                         }
                     } else {
                         event.reply("Something went wrong while getting data from the database").setEphemeral(true).queue();
                     }
+                } else {
+                    event.reply("No new count specified").setEphemeral(true).queue();
                 }
-            } else {
-                event.reply("You do not have permission to use this command").setEphemeral(true).queue();
+            } else if (Objects.equals(event.getSubcommandName(), "reset")) {
+                CountingDatabase database = CountingDatabase.getInstance();
+                CountingInfo countingInfo = database.getCountingData(event.getChannel().getId());
+                if (countingInfo != null) {
+                    if (database.setCount(new CountingInfo(true, countingInfo.userID(), 0, " ", 3), event.getChannel().getId())) {
+                        event.reply("Counter has been reset.").queue();
+                    } else {
+                        event.reply("Something went wrong while resetting the count").setEphemeral(true).queue();
+                    }
+                } else {
+                    event.reply("Something went wrong while getting data from the database").setEphemeral(true).queue();
+                }
             }
         }
     }

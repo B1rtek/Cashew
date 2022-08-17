@@ -24,8 +24,8 @@ public class CmdSet extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("cmdset")) {
-            if (!checkSlashCommandPermissions(event, modPermissions)) {
-                event.reply("This command is available only to moderators!").setEphemeral(true).queue();
+            if(cantBeExecuted(event, true)) {
+                event.reply("This command is only available to server moderators").setEphemeral(true).queue();
                 return;
             }
             boolean state = !event.getOption("toggle", "", OptionMapping::getAsString).equals("off");

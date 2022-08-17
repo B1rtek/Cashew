@@ -41,6 +41,10 @@ public class Inspirobot extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if(event.getName().equals("insp")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             event.reply(getAnInspirobotQuote()).queue();
         }
     }

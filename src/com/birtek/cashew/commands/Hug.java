@@ -56,6 +56,10 @@ public class Hug extends BaseCuddlyCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("hug")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             String[] cuddlyStringSplit = event.getOption("tohug", "", OptionMapping::getAsString).split("\\s+");
             String cuddlyString = purifyFromMentionsAndMerge(cuddlyStringSplit, event.getGuild(), false);
             if (!cuddlyString.isEmpty()) {

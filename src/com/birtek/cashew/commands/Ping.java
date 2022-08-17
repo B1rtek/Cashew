@@ -20,11 +20,15 @@ public class Ping extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        String pingMessage = "Pong!";
         if (event.getName().equals("ping")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             long lastMeasured = System.nanoTime();
+            String pingMessage = "Pong!";
             event.reply(pingMessage).flatMap(v ->
-                            event.getHook().editOriginal(pingMessage + " Time = " + Math.round((System.nanoTime() - lastMeasured) / 1000000.0) + " ms"))
+                            event.getHook().editOriginal(pingMessage + "Pong! Time = " + Math.round((System.nanoTime() - lastMeasured) / 1000000.0) + " ms"))
                     .queue();
         }
     }

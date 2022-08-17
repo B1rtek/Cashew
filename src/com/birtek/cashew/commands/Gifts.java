@@ -241,6 +241,10 @@ public class Gifts extends BaseCommand {
                 event.reply("Gifts doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             if (!event.getChannel().canTalk()) {
                 event.reply("This command won't work in here, Cashew can't see or/and write in this channel!").setEphemeral(true).queue();
                 return;

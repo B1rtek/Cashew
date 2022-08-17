@@ -158,9 +158,13 @@ public class SocialCredit extends BaseCommand {
                 event.reply("Social credit doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             String targetUserID = event.getOption("user", event.getUser().getId(), OptionMapping::getAsString);
             if (Objects.equals(event.getSubcommandName(), "modify")) {
-                if (!checkSlashCommandPermissions(event, modPermissions)) {
+                if (!cantBeExecuted(event, true)) {
                     int amountLost = loseSocialCredit(event.getUser().getId(), Objects.requireNonNull(event.getGuild()).getId());
                     event.reply("You lose " + amountLost + " social credit for misuse of the social credit system.").queue();
                     return;

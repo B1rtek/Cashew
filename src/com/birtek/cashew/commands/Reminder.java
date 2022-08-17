@@ -23,6 +23,10 @@ public class Reminder extends BaseCommand {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("reminder")) {
+            if(cantBeExecuted(event, false)) {
+                event.reply("This command is turned off in this channel").setEphemeral(true).queue();
+                return;
+            }
             switch (Objects.requireNonNull(event.getSubcommandName())) {
                 case "set" -> {
                     // check if the current reminders count isn't already at 10 (maximum)

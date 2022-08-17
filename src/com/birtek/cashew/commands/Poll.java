@@ -37,7 +37,11 @@ public class Poll extends BaseCommand {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        if (event.getName().equals("poll") && checkSlashCommandPermissions(event, modPermissions)) {
+        if (event.getName().equals("poll")) {
+            if(cantBeExecuted(event, true)) {
+                event.reply("This command is only available to server moderators").setEphemeral(true).queue();
+                return;
+            }
             EmbedBuilder pollEmbed = new EmbedBuilder();
             String pollTitle = event.getOption("title", null, OptionMapping::getAsString);
             if (pollTitle == null) {

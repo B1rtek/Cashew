@@ -148,29 +148,29 @@ public class Clear extends BaseCommand {
                 event.reply("Clear doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
-            if (checkSlashCommandPermissions(event, modPermissions)) {
-                int recent = event.getOption("recent", -1, OptionMapping::getAsInt);
-                String ranges = event.getOption("range", "", OptionMapping::getAsString);
-                if (recent != -1) {
-                    ranges = "1-" + recent;
-                }
-                MessageEmbed clearEmbed;
-                List<Message> messagesToRemove = getMessagesToRemove(ranges, event);
-                if (messagesToRemove == null) {
-                    clearEmbed = generateClearEmbed(false, "Failed to retrieve message history");
-                } else if (messagesToRemove.isEmpty()) {
-                    clearEmbed = generateClearEmbed(false, "Invalid range selection");
-                } else {
-                    Pair<Boolean, String> removalResult = removeMessages(messagesToRemove, event);
-                    clearEmbed = generateClearEmbed(removalResult.getLeft(), removalResult.getRight());
-                }
-                if (Objects.requireNonNull(clearEmbed.getTitle()).startsWith("✅")) {
-                    event.replyEmbeds(clearEmbed).addActionRow(Button.danger(event.getUser().getId() + ":clear", "OK")).queue();
-                } else {
-                    event.replyEmbeds(clearEmbed).setEphemeral(true).queue();
-                }
+            if (cantBeExecuted(event, true)) {
+                event.reply("This command is only available to server moderators").setEphemeral(true).queue();
+                return;
+            }
+            int recent = event.getOption("recent", -1, OptionMapping::getAsInt);
+            String ranges = event.getOption("range", "", OptionMapping::getAsString);
+            if (recent != -1) {
+                ranges = "1-" + recent;
+            }
+            MessageEmbed clearEmbed;
+            List<Message> messagesToRemove = getMessagesToRemove(ranges, event);
+            if (messagesToRemove == null) {
+                clearEmbed = generateClearEmbed(false, "Failed to retrieve message history");
+            } else if (messagesToRemove.isEmpty()) {
+                clearEmbed = generateClearEmbed(false, "Invalid range selection");
             } else {
-                event.reply("You do not have permission to use this command").setEphemeral(true).queue();
+                Pair<Boolean, String> removalResult = removeMessages(messagesToRemove, event);
+                clearEmbed = generateClearEmbed(removalResult.getLeft(), removalResult.getRight());
+            }
+            if (Objects.requireNonNull(clearEmbed.getTitle()).startsWith("✅")) {
+                event.replyEmbeds(clearEmbed).addActionRow(Button.danger(event.getUser().getId() + ":clear", "OK")).queue();
+            } else {
+                event.replyEmbeds(clearEmbed).setEphemeral(true).queue();
             }
         }
     }
