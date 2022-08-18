@@ -3,13 +3,13 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.RemindersDatabase;
 import com.birtek.cashew.timings.ReminderRunnable;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import org.jetbrains.annotations.NotNull;
-import org.nocrala.tools.texttablefmt.BorderStyle;
-import org.nocrala.tools.texttablefmt.ShownBorders;
-import org.nocrala.tools.texttablefmt.Table;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -19,6 +19,16 @@ import java.util.Objects;
  * reminders that will be delivered to their DMs
  */
 public class Reminder extends BaseCommand {
+
+    private MessageEmbed generateRemindersEmbed(ArrayList<ReminderRunnable> reminders, User user) {
+        EmbedBuilder remindersEmbed = new EmbedBuilder();
+        remindersEmbed.setTitle("Your reminders");
+        remindersEmbed.setThumbnail(user.getAvatarUrl());
+        for(ReminderRunnable reminder: reminders) {
+            remindersEmbed.addField(reminder.getContent(), "Set for " + reminder.getDateTime(), false);
+        }
+        return remindersEmbed.build();
+    }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
@@ -75,23 +85,8 @@ public class Reminder extends BaseCommand {
                         event.reply("You don't have any reminders set").setEphemeral(true).queue();
                         return;
                     }
-                    Table remindersTable = new Table(4, BorderStyle.UNICODE_BOX, ShownBorders.HEADER_AND_COLUMNS);
-                    remindersTable.setColumnWidth(0, 2, 10);
-                    remindersTable.setColumnWidth(1, 19, 19);
-                    remindersTable.setColumnWidth(2, 4, 4);
-                    remindersTable.setColumnWidth(3, 1, 48);
-                    remindersTable.addCell("ID");
-                    remindersTable.addCell("Scheduled for");
-                    remindersTable.addCell("Ping");
-                    remindersTable.addCell("Reminder content");
-                    for (ReminderRunnable reminder : reminders) {
-                        remindersTable.addCell(String.valueOf(reminder.getId()));
-                        remindersTable.addCell(reminder.getDateTime());
-                        remindersTable.addCell(reminder.isPing() ? "yes" : "no");
-                        remindersTable.addCell(reminder.getContent());
-                    }
-                    String tableContent = "```prolog\n" + remindersTable.render() + "\n```";
-                    event.reply(tableContent).setEphemeral(true).queue();
+                    MessageEmbed remindersEmbed = generateRemindersEmbed(reminders, event.getUser());
+                    event.replyEmbeds(remindersEmbed).setEphemeral(true).queue();
                 }
                 case "delete" -> {
                     int id = event.getOption("id", -1, OptionMapping::getAsInt);
