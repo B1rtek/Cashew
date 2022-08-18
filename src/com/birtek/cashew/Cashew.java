@@ -206,6 +206,8 @@ public class Cashew {
                         .addOption(STRING, "toggle", "New state of the command - either ON or OFF", true, true)
                         .addOption(STRING, "command", "Command to change the settings of - leave blank to apply to all commands", false, true)
                         .addOption(CHANNEL, "channel", "Channel to apply the setting to - leave blank to apply to all channels", false, false)
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);

@@ -260,7 +260,7 @@ public class Help extends BaseCommand {
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`, `/roll`", false);
         helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `/counting`, `dadjoke`, `/gifts`, `insp`, `korwin`, `kromer`, `nekoichi`, `ping`, `/socialcredit`", false);
-        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`clear`, `/poll`, `/reactions`, `/scheduler`", false);
+        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/poll`, `/reactions`, `/scheduler`, `/cmdset`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
