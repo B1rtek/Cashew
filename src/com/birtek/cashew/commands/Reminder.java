@@ -237,8 +237,8 @@ public class Reminder extends BaseCommand {
         }
         MessageEmbed reminderDetailsEmbed = generateReminderDetailsEmbed(reminder);
         ActionRow reminderDetailsButtons = ActionRow.of(
-                Button.danger(event.getUser().getId() + ":reminder:delete:" + selectedItemIndex, "Delete"),
-                Button.secondary(event.getUser().getId() + ":reminder:back", "Back"));
+                Button.secondary(event.getUser().getId() + ":reminder:back", "Back"),
+                Button.danger(event.getUser().getId() + ":reminder:delete:" + selectedItemIndex, "Delete"));
         event.editMessageEmbeds(reminderDetailsEmbed).setActionRows(reminderDetailsButtons).queue();
     }
 
