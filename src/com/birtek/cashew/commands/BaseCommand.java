@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.utils.TimeFormat;
+import net.dv8tion.jda.api.utils.Timestamp;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -439,6 +441,12 @@ public class BaseCommand extends ListenerAdapter {
             JComponent result = (JComponent) render.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             result.setBorder(b);
             return result;
+        }
+    }
+
+    public static class DiscordTimestamp extends Timestamp {
+        protected DiscordTimestamp(TimeFormat format, long timestamp) {
+            super(format, timestamp);
         }
     }
 }
