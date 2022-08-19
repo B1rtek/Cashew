@@ -205,10 +205,9 @@ public class Reminder extends BaseCommand {
      */
     private MessageEmbed generateReminderDetailsEmbed(ReminderRunnable reminder) {
         EmbedBuilder reminderDetailsEmbed = new EmbedBuilder();
-        DiscordTimestamp timestamp = new DiscordTimestamp(TimeFormat.DATE_TIME_LONG, calculateMillisFromDateTimeString(reminder.getDateTime()));
         reminderDetailsEmbed.setTitle("Reminder details");
         reminderDetailsEmbed.addField("Full content", reminder.getContent(), false);
-        reminderDetailsEmbed.addField("Will arrive on", timestamp.toString(), false);
+        reminderDetailsEmbed.addField("Will arrive on", TimeFormat.DATE_TIME_LONG.format(calculateMillisFromDateTimeString(reminder.getDateTime())), false);
         reminderDetailsEmbed.addField("Ping", reminder.isPing() ? "Yes" : "No", false);
         return reminderDetailsEmbed.build();
     }
