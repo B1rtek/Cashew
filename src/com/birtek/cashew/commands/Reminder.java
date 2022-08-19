@@ -14,9 +14,15 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
+import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -26,6 +32,15 @@ import java.util.Objects;
  */
 public class Reminder extends BaseCommand {
 
+    /**
+     * Generates an embed listing all reminders
+     *
+     * @param reminders ArrayList of {@link ReminderRunnable ReminderRunnables} being a list of user's reminders
+     * @param user      User who requested their reminders list
+     * @return a {@link MessageEmbed MessageEmbed} containing short descriptions of reminders in the fields, consisting
+     * of first 64 characters of the reminder content, and its delivery date in the field description, a thumbnail being
+     * user's avatar, and a title "Your reminders"
+     */
     private MessageEmbed generateRemindersEmbed(ArrayList<ReminderRunnable> reminders, User user) {
         EmbedBuilder remindersEmbed = new EmbedBuilder();
         remindersEmbed.setTitle("Your reminders");
@@ -38,6 +53,15 @@ public class Reminder extends BaseCommand {
         return remindersEmbed.build();
     }
 
+    /**
+     * Generates a pair of ActionRows, one being a SelectMenu used to select the reminder in the embed, and the other
+     * one with buttons which allow for interactions with the items
+     *
+     * @param reminders ArrayList of {@link ReminderRunnable ReminderRunnables} being a list of user's reminders
+     * @param user      User who requested their reminders list
+     * @return a {@link Pair Pair} of {@link ActionRow ActionRows}, the first one with a {@link SelectMenu SelectMenu}
+     * and the other one with three {@link Button Buttons} - "Show details", "Delete" and "Delete all"
+     */
     private Pair<ActionRow, ActionRow> generateListActionRows(ArrayList<ReminderRunnable> reminders, User user) {
         SelectMenu.Builder reminderSelectMenu = SelectMenu.create(user.getId() + ":reminder:list")
                 .setPlaceholder("Select a reminder")
@@ -142,19 +166,85 @@ public class Reminder extends BaseCommand {
         }
     }
 
+    /**
+     * Returns the index of the selected item from the reminders list embed
+     *
+     * @param remindersListEmbed {@link MessageEmbed MessageEmbed} with the list of user's reminders
+     * @return index of the selected (underlined) item, counting from zero, or -1 if no items were selected
+     */
+    private int getSelectedItemIndex(MessageEmbed remindersListEmbed) {
+        int selectedItemIndex = -1, index = 0;
+        for (MessageEmbed.Field field : remindersListEmbed.getFields()) {
+            if (Objects.requireNonNull(field.getName()).startsWith("__")) {
+                selectedItemIndex = index;
+                break;
+            }
+            index++;
+        }
+        return selectedItemIndex;
+    }
+
+    /**
+     * Generates an Instant from the provided time string and returns the toEpochMilli() output of it
+     *
+     * @param dateTimeString execution time set by the user who created the {@link ReminderRunnable reminder}
+     * @return result of executing toEpochMilli() on the calculated Instant
+     */
+    private long calculateMillisFromDateTimeString(String dateTimeString) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        ZonedDateTime timeOfExecution = LocalDateTime.parse(dateTimeString, dateTimeFormatter).atZone(ZoneId.of("Europe/Warsaw"));
+        Instant instantOfExecution = timeOfExecution.toInstant();
+        return instantOfExecution.toEpochMilli();
+    }
+
+    /**
+     * Generates an embed showing details of the given reminder
+     *
+     * @param reminder {@link ReminderRunnable ReminderRunnable} to show the details off
+     * @return a {@link MessageEmbed MessageEmbed}
+     */
+    private MessageEmbed generateReminderDetailsEmbed(ReminderRunnable reminder) {
+        EmbedBuilder reminderDetailsEmbed = new EmbedBuilder();
+        DiscordTimestamp timestamp = new DiscordTimestamp(TimeFormat.DATE_TIME_LONG, calculateMillisFromDateTimeString(reminder.getDateTime()));
+        reminderDetailsEmbed.setTitle("Reminder details");
+        reminderDetailsEmbed.addField("Full content", reminder.getContent(), false);
+        reminderDetailsEmbed.addField("Will arrive on", timestamp.toString(), false);
+        reminderDetailsEmbed.addField("Ping", reminder.isPing() ? "Yes" : "No", false);
+        return reminderDetailsEmbed.build();
+    }
+
+    /**
+     * Swaps the reminders list embed for the one showing the selected embed's details
+     *
+     * @param event {@link ButtonInteractionEvent event} triggered by the user clicking the "Show details" button
+     */
+    private void showDetails(ButtonInteractionEvent event) {
+        MessageEmbed remindersListEmbed = event.getMessage().getEmbeds().get(0);
+        int selectedItemIndex = getSelectedItemIndex(remindersListEmbed);
+        if (selectedItemIndex == -1) { // nothing was selected
+            event.reply("Select a reminder first").setEphemeral(true).queue();
+            return;
+        }
+        RemindersDatabase database = RemindersDatabase.getInstance();
+        ReminderRunnable reminder = database.getUsersReminderByIndex(event.getUser().getId(), selectedItemIndex);
+        MessageEmbed reminderDetailsEmbed = generateReminderDetailsEmbed(reminder);
+        ActionRow reminderDetailsButtons = ActionRow.of(
+                Button.danger(event.getUser().getId() + ":reminder:delete:" + selectedItemIndex, "Delete"),
+                Button.secondary(event.getUser().getId() + ":reminder:back", "Back"));
+        event.editMessageEmbeds(reminderDetailsEmbed).setActionRows(reminderDetailsButtons).queue();
+    }
+
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         String[] buttonID = event.getComponentId().split(":");
-        if(buttonID.length < 3) return;
-        if(buttonID[1].equals("reminder")) {
-            if(!event.getUser().getId().equals(buttonID[0])) {
+        if (buttonID.length < 3) return;
+        if (buttonID[1].equals("reminder")) {
+            if (!event.getUser().getId().equals(buttonID[0])) {
                 event.reply("You can't interact with this button").setEphemeral(true).queue();
                 return;
             }
             switch (buttonID[2]) {
-                case "details" -> {
-
-                }
+                case "details" -> showDetails(event);
                 case "delete" -> {
 
                 }
@@ -171,9 +261,9 @@ public class Reminder extends BaseCommand {
     @Override
     public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
         String[] menuID = event.getComponentId().split(":");
-        if(menuID.length < 3) return;
-        if(menuID[1].equals("reminder")) {
-            if(!event.getUser().getId().equals(menuID[0])) {
+        if (menuID.length < 3) return;
+        if (menuID[1].equals("reminder")) {
+            if (!event.getUser().getId().equals(menuID[0])) {
                 event.reply("You can't interact with this select menu").setEphemeral(true).queue();
                 return;
             }
@@ -183,7 +273,7 @@ public class Reminder extends BaseCommand {
             selectedReminderEmbed.setThumbnail(Objects.requireNonNull(remindersListEmbed.getThumbnail()).getUrl());
             selectedReminderEmbed.setFooter(Objects.requireNonNull(remindersListEmbed.getFooter()).getText());
             int index = 0;
-            for(MessageEmbed.Field field: remindersListEmbed.getFields()) {
+            for (MessageEmbed.Field field : remindersListEmbed.getFields()) {
                 String fieldName = field.getName();
                 assert fieldName != null;
                 if (fieldName.startsWith("__")) {

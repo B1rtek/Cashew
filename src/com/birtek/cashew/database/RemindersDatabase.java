@@ -92,7 +92,7 @@ public class RemindersDatabase {
      */
     public ArrayList<ReminderRunnable> getUserReminders(String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping FROM reminders where userid = ?");
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping FROM reminders where userid = ? order by _id");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<ReminderRunnable> reminders = new ArrayList<>();
@@ -102,6 +102,31 @@ public class RemindersDatabase {
             return reminders;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at RemindersDatabase.getUserReminders()");
+            return null;
+        }
+    }
+
+    /**
+     * Gets a reminder from user's list of reminders by the index
+     *
+     * @param userID ID of the user whose reminder will be retrieved
+     * @param index  index of the reminder, starting from 0, which will be chosen. Reminders are sorted by the date of
+     *               their creation, aka _id assigned by the database
+     * @return a {@link ReminderRunnable ReminderRunnable} representing the requested reminder, or null if an error
+     * occurred or if the provided index doesn't point to any reminder
+     */
+    public ReminderRunnable getUsersReminderByIndex(String userID, int index) {
+        try {
+            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping FROM (SELECT ROW_NUMBER() OVER (ORDER BY _id) index, _id, content, timedate, ping FROM reminders where userid = ? order by _id) as subqr where index = ?");
+            preparedStatement.setString(1, userID);
+            preparedStatement.setInt(2, index + 1);
+            ResultSet results = preparedStatement.executeQuery();
+            if (results.next()) {
+                return new ReminderRunnable(results.getInt(1), results.getBoolean(4), results.getString(2), results.getString(3), userID);
+            }
+            return null;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at RemindersDatabase.getUsersReminderByIndex()");
             return null;
         }
     }
@@ -196,15 +221,16 @@ public class RemindersDatabase {
 
     /**
      * Deletes all user's reminders from the database
+     *
      * @param userID ID of the user whose reminders should be removed
      * @return a list of all user's reminders' IDs, or null if an error occurred or the user had no reminders
      */
     public ArrayList<Integer> deleteUsersReminders(String userID) {
         try {
             ArrayList<ReminderRunnable> reminders = getUserReminders(userID);
-            if(reminders == null || reminders.isEmpty()) return null;
+            if (reminders == null || reminders.isEmpty()) return null;
             ArrayList<Integer> remindersIDs = new ArrayList<>();
-            for(ReminderRunnable reminder: reminders) {
+            for (ReminderRunnable reminder : reminders) {
                 remindersIDs.add(reminder.getId());
             }
             PreparedStatement preparedStatement = remindersConnection.prepareStatement("DELETE FROM reminders WHERE userid = ?");
