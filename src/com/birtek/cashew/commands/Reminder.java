@@ -123,7 +123,7 @@ public class Reminder extends BaseCommand {
                     ReminderRunnable reminder = new ReminderRunnable(0, ping, content, timeString, event.getUser().getId());
                     int id = Cashew.remindersManager.addReminder(reminder);
                     if (id != -1) {
-                        event.reply("Successfully added a reminder! ID = " + id).setEphemeral(true).queue();
+                        event.reply("Successfully added a reminder!").setEphemeral(true).queue();
                     } else {
                         event.reply("Something went wrong while adding the reminder (Error 2)").setEphemeral(true).queue();
                     }
@@ -143,30 +143,29 @@ public class Reminder extends BaseCommand {
                     Pair<ActionRow, ActionRow> actionRows = generateListActionRows(reminders, event.getUser(), false);
                     event.replyEmbeds(remindersEmbed).addActionRows(actionRows.getLeft(), actionRows.getRight()).setEphemeral(true).queue();
                 }
-                case "delete" -> {
-                    int id = event.getOption("id", -1, OptionMapping::getAsInt);
-                    if (id == -1) {
-                        event.reply("Wrong ID!").setEphemeral(true).queue();
-                        return;
-                    }
-                    if (id == 0) { // delete all
-                        if (Cashew.remindersManager.deleteAllReminders(event.getUser().getId())) {
-                            event.reply("All reminders successfully deleted!").setEphemeral(true).queue();
-                        } else {
-                            event.reply("Something went wrong while deleting all your reminders").setEphemeral(true).queue();
-                        }
-                    } else {
-                        int result = Cashew.remindersManager.deleteReminder(id, event.getUser().getId());
-                        if (result == 1) {
-                            event.reply("Reminder successfully deleted!").setEphemeral(true).queue();
-                        } else if (result == -1) {
-                            event.reply("Something went wrong while deleting the reminder (Error 1)").setEphemeral(true).queue();
-                        } else {
-                            event.reply("Reminder with this ID doesn't exist").setEphemeral(true).queue();
-                        }
-                    }
-
-                }
+//                case "delete" -> {
+//                    int id = event.getOption("id", -1, OptionMapping::getAsInt);
+//                    if (id == -1) {
+//                        event.reply("Wrong ID!").setEphemeral(true).queue();
+//                        return;
+//                    }
+//                    if (id == 0) { // delete all
+//                        if (Cashew.remindersManager.deleteAllReminders(event.getUser().getId())) {
+//                            event.reply("All reminders successfully deleted!").setEphemeral(true).queue();
+//                        } else {
+//                            event.reply("Something went wrong while deleting all your reminders").setEphemeral(true).queue();
+//                        }
+//                    } else {
+//                        int result = Cashew.remindersManager.deleteReminder(id, event.getUser().getId());
+//                        if (result == 1) {
+//                            event.reply("Reminder successfully deleted!").setEphemeral(true).queue();
+//                        } else if (result == -1) {
+//                            event.reply("Something went wrong while deleting the reminder (Error 1)").setEphemeral(true).queue();
+//                        } else {
+//                            event.reply("Reminder with this ID doesn't exist").setEphemeral(true).queue();
+//                        }
+//                    }
+//                }
             }
         }
     }

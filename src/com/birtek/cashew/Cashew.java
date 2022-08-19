@@ -175,11 +175,7 @@ public class Cashew {
                                         .addOption(BOOLEAN, "ping", "Should the bot ping you with this reminder (default is yes)")
                         )
                         .addSubcommands(
-                                new SubcommandData("list", "List your reminders")
-                        )
-                        .addSubcommands(
-                                new SubcommandData("delete", "Delete a reminder")
-                                        .addOption(INTEGER, "id", "ID of the reminder to delete, or 0 to delete them all", true)
+                                new SubcommandData("list", "Show an interactive list of your reminders")
                         ),
                 Commands.slash("feedback", "Send feedback to Cashew's creator!")
                         .addOption(STRING, "content", "Content of your feedback message", true, false),
