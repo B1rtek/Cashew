@@ -233,6 +233,52 @@ public class Reminder extends BaseCommand {
         event.editMessageEmbeds(reminderDetailsEmbed).setActionRows(reminderDetailsButtons).queue();
     }
 
+    /**
+     * Returns to the reminders list after an action was performed
+     *
+     * @param event {@link ButtonInteractionEvent event} that triggered refreshing the list
+     */
+    private void detailsBack(ButtonInteractionEvent event) {
+        RemindersDatabase database = RemindersDatabase.getInstance();
+        ArrayList<ReminderRunnable> reminders = database.getUserReminders(event.getUser().getId());
+        if (reminders == null) {
+            event.editMessage("Something went wrong while checking your reminders (Error 3)").setEmbeds().setActionRow().queue();
+            return;
+        }
+        if (reminders.isEmpty()) {
+            event.editMessage("You don't have any reminders set").setEmbeds().setActionRow().queue();
+            return;
+        }
+        MessageEmbed remindersEmbed = generateRemindersEmbed(reminders, event.getUser());
+        Pair<ActionRow, ActionRow> actionRows = generateListActionRows(reminders, event.getUser());
+        event.editMessageEmbeds(remindersEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
+    }
+
+    /**
+     * Deletes a reminder and returns to the reminders list
+     *
+     * @param event {@link ButtonInteractionEvent event} being a button press that triggered the deletion
+     * @param index if set to anything else than -1, will be used as the index of the reminder to delete
+     */
+    private void deleteReminder(ButtonInteractionEvent event, int index) {
+        int selectedItemIndex = index;
+        if (selectedItemIndex == -1) {
+            MessageEmbed remindersListEmbed = event.getMessage().getEmbeds().get(0);
+            selectedItemIndex = getSelectedItemIndex(remindersListEmbed);
+        }
+        if (selectedItemIndex == -1) { // nothing was selected
+            event.reply("Select a reminder first").setEphemeral(true).queue();
+            return;
+        }
+        RemindersDatabase database = RemindersDatabase.getInstance();
+        ReminderRunnable reminder = database.getUsersReminderByIndex(event.getUser().getId(), selectedItemIndex);
+        if (database.deleteReminder(reminder.getId(), event.getUser().getId()) != 1) {
+            event.reply("Something went wrong while deleting the reminder").setEphemeral(true).queue();
+            return;
+        }
+        detailsBack(event);
+    }
+
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         String[] buttonID = event.getComponentId().split(":");
@@ -245,7 +291,8 @@ public class Reminder extends BaseCommand {
             switch (buttonID[2]) {
                 case "details" -> showDetails(event);
                 case "delete" -> {
-
+                    int index = buttonID.length == 4 ? Integer.parseInt(buttonID[3]) : -1;
+                    deleteReminder(event, index);
                 }
                 case "deleteall" -> {
 
@@ -253,6 +300,7 @@ public class Reminder extends BaseCommand {
                 case "deleteall2" -> {
 
                 }
+                case "back" -> detailsBack(event);
             }
         }
     }
