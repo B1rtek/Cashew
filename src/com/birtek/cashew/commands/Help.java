@@ -219,8 +219,7 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.setTitle("Reminder");
                 specificHelpEmbed.setDescription("Lets you set up to 10 reminders that will be sent to your DMs");
                 specificHelpEmbed.addField("`/reminder set <content> <time> [unit] [ping]`", "Sets a reminder. You need to provide the reminder content and the time after which it will be sent (by default the delay is measured in hours). You can change the delay unit using the `unit` option. You can also specify whether the bot should ping you with the reminder or not (by default ping is set to `true`). The reminder is automatically deleted from the reminders list after it's delivered", false);
-                specificHelpEmbed.addField("`/reminder list`", "Shows the list of your reminders", false);
-                specificHelpEmbed.addField("`/reminder delete <id>`", "Deletes the reminder with the specified ID, or all of them if you select ID = 0. The ID can be obtained with `/reminder list`", false);
+                specificHelpEmbed.addField("`/reminder list`", "Shows the list of your reminders in an interactive embed where you can show the details of the reminder and delete the reminders", false);
             }
             case "roll" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
@@ -260,7 +259,7 @@ public class Help extends BaseCommand {
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`, `/roll`", false);
         helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `/counting`, `dadjoke`, `/gifts`, `insp`, `korwin`, `kromer`, `nekoichi`, `ping`, `/socialcredit`", false);
-        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/poll`, `/reactions`, `/scheduler`, `/cmdset`", false);
+        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/cmdset`, `/poll`, `/reactions`, `/scheduler`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
