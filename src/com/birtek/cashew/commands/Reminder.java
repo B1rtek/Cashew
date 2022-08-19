@@ -57,12 +57,13 @@ public class Reminder extends BaseCommand {
      * Generates a pair of ActionRows, one being a SelectMenu used to select the reminder in the embed, and the other
      * one with buttons which allow for interactions with the items
      *
-     * @param reminders ArrayList of {@link ReminderRunnable ReminderRunnables} being a list of user's reminders
-     * @param user      User who requested their reminders list
+     * @param reminders        ArrayList of {@link ReminderRunnable ReminderRunnables} being a list of user's reminders
+     * @param user             User who requested their reminders list
+     * @param deleteAllConfirm if set to true, will generate with the button that confirms deleting all reminders
      * @return a {@link Pair Pair} of {@link ActionRow ActionRows}, the first one with a {@link SelectMenu SelectMenu}
      * and the other one with three {@link Button Buttons} - "Show details", "Delete" and "Delete all"
      */
-    private Pair<ActionRow, ActionRow> generateListActionRows(ArrayList<ReminderRunnable> reminders, User user) {
+    private Pair<ActionRow, ActionRow> generateListActionRows(ArrayList<ReminderRunnable> reminders, User user, boolean deleteAllConfirm) {
         SelectMenu.Builder reminderSelectMenu = SelectMenu.create(user.getId() + ":reminder:list")
                 .setPlaceholder("Select a reminder")
                 .setRequiredRange(1, 1);
@@ -75,7 +76,11 @@ public class Reminder extends BaseCommand {
         ArrayList<Button> reminderListButtons = new ArrayList<>();
         reminderListButtons.add(Button.success(user.getId() + ":reminder:details", "Show details"));
         reminderListButtons.add(Button.danger(user.getId() + ":reminder:delete", "Delete"));
-        reminderListButtons.add(Button.danger(user.getId() + ":reminder:deleteall", "Delete all"));
+        if (deleteAllConfirm) {
+            reminderListButtons.add(Button.danger(user.getId() + ":reminder:deleteall2", "[!] Confirm delete all [!]"));
+        } else {
+            reminderListButtons.add(Button.danger(user.getId() + ":reminder:deleteall", "Delete all"));
+        }
         return Pair.of(ActionRow.of(reminderSelectMenu.build()), ActionRow.of(reminderListButtons));
     }
 
@@ -135,7 +140,7 @@ public class Reminder extends BaseCommand {
                         return;
                     }
                     MessageEmbed remindersEmbed = generateRemindersEmbed(reminders, event.getUser());
-                    Pair<ActionRow, ActionRow> actionRows = generateListActionRows(reminders, event.getUser());
+                    Pair<ActionRow, ActionRow> actionRows = generateListActionRows(reminders, event.getUser(), false);
                     event.replyEmbeds(remindersEmbed).addActionRows(actionRows.getLeft(), actionRows.getRight()).setEphemeral(true).queue();
                 }
                 case "delete" -> {
@@ -238,7 +243,7 @@ public class Reminder extends BaseCommand {
      *
      * @param event {@link ButtonInteractionEvent event} that triggered refreshing the list
      */
-    private void detailsBack(ButtonInteractionEvent event) {
+    private void showRemindersList(ButtonInteractionEvent event, boolean deleteAllConfirm) {
         RemindersDatabase database = RemindersDatabase.getInstance();
         ArrayList<ReminderRunnable> reminders = database.getUserReminders(event.getUser().getId());
         if (reminders == null) {
@@ -246,11 +251,11 @@ public class Reminder extends BaseCommand {
             return;
         }
         if (reminders.isEmpty()) {
-            event.editMessage("You don't have any reminders set").setEmbeds().setActionRow().queue();
+            event.editMessage("You don't have any reminders set").setEmbeds().setActionRows().queue();
             return;
         }
         MessageEmbed remindersEmbed = generateRemindersEmbed(reminders, event.getUser());
-        Pair<ActionRow, ActionRow> actionRows = generateListActionRows(reminders, event.getUser());
+        Pair<ActionRow, ActionRow> actionRows = generateListActionRows(reminders, event.getUser(), deleteAllConfirm);
         event.editMessageEmbeds(remindersEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
@@ -272,11 +277,24 @@ public class Reminder extends BaseCommand {
         }
         RemindersDatabase database = RemindersDatabase.getInstance();
         ReminderRunnable reminder = database.getUsersReminderByIndex(event.getUser().getId(), selectedItemIndex);
-        if (database.deleteReminder(reminder.getId(), event.getUser().getId()) != 1) {
+        if (Cashew.remindersManager.deleteReminder(reminder.getId(), event.getUser().getId()) != 1) {
             event.reply("Something went wrong while deleting the reminder").setEphemeral(true).queue();
             return;
         }
-        detailsBack(event);
+        showRemindersList(event, false);
+    }
+
+    /**
+     * Deletes all reminders and removes the message
+     *
+     * @param event {@link ButtonInteractionEvent event} triggered by pressing the "Delete all" button twice
+     */
+    private void deleteAllReminders(ButtonInteractionEvent event) {
+        if(Cashew.remindersManager.deleteAllReminders(event.getUser().getId())) {
+            event.editMessage("Successfully removed all reminders!").setEmbeds().setActionRows().queue();
+        } else {
+            event.reply("Something went wrong while removing all reminders").setEphemeral(true).queue();
+        }
     }
 
     @Override
@@ -294,13 +312,9 @@ public class Reminder extends BaseCommand {
                     int index = buttonID.length == 4 ? Integer.parseInt(buttonID[3]) : -1;
                     deleteReminder(event, index);
                 }
-                case "deleteall" -> {
-
-                }
-                case "deleteall2" -> {
-
-                }
-                case "back" -> detailsBack(event);
+                case "deleteall" -> showRemindersList(event, true);
+                case "deleteall2" -> deleteAllReminders(event);
+                case "back" -> showRemindersList(event, false);
             }
         }
     }
