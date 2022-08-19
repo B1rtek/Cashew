@@ -47,7 +47,7 @@ public class Reminder extends BaseCommand {
         remindersEmbed.setThumbnail(user.getAvatarUrl());
         for (ReminderRunnable reminder : reminders) {
             String reminderContentShort = reminder.getContent().length() > 64 ? reminder.getContent().substring(0, 64) + "..." : reminder.getContent();
-            remindersEmbed.addField(reminderContentShort, "Set for " + reminder.getDateTime(), false);
+            remindersEmbed.addField(reminderContentShort, "Arrives " + TimeFormat.RELATIVE.format(calculateMillisFromDateTimeString(reminder.getDateTime())), false);
         }
         remindersEmbed.setFooter("Select a reminder with the dropdown menu to see it's details or remove it");
         return remindersEmbed.build();
@@ -231,6 +231,10 @@ public class Reminder extends BaseCommand {
         }
         RemindersDatabase database = RemindersDatabase.getInstance();
         ReminderRunnable reminder = database.getUsersReminderByIndex(event.getUser().getId(), selectedItemIndex);
+        if(reminder == null) {
+            event.reply("This reminder does not exist").setEphemeral(true).queue();
+            return;
+        }
         MessageEmbed reminderDetailsEmbed = generateReminderDetailsEmbed(reminder);
         ActionRow reminderDetailsButtons = ActionRow.of(
                 Button.danger(event.getUser().getId() + ":reminder:delete:" + selectedItemIndex, "Delete"),
@@ -277,6 +281,10 @@ public class Reminder extends BaseCommand {
         }
         RemindersDatabase database = RemindersDatabase.getInstance();
         ReminderRunnable reminder = database.getUsersReminderByIndex(event.getUser().getId(), selectedItemIndex);
+        if(reminder == null) {
+            event.reply("This reminder does not exist").setEphemeral(true).queue();
+            return;
+        }
         if (Cashew.remindersManager.deleteReminder(reminder.getId(), event.getUser().getId()) != 1) {
             event.reply("Something went wrong while deleting the reminder").setEphemeral(true).queue();
             return;
