@@ -122,7 +122,7 @@ public class Cashew {
                                 .addOption(STRING, "time", "Exact hour to send the message on (HH:MM:SS CET)", true, false)
                                 .addOption(STRING, "content", "Content of the message", true, false))
                         .addSubcommands(new SubcommandData("list", "Shows all messages scheduled on this server")
-                                .addOption(INTEGER, "id", "ID of the message to display (optional)"))
+                                .addOption(INTEGER, "page", "Page of the scheduled messages list to display"))
                         .addSubcommands(new SubcommandData("delete", "Deletes the specified messages")
                                 .addOption(STRING, "all", "Deletes ALL scheduled messages (type \"definitely\" to confirm)")
                                 .addOption(INTEGER, "id", "ID of the messsage to delete"))
@@ -196,7 +196,7 @@ public class Cashew {
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("roll", "Roll a dice")
-                        .addOption(INTEGER,"sides", "Number of sides of the dice, 6 by default", false, false)
+                        .addOption(INTEGER, "sides", "Number of sides of the dice, 6 by default", false, false)
                         .addOption(INTEGER, "rolls", "Number of rolls to perform", false, false),
                 Commands.slash("cmdset", "Enable or disable commands")
                         .addOption(STRING, "toggle", "New state of the command - either ON or OFF", true, true)

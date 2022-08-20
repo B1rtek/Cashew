@@ -57,7 +57,7 @@ public class ScheduledMessagesManager {
         return scheduler.scheduleAtFixedRate(message, initialDelay, 86400, TimeUnit.SECONDS);
     }
 
-    private int calculateInitialDelay(String executionTimeString) {
+    public static Instant getInstantFromExecutionTime(String executionTimeString) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.of("Europe/Warsaw"));
         String currentYearString = String.valueOf(now.getYear());
@@ -70,7 +70,11 @@ public class ScheduledMessagesManager {
         if (now.isAfter(timeOfNextRun)) {
             timeOfNextRun = timeOfNextRun.plusDays(1);
         }
-        Instant instantOfNextRun = timeOfNextRun.toInstant();
+        return timeOfNextRun.toInstant();
+    }
+
+    private int calculateInitialDelay(String executionTimeString) {
+        Instant instantOfNextRun = getInstantFromExecutionTime(executionTimeString);
         Duration diff = Duration.between(Instant.now(), instantOfNextRun);
         return (int) diff.toSeconds() + 1;
     }
@@ -102,8 +106,8 @@ public class ScheduledMessagesManager {
     public boolean deleteScheduledMessage(int id, String serverID) {
         ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
         ArrayList<ScheduledMessage> messagesToRemove = database.getScheduledMessages(id, serverID);
-        if(!database.removeScheduledMessage(id, serverID)) return false;
-        for(ScheduledMessage message: messagesToRemove) {
+        if (!database.removeScheduledMessage(id, serverID)) return false;
+        for (ScheduledMessage message : messagesToRemove) {
             scheduledFutures.get(message.getId()).cancel(false);
             scheduledFutures.remove(message.getId());
             scheduledMessages.remove(message.getId());

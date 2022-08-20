@@ -3,14 +3,15 @@ package com.birtek.cashew.commands;
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.ScheduledMessagesDatabase;
 import com.birtek.cashew.timings.ScheduledMessage;
+import com.birtek.cashew.timings.ScheduledMessagesManager;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.utils.TimeFormat;
 import org.jetbrains.annotations.NotNull;
-import org.nocrala.tools.texttablefmt.BorderStyle;
-import org.nocrala.tools.texttablefmt.ShownBorders;
-import org.nocrala.tools.texttablefmt.Table;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -21,47 +22,20 @@ import java.util.Objects;
  */
 public class Scheduler extends BaseCommand {
 
-    /**
-     * Returns a table listing selected {@link ScheduledMessage ScheduledMessages}
-     *
-     * @param server             {@link Guild Server} object representing the server from which the request came
-     * @param scheduledMessageID ID of the message to show, if set to 0 will show all of them
-     * @return a String containing a table with all messages selected to be shown, or an error message explaining why
-     * that failed
-     */
-    private String schedulerListMessages(Guild server, int scheduledMessageID) {
-        ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
-        ArrayList<ScheduledMessage> scheduledMessages;
-        if (scheduledMessageID == 0) {
-            scheduledMessages = database.getScheduledMessages(0, server.getId());
-        } else {
-            scheduledMessages = database.getScheduledMessages(scheduledMessageID, server.getId());
+    private long getHourTimestamp(String timeString) {
+        return ScheduledMessagesManager.getInstantFromExecutionTime(timeString).toEpochMilli();
+    }
+
+    private MessageEmbed generateScheduledMessagesEmbed(ArrayList<ScheduledMessage> messages, User user, Guild server) {
+        EmbedBuilder scheduledMessagesEmbed = new EmbedBuilder();
+        scheduledMessagesEmbed.setTitle("Messages scheduled on " + server.getName());
+        scheduledMessagesEmbed.setThumbnail(server.getIconUrl());
+        for (ScheduledMessage message : messages) {
+            String messageContentShort = message.getMessageContent().length() > 64 ? message.getMessageContent().substring(0, 64) + "..." : message.getMessageContent();
+            scheduledMessagesEmbed.addField(messageContentShort, "In <#" + message.getDestinationChannelID() + ">, " + TimeFormat.TIME_LONG.format(getHourTimestamp(message.getExecutionTime())), false);
         }
-        if (scheduledMessages == null) return "Something went wrong while fetching the messages, try again later";
-        if (scheduledMessages.isEmpty()) {
-            if (scheduledMessageID == 0) {
-                return "There are no defined Scheduled messages yet.";
-            } else {
-                return "Message with this ID doesn't exist.";
-            }
-        }
-        Table messagesTable = new Table(4, BorderStyle.UNICODE_BOX, ShownBorders.HEADER_AND_COLUMNS);
-        messagesTable.setColumnWidth(0, 2, 10);
-        messagesTable.setColumnWidth(1, 8, 8);
-        messagesTable.setColumnWidth(2, 7, 20);
-        messagesTable.setColumnWidth(3, 7, 80);
-        messagesTable.addCell("ID");
-        messagesTable.addCell("Time");
-        messagesTable.addCell("Channel");
-        messagesTable.addCell("Message");
-        for (ScheduledMessage message : scheduledMessages) {
-            messagesTable.addCell(String.valueOf(message.getId()));
-            messagesTable.addCell(message.getExecutionTime());
-            GuildChannel channel = server.getGuildChannelById(message.getDestinationChannelID());
-            messagesTable.addCell(channel == null ? message.getDestinationChannelID() : channel.getName());
-            messagesTable.addCell(message.getMessageContent());
-        }
-        return "```prolog\n" + messagesTable.render() + "\n```";
+        scheduledMessagesEmbed.setFooter("Select a message with the dropdown menu to see it's full content or delete it");
+        return scheduledMessagesEmbed.build();
     }
 
     /**
@@ -131,9 +105,19 @@ public class Scheduler extends BaseCommand {
                 String response = schedulerAddMessages(message, timestamp, channelID, Objects.requireNonNull(event.getGuild()).getId());
                 event.reply(response).setEphemeral(true).queue();
             } else if (event.getSubcommandName().equals("list")) {
-                int id = event.getOption("id", 0, OptionMapping::getAsInt);
-                String response = schedulerListMessages(event.getGuild(), id);
-                event.reply(response).queue();
+                int page = event.getOption("page", 1, OptionMapping::getAsInt);
+                ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
+                ArrayList<ScheduledMessage> messages = database.getScheduledMessagesPage(Objects.requireNonNull(event.getGuild()).getId(), page);
+                if (messages == null) {
+                    event.reply("Something went wrong while fetching the list of scheduled messages, try again later").setEphemeral(true).queue();
+                    return;
+                }
+                if (messages.isEmpty()) {
+                    event.reply("There are no scheduled messages on this server").setEphemeral(true).queue();
+                    return;
+                }
+                MessageEmbed scheduledMessagesEmbed = generateScheduledMessagesEmbed(messages, event.getUser(), event.getGuild());
+                event.replyEmbeds(scheduledMessagesEmbed).setEphemeral(true).queue();
             } else if (event.getSubcommandName().equals("delete")) {
                 int id = event.getOption("id", 0, OptionMapping::getAsInt);
                 String definitely = event.getOption("all", "", OptionMapping::getAsString);
