@@ -120,29 +120,6 @@ public class Scheduler extends BaseCommand {
     }
 
     /**
-     * Deletes selected {@link ScheduledMessage ScheduledMessages} from the database and unschedules them
-     *
-     * @param server             {@link Guild Server} from which the deletion request came
-     * @param scheduledMessageID ID of the message to remove, if set to 0 will delete all of them
-     * @return a String with a message telling whether the deletion was successful or not
-     */
-    private String schedulerDeleteMessages(Guild server, int scheduledMessageID) {
-        if (scheduledMessageID == 0) {
-            if (Cashew.scheduledMessagesManager.deleteScheduledMessage(0, server.getId())) {
-                return "Successfully deleted all Scheduled messages!";
-            } else {
-                return "Failed to delete the messages";
-            }
-        } else {
-            if (Cashew.scheduledMessagesManager.deleteScheduledMessage(scheduledMessageID, server.getId())) {
-                return "Successfully deleted Scheduled message " + scheduledMessageID + "!";
-            } else {
-                return "Failed to delete the message";
-            }
-        }
-    }
-
-    /**
      * Adds a {@link ScheduledMessage ScheduledMessage} to the database and schedules it
      *
      * @param messageContent content of the {@link ScheduledMessage ScheduledMessage} to add
@@ -155,7 +132,7 @@ public class Scheduler extends BaseCommand {
     private String schedulerAddMessages(String messageContent, String timestring, String channelID, String serverID) {
         int insertID = Cashew.scheduledMessagesManager.addScheduledMessage(new ScheduledMessage(0, messageContent, timestring, channelID), serverID);
         if (insertID != -1) {
-            return "Successfully added a new timed message! ID = " + insertID;
+            return "Successfully added a new scheduled message!";
         } else {
             return "Something went wrong while adding your message, try again later";
         }
@@ -202,15 +179,6 @@ public class Scheduler extends BaseCommand {
                 MessageEmbed scheduledMessagesEmbed = generateScheduledMessagesEmbed(messages, event.getGuild(), page);
                 Pair<ActionRow, ActionRow> schedulerListActionRows = generateScheduledMessagesListActionRows(messages, event.getUser(), false);
                 event.replyEmbeds(scheduledMessagesEmbed).addActionRows(schedulerListActionRows.getLeft(), schedulerListActionRows.getRight()).setEphemeral(true).queue();
-            } else if (event.getSubcommandName().equals("delete")) {
-                int id = event.getOption("id", 0, OptionMapping::getAsInt);
-                String definitely = event.getOption("all", "", OptionMapping::getAsString);
-                if (!definitely.equals("definitely") && id == 0) {
-                    event.reply("No messages were deleted").setEphemeral(true).queue();
-                    return;
-                }
-                String response = schedulerDeleteMessages(event.getGuild(), id);
-                event.reply(response).setEphemeral(true).queue();
             }
         }
     }

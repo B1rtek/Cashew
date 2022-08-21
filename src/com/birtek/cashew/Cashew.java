@@ -121,11 +121,8 @@ public class Cashew {
                                 .addOption(CHANNEL, "channel", "Destination channel of the message", true, false)
                                 .addOption(STRING, "time", "Exact hour to send the message on (HH:MM:SS CET)", true, false)
                                 .addOption(STRING, "content", "Content of the message", true, false))
-                        .addSubcommands(new SubcommandData("list", "Shows all messages scheduled on this server")
+                        .addSubcommands(new SubcommandData("list", "Shows all messages scheduled on this server in an interactive list")
                                 .addOption(INTEGER, "page", "Page of the scheduled messages list to display"))
-                        .addSubcommands(new SubcommandData("delete", "Deletes the specified messages")
-                                .addOption(STRING, "all", "Deletes ALL scheduled messages (type \"definitely\" to confirm)")
-                                .addOption(INTEGER, "id", "ID of the messsage to delete"))
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("gifts", "Gift system command")
