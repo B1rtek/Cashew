@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -172,12 +173,14 @@ public class Scheduler extends BaseCommand {
                 int page = event.getOption("page", 1, OptionMapping::getAsInt);
                 ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
                 ArrayList<ScheduledMessage> messages = database.getScheduledMessagesPage(Objects.requireNonNull(event.getGuild()).getId(), page);
+                int pageCount = database.getScheduledMessagesPageCount(Objects.requireNonNull(event.getGuild()).getId());
+                page = page < 1 ? 1 : (Math.min(page, pageCount));
                 if (messages == null) {
                     event.reply("Something went wrong while fetching the list of scheduled messages, try again later").setEphemeral(true).queue();
                     return;
                 }
                 if (messages.isEmpty()) {
-                    event.reply("This page does not exist").setEphemeral(true).queue();
+                    event.reply("There are no scheduled messages on this server").setEphemeral(true).queue();
                     return;
                 }
                 MessageEmbed scheduledMessagesEmbed = generateScheduledMessagesEmbed(messages, event.getGuild(), page);
@@ -206,12 +209,52 @@ public class Scheduler extends BaseCommand {
             return;
         }
         if (messages.isEmpty()) {
-            event.reply("This page does not exist").setEphemeral(true).queue();
+            event.editMessage("There are no scheduled messages on this server").setEmbeds().setActionRows().queue();
             return;
         }
         MessageEmbed scheduledMessagesEmbed = generateScheduledMessagesEmbed(messages, event.getGuild(), page);
         Pair<ActionRow, ActionRow> schedulerListActionRows = generateScheduledMessagesListActionRows(messages, event.getUser(), deleteAllConfirm);
         event.editMessageEmbeds(scheduledMessagesEmbed).setActionRows(schedulerListActionRows.getLeft(), schedulerListActionRows.getRight()).queue();
+    }
+
+    /**
+     * Deletes the selected message and refreshes the embed
+     *
+     * @param event {@link ButtonInteractionEvent event} that was triggered by clicking the "delete all confirm" button
+     */
+    private void deleteMessage(ButtonInteractionEvent event) {
+        MessageEmbed messagesListEmbed = event.getMessage().getEmbeds().get(0);
+        int chosenMessageIndex = getSelectedItemIndex(messagesListEmbed);
+        if (chosenMessageIndex == -1) {
+            event.reply("Select a message first").setEphemeral(true).queue();
+            return;
+        }
+        int pageNumber = getPageNumber(messagesListEmbed);
+        chosenMessageIndex = (pageNumber - 1) * 10 + chosenMessageIndex;
+        ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
+        ScheduledMessage messageToDelete = database.getScheduledMessageByIndex(Objects.requireNonNull(event.getGuild()).getId(), chosenMessageIndex);
+        if (messageToDelete == null) {
+            event.reply("This message does not exist").setEphemeral(true).queue();
+            return;
+        }
+        if (Cashew.scheduledMessagesManager.deleteScheduledMessage(messageToDelete.getId(), event.getGuild().getId())) {
+            showPage(event, pageNumber, false);
+        } else {
+            event.reply("Something went wrong while removing the message").setEphemeral(true).queue();
+        }
+    }
+
+    /**
+     * Deletes all messages and refreshes the embed
+     *
+     * @param event {@link ButtonInteractionEvent event} that was triggered by clicking the "delete all confirm" button
+     */
+    private void deleteAll(ButtonInteractionEvent event) {
+        if (Cashew.scheduledMessagesManager.deleteScheduledMessage(0, Objects.requireNonNull(event.getGuild()).getId())) {
+            showPage(event, 1, true);
+        } else {
+            event.reply("Something went wrong while removing the scheduled messages, try again later").setEphemeral(true).queue();
+        }
     }
 
     @Override
@@ -227,20 +270,49 @@ public class Scheduler extends BaseCommand {
                 case "details" -> {
 
                 }
-                case "delete" -> {
-
-                }
+                case "delete" -> deleteMessage(event);
                 case "deleteall" -> {
-
+                    int page = getPageNumber(event.getMessage().getEmbeds().get(0));
+                    showPage(event, page, true);
                 }
-                case "deleteall2" -> {
-
-                }
+                case "deleteall2" -> deleteAll(event);
                 case "page" -> {
                     int page = getPageNumber(event.getMessage().getEmbeds().get(0)) + (buttonID[3].equals("1") ? 1 : -1);
                     showPage(event, page, false);
                 }
             }
+        }
+    }
+
+    @Override
+    public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
+        String[] menuID = event.getComponentId().split(":");
+        if (menuID.length < 3) return;
+        if (menuID[1].equals("scheduler")) {
+            if (!event.getUser().getId().equals(menuID[0])) {
+                event.reply("You can't interact with this select menu").setEphemeral(true).queue();
+                return;
+            }
+            MessageEmbed scheduledMessagesListEmbed = event.getMessage().getEmbeds().get(0);
+            EmbedBuilder selectedScheduledMessageListEmbed = new EmbedBuilder();
+            selectedScheduledMessageListEmbed.setTitle(scheduledMessagesListEmbed.getTitle());
+            selectedScheduledMessageListEmbed.setThumbnail(Objects.requireNonNull(scheduledMessagesListEmbed.getThumbnail()).getUrl());
+            selectedScheduledMessageListEmbed.setFooter(Objects.requireNonNull(scheduledMessagesListEmbed.getFooter()).getText());
+            int index = 0;
+            for (MessageEmbed.Field field : scheduledMessagesListEmbed.getFields()) {
+                String fieldName = field.getName();
+                assert fieldName != null;
+                if (fieldName.startsWith("__")) {
+                    fieldName = fieldName.substring(2, fieldName.length() - 2);
+                }
+                if (index == Integer.parseInt(event.getSelectedOptions().get(0).getValue())) {
+                    selectedScheduledMessageListEmbed.addField("__" + fieldName + "__", Objects.requireNonNull(field.getValue()), field.isInline());
+                } else {
+                    selectedScheduledMessageListEmbed.addField(fieldName, Objects.requireNonNull(field.getValue()), field.isInline());
+                }
+                index++;
+            }
+            event.editMessageEmbeds(selectedScheduledMessageListEmbed.build()).queue();
         }
     }
 }
