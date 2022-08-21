@@ -233,8 +233,7 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.setTitle("Scheduler");
                 specificHelpEmbed.setDescription("Daily message scheduling system, only accessible by moderators");
                 specificHelpEmbed.addField("`/scheduler <#channel> <timestamp(HH:MM:SS GMT+1)> <message(string)>`", "Schedules a message to be sent in the specified channel every day on the specified time.", false);
-                specificHelpEmbed.addField("`/scheduler show <id(int)|\"all\">`", "Shows the timed message with the specified id/all scheduled messages on this server.", false);
-                specificHelpEmbed.addField("`/scheduler delete <id(int)|\"all\">`", "Removes the timed message with the specified id/all of them.", false);
+                specificHelpEmbed.addField("`/scheduler list`", "Shows an interactive list of all scheduled message set on the server, the list allows for deleting the messages and seeing their full content and details", false);
             }
             case "socialcredit" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
