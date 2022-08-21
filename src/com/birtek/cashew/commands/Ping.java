@@ -32,7 +32,7 @@ public class Ping extends BaseCommand {
             long lastMeasured = System.nanoTime();
             String pingMessage = "Pong!";
             event.reply(pingMessage).flatMap(v ->
-                            event.getHook().editOriginal(pingMessage + "Time = " + Math.round((System.nanoTime() - lastMeasured) / 1000000.0) + " ms"))
+                            event.getHook().editOriginal(pingMessage + " Time = " + Math.round((System.nanoTime() - lastMeasured) / 1000000.0) + " ms"))
                     .queue();
         }
     }
