@@ -824,16 +824,6 @@ public class CaseSim extends BaseCommand {
     }
 
     /**
-     * Gets the current page number from an inventory embed
-     *
-     * @param inventoryEmbed {@link MessageEmbed MessageEmbed} with someone's inventory
-     * @return integer with the page number (counting from 1)
-     */
-    private int getPageNumber(MessageEmbed inventoryEmbed) {
-        return Integer.parseInt(Objects.requireNonNull(Objects.requireNonNull(inventoryEmbed.getFooter()).getText()).split("\\s+")[1]);
-    }
-
-    /**
      * Returns the index of the selected item from the inventory embed
      *
      * @param inventoryEmbed {@link MessageEmbed MessageEmbed} with someone's inventory
