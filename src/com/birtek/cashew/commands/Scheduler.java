@@ -104,6 +104,22 @@ public class Scheduler extends BaseCommand {
     }
 
     /**
+     * Creates an {@link MessageEmbed embed} with details about a {@link ScheduledMessage ScheduledMessage}
+     *
+     * @param message {@link ScheduledMessage ScheduledMessage} which this embed will describe in detail
+     * @return a {@link MessageEmbed MessageEmbed} with the full content, destination channel and localized arrival time
+     * in separate fields of the embed
+     */
+    private MessageEmbed generateScheduledMessageDetailsEmbed(ScheduledMessage message) {
+        EmbedBuilder scheduledMessageDetailsEmbed = new EmbedBuilder();
+        scheduledMessageDetailsEmbed.setTitle("Scheduled message details");
+        scheduledMessageDetailsEmbed.addField("Full content", message.getMessageContent(), false);
+        scheduledMessageDetailsEmbed.addField("Destination channel", "<#" + message.getDestinationChannelID() + ">", false);
+        scheduledMessageDetailsEmbed.addField("Arrival time", TimeFormat.TIME_LONG.format(getHourTimestamp(message.getExecutionTime())), false);
+        return scheduledMessageDetailsEmbed.build();
+    }
+
+    /**
      * Deletes selected {@link ScheduledMessage ScheduledMessages} from the database and unschedules them
      *
      * @param server             {@link Guild Server} from which the deletion request came
@@ -199,6 +215,14 @@ public class Scheduler extends BaseCommand {
         }
     }
 
+    /**
+     * Shows the chosen page of the scheduled messages list
+     *
+     * @param event            {@link ButtonInteractionEvent event} that triggered a refresh of the scheduled messages list embed
+     * @param page             number of the page to show
+     * @param deleteAllConfirm if set to true, will set the second action row to the version with the
+     *                         "delete all confirm" button
+     */
     private void showPage(ButtonInteractionEvent event, int page, boolean deleteAllConfirm) {
         ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
         int pageCount = database.getScheduledMessagesPageCount(Objects.requireNonNull(event.getGuild()).getId());
@@ -218,11 +242,11 @@ public class Scheduler extends BaseCommand {
     }
 
     /**
-     * Deletes the selected message and refreshes the embed
+     * Shows an embed with a scheduled message's full content and all of its details
      *
-     * @param event {@link ButtonInteractionEvent event} that was triggered by clicking the "delete all confirm" button
+     * @param event {@link ButtonInteractionEvent event} triggered with the "Show details" button press
      */
-    private void deleteMessage(ButtonInteractionEvent event) {
+    private void showDetails(ButtonInteractionEvent event) {
         MessageEmbed messagesListEmbed = event.getMessage().getEmbeds().get(0);
         int chosenMessageIndex = getSelectedItemIndex(messagesListEmbed);
         if (chosenMessageIndex == -1) {
@@ -231,6 +255,39 @@ public class Scheduler extends BaseCommand {
         }
         int pageNumber = getPageNumber(messagesListEmbed);
         chosenMessageIndex = (pageNumber - 1) * 10 + chosenMessageIndex;
+        ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
+        ScheduledMessage messageToShow = database.getScheduledMessageByIndex(Objects.requireNonNull(event.getGuild()).getId(), chosenMessageIndex);
+        if (messageToShow == null) {
+            event.reply("This message does not exist").setEphemeral(true).queue();
+            return;
+        }
+        MessageEmbed scheduledMessageDetailsEmbed = generateScheduledMessageDetailsEmbed(messageToShow);
+        ActionRow scheduledMessageDetailsActionRow = ActionRow.of(
+                Button.secondary(event.getUser().getId() + ":scheduler:back:" + pageNumber, "Back"),
+                Button.danger(event.getUser().getId() + ":scheduler:delete:" + chosenMessageIndex, "Delete")
+        );
+        event.editMessageEmbeds(scheduledMessageDetailsEmbed).setActionRows(scheduledMessageDetailsActionRow).queue();
+    }
+
+    /**
+     * Deletes the selected message and refreshes the embed
+     *
+     * @param event              {@link ButtonInteractionEvent event} that was triggered by clicking the "delete all confirm" button
+     * @param chosenMessageIndex if not set to -1, will be used as the index of the message to remove
+     */
+    private void deleteMessage(ButtonInteractionEvent event, int chosenMessageIndex) {
+        int pageNumber;
+        if (chosenMessageIndex == -1) {
+            MessageEmbed messagesListEmbed = event.getMessage().getEmbeds().get(0);
+            chosenMessageIndex = getSelectedItemIndex(messagesListEmbed);
+            pageNumber = getPageNumber(messagesListEmbed);
+        } else {
+            pageNumber = chosenMessageIndex / 10 + 1;
+        }
+        if (chosenMessageIndex == -1) {
+            event.reply("Select a message first").setEphemeral(true).queue();
+            return;
+        }
         ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
         ScheduledMessage messageToDelete = database.getScheduledMessageByIndex(Objects.requireNonNull(event.getGuild()).getId(), chosenMessageIndex);
         if (messageToDelete == null) {
@@ -267,19 +324,18 @@ public class Scheduler extends BaseCommand {
                 return;
             }
             switch (buttonID[2]) {
-                case "details" -> {
-
+                case "details" -> showDetails(event);
+                case "delete" -> {
+                    int index = buttonID.length == 4 ? Integer.parseInt(buttonID[3]) : -1;
+                    deleteMessage(event, index);
                 }
-                case "delete" -> deleteMessage(event);
-                case "deleteall" -> {
-                    int page = getPageNumber(event.getMessage().getEmbeds().get(0));
-                    showPage(event, page, true);
-                }
+                case "deleteall" -> showPage(event, getPageNumber(event.getMessage().getEmbeds().get(0)), true);
                 case "deleteall2" -> deleteAll(event);
                 case "page" -> {
                     int page = getPageNumber(event.getMessage().getEmbeds().get(0)) + (buttonID[3].equals("1") ? 1 : -1);
                     showPage(event, page, false);
                 }
+                case "back" -> showPage(event, Integer.parseInt(buttonID[3]), false);
             }
         }
     }
