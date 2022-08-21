@@ -171,24 +171,6 @@ public class Reminder extends BaseCommand {
     }
 
     /**
-     * Returns the index of the selected item from the reminders list embed
-     *
-     * @param remindersListEmbed {@link MessageEmbed MessageEmbed} with the list of user's reminders
-     * @return index of the selected (underlined) item, counting from zero, or -1 if no items were selected
-     */
-    private int getSelectedItemIndex(MessageEmbed remindersListEmbed) {
-        int selectedItemIndex = -1, index = 0;
-        for (MessageEmbed.Field field : remindersListEmbed.getFields()) {
-            if (Objects.requireNonNull(field.getName()).startsWith("__")) {
-                selectedItemIndex = index;
-                break;
-            }
-            index++;
-        }
-        return selectedItemIndex;
-    }
-
-    /**
      * Generates an Instant from the provided time string and returns the toEpochMilli() output of it
      *
      * @param dateTimeString execution time set by the user who created the {@link ReminderRunnable reminder}

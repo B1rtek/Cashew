@@ -204,6 +204,24 @@ public class BaseCommand extends ListenerAdapter {
     }
 
     /**
+     * Returns the index of the selected item from a list embed
+     *
+     * @param listEmbed {@link MessageEmbed MessageEmbed} with a list made of fields
+     * @return index of the selected (underlined) item, counting from zero, or -1 if no items were selected
+     */
+    protected int getSelectedItemIndex(MessageEmbed listEmbed) {
+        int selectedItemIndex = -1, index = 0;
+        for (MessageEmbed.Field field : listEmbed.getFields()) {
+            if (Objects.requireNonNull(field.getName()).startsWith("__")) {
+                selectedItemIndex = index;
+                break;
+            }
+            index++;
+        }
+        return selectedItemIndex;
+    }
+
+    /**
      * Checks whether the given timestamp is in HH:MM:SS format
      *
      * @param timestring String with potentially a timestamp in it
