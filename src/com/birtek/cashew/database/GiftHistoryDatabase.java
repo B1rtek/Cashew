@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class GiftHistoryDatabase {
+public class GiftHistoryDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GiftHistoryDatabase.class);
 
     private static volatile GiftHistoryDatabase instance;
-
-    private Connection giftHistoryConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -22,6 +20,8 @@ public class GiftHistoryDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private GiftHistoryDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -31,7 +31,7 @@ public class GiftHistoryDatabase {
         }
 
         try {
-            giftHistoryConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -66,12 +66,15 @@ public class GiftHistoryDatabase {
      */
     public GiftStats getGiftStats(int giftID, String userID, String serverID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("SELECT amountgifted, amountreceived, lastgifted FROM gifthistory WHERE ((serverid = ? AND userid = ?) AND giftid = ?)");
+                preparedStatement = databaseConnection.prepareStatement("SELECT amountgifted, amountreceived, lastgifted FROM gifthistory WHERE ((serverid = ? AND userid = ?) AND giftid = ?)");
                 preparedStatement.setInt(3, giftID);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("SELECT SUM(amountgifted), SUM(amountreceived), MAX(lastgifted) FROM gifthistory WHERE (serverid = ? AND userid = ?)");
+                preparedStatement = databaseConnection.prepareStatement("SELECT SUM(amountgifted), SUM(amountreceived), MAX(lastgifted) FROM gifthistory WHERE (serverid = ? AND userid = ?)");
             }
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
@@ -114,7 +117,10 @@ public class GiftHistoryDatabase {
      */
     private boolean isInDatabase(int giftID, String userID, String serverID) {
         try {
-            PreparedStatement preparedStatement = giftHistoryConnection.prepareStatement("SELECT COUNT(*) FROM gifthistory WHERE giftid = ? AND userid = ? AND serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM gifthistory WHERE giftid = ? AND userid = ? AND serverid = ?");
             preparedStatement.setInt(1, giftID);
             preparedStatement.setString(2, userID);
             preparedStatement.setString(3, serverID);
@@ -140,7 +146,10 @@ public class GiftHistoryDatabase {
      */
     private boolean updateStats(GiftStats newStats, int giftID, String userID, String serverID) {
         try {
-            PreparedStatement preparedStatement = giftHistoryConnection.prepareStatement("UPDATE gifthistory SET amountgifted = ?, amountreceived = ?, lastgifted = ? WHERE giftid = ? AND userid = ? AND serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE gifthistory SET amountgifted = ?, amountreceived = ?, lastgifted = ? WHERE giftid = ? AND userid = ? AND serverid = ?");
             preparedStatement.setInt(1, newStats.amountGifted());
             preparedStatement.setInt(2, newStats.amountReceived());
             preparedStatement.setLong(3, newStats.lastGifted());
@@ -165,7 +174,10 @@ public class GiftHistoryDatabase {
      */
     private boolean insertStats(GiftStats newStats, int giftID, String userID, String serverID) {
         try {
-            PreparedStatement preparedStatement = giftHistoryConnection.prepareStatement("INSERT INTO gifthistory(serverid, userid, giftid, amountgifted, amountreceived, lastgifted) VALUES(?, ?, ?, ?, ?, ?)");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO gifthistory(serverid, userid, giftid, amountgifted, amountreceived, lastgifted) VALUES(?, ?, ?, ?, ?, ?)");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
             preparedStatement.setInt(3, giftID);
@@ -193,16 +205,19 @@ public class GiftHistoryDatabase {
 
     public ArrayList<LeaderboardRecord> getGiftsLeaderboardPage(Gifts.GiftsLeaderboardType type, int page, String serverID, int giftID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
             String selectedColumn = type == Gifts.GiftsLeaderboardType.MOST_GIFTED ? "amountgifted" : "amountreceived";
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userid, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) as subqr where pos between (?-1)*10+1 and (?-1)*10+10");
+                preparedStatement = databaseConnection.prepareStatement("select pos, userid, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) as subqr where pos between (?-1)*10+1 and (?-1)*10+10");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
                 preparedStatement.setInt(3, page);
                 preparedStatement.setInt(4, page);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, userid, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where pos between (?-1)*10+1 and (?-1)*10+10 and total > 0");
+                preparedStatement = databaseConnection.prepareStatement("select pos, userid, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where pos between (?-1)*10+1 and (?-1)*10+10 and total > 0");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, page);
                 preparedStatement.setInt(3, page);
@@ -235,15 +250,18 @@ public class GiftHistoryDatabase {
      */
     public LeaderboardRecord getGiftsLeaderboardUserStats(Gifts.GiftsLeaderboardType type, String serverID, int giftID, String userID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
             String selectedColumn = type == Gifts.GiftsLeaderboardType.MOST_GIFTED ? "amountgifted" : "amountreceived";
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) as subqr where userid = ?");
+                preparedStatement = databaseConnection.prepareStatement("select pos, " + selectedColumn + " from (select ROW_NUMBER() over (order by " + selectedColumn + " desc) pos, userid, " + selectedColumn + " from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0 order by " + selectedColumn + " desc) as subqr where userid = ?");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setInt(2, giftID);
                 preparedStatement.setString(3, userID);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select pos, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where userid = ? AND total > 0");
+                preparedStatement = databaseConnection.prepareStatement("select pos, total from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where userid = ? AND total > 0");
                 preparedStatement.setString(1, serverID);
                 preparedStatement.setString(2, userID);
             }
@@ -273,13 +291,16 @@ public class GiftHistoryDatabase {
      */
     public int getGiftsLeaderboardPageCount(Gifts.GiftsLeaderboardType type, String serverID, int giftID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
             String selectedColumn = type == Gifts.GiftsLeaderboardType.MOST_GIFTED ? "amountgifted" : "amountreceived";
             PreparedStatement preparedStatement;
             if (giftID != 0) {
-                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0");
+                preparedStatement = databaseConnection.prepareStatement("select COUNT(*) from gifthistory where serverid = ? AND giftid = ? AND " + selectedColumn + " > 0");
                 preparedStatement.setInt(2, giftID);
             } else {
-                preparedStatement = giftHistoryConnection.prepareStatement("select COUNT(*) from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where total > 0");
+                preparedStatement = databaseConnection.prepareStatement("select COUNT(*) from (select ROW_NUMBER() over (order by SUM(" + selectedColumn + ") desc) pos, userid, SUM(" + selectedColumn + ") as total from gifthistory where serverid = ? group by userid order by total desc) as subqr where total > 0");
             }
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
@@ -292,5 +313,4 @@ public class GiftHistoryDatabase {
             return -1;
         }
     }
-
 }
