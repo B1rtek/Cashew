@@ -1,6 +1,6 @@
 package com.birtek.cashew.timings;
 
-import com.birtek.cashew.database.Database;
+import com.birtek.cashew.database.OldDatabase;
 import net.dv8tion.jda.api.JDA;
 
 import java.text.DateFormat;
@@ -35,7 +35,7 @@ public class TimedMessagesManager {
     public void updateData() {
         timedMessagesArrayList.clear();
         cancelEverything();
-        Database database = Database.getInstance();
+        OldDatabase database = OldDatabase.getInstance();
         ArrayList<TimedMessage> newTimedMessages = database.getTimedMessages();
         if(newTimedMessages.size()>0) {
             timedMessagesArrayList = newTimedMessages;

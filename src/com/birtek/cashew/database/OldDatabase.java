@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * The old Database class, contains only old pieces of code that are no longer used
  */
-public final class Database {
+public final class OldDatabase {
 
-    private static volatile Database instance;
+    private static volatile OldDatabase instance;
     public static final String SQLITE_DRIVER = "org.sqlite.JDBC";
     public static final String CASE_OPENING_DB = "jdbc:sqlite:databases/data/caseOpening.db";
     public static final String COLLECTION_OPENING_DB = "jdbc:sqlite:databases/data/collectionOpening.db";
@@ -19,11 +19,11 @@ public final class Database {
     private Connection collectionOpeningConnection;
     private Connection timedMessagesConnection;
 
-    private Database() {
+    private OldDatabase() {
 
         // SQLite
         try {
-            Class.forName(Database.SQLITE_DRIVER);
+            Class.forName(OldDatabase.SQLITE_DRIVER);
         } catch (ClassNotFoundException e) {
             System.err.println("Missing SQLite JDBC driver");
             e.printStackTrace();
@@ -55,14 +55,14 @@ public final class Database {
         }
     }
 
-    public static Database getInstance() {
-        Database result = instance;
+    public static OldDatabase getInstance() {
+        OldDatabase result = instance;
         if (result != null) {
             return result;
         }
-        synchronized (Database.class) {
+        synchronized (OldDatabase.class) {
             if (instance == null) {
-                instance = new Database();
+                instance = new OldDatabase();
             }
             return instance;
         }

@@ -1,7 +1,7 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.database.Database;
+import com.birtek.cashew.database.OldDatabase;
 import com.birtek.cashew.database.TwoStringsPair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -21,7 +21,7 @@ public class OpenCase extends BaseOpeningCommand {
     ArrayList<String> availableCases = new ArrayList<>();
 
     public OpenCase() {
-        Database database = Database.getInstance();
+        OldDatabase database = OldDatabase.getInstance();
         ResultSet cases = database.getCases();
         if (cases != null) {
             try {
@@ -38,7 +38,7 @@ public class OpenCase extends BaseOpeningCommand {
         if (caseChoice.equals("cases") || caseChoice.equals("list")) {
             return generateCasesCommandEmbed("Here's the list of available cases:");
         }
-        Database database = Database.getInstance();
+        OldDatabase database = OldDatabase.getInstance();
         ResultSet cases = database.getCases();
         int selectedCaseID = 0, selectedCaseKnifeGroup = 0;
         String selectedCaseName = "", selectedCaseURL = "", selectedCaseIconURL = "";
@@ -150,7 +150,7 @@ public class OpenCase extends BaseOpeningCommand {
         if (knifeGroup == 0) {
             return null;
         }
-        Database database = Database.getInstance();
+        OldDatabase database = OldDatabase.getInstance();
         int knifeCount = database.getKnifeCount(knifeGroup);
         if (knifeCount == 0) {
             return null;
