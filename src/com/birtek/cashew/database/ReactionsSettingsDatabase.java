@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.HashMap;
 
-public class ReactionsSettingsDatabase {
+public class ReactionsSettingsDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReactionsSettingsDatabase.class);
 
     private static volatile ReactionsSettingsDatabase instance;
-
-    private Connection reactionsConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -22,6 +20,8 @@ public class ReactionsSettingsDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private ReactionsSettingsDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -31,7 +31,7 @@ public class ReactionsSettingsDatabase {
         }
 
         try {
-            reactionsConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -39,7 +39,7 @@ public class ReactionsSettingsDatabase {
         }
 
         try {
-            PreparedStatement preparedStatement = reactionsConnection.prepareStatement("DROP TABLE IF EXISTS channelactivity");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("DROP TABLE IF EXISTS channelactivity");
             preparedStatement.execute();
         } catch (SQLException e) {
             LOGGER.error("Failed to remove the channelactivity table!");
@@ -48,7 +48,7 @@ public class ReactionsSettingsDatabase {
         }
 
         try {
-            PreparedStatement preparedStatement = reactionsConnection.prepareStatement("CREATE TABLE IF NOT EXISTS reactions(serverid TEXT, settings TEXT)");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS reactions(serverid TEXT, settings TEXT)");
             preparedStatement.execute();
         } catch (SQLException e) {
             LOGGER.error("Failed to create the reactions table");
@@ -80,7 +80,10 @@ public class ReactionsSettingsDatabase {
      */
     public HashMap<String, ReactionsSettings> getAllReactionsSettings() {
         try {
-            PreparedStatement preparedStatement = reactionsConnection.prepareStatement("SELECT * FROM reactions");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT * FROM reactions");
             ResultSet results = preparedStatement.executeQuery();
             HashMap<String, ReactionsSettings> settingsHashMap = new HashMap<>();
             while (results.next()) {
@@ -115,7 +118,10 @@ public class ReactionsSettingsDatabase {
      */
     private boolean isInDatabase(String serverID) {
         try {
-            PreparedStatement preparedStatement = reactionsConnection.prepareStatement("SELECT COUNT(*) FROM reactions WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM reactions WHERE serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -136,7 +142,10 @@ public class ReactionsSettingsDatabase {
      */
     private boolean updateReactionsSettings(ReactionsSettings settings) {
         try {
-            PreparedStatement preparedStatement = reactionsConnection.prepareStatement("UPDATE reactions SET settings = ? WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE reactions SET settings = ? WHERE serverid = ?");
             preparedStatement.setString(1, settings.getSettings().toString());
             preparedStatement.setString(2, settings.getServerID());
             return preparedStatement.executeUpdate() == 1;
@@ -154,7 +163,10 @@ public class ReactionsSettingsDatabase {
      */
     private boolean insertReactionsSettings(ReactionsSettings settings) {
         try {
-            PreparedStatement preparedStatement = reactionsConnection.prepareStatement("INSERT INTO reactions(serverid, settings) VALUES(?, ?)");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO reactions(serverid, settings) VALUES(?, ?)");
             preparedStatement.setString(1, settings.getServerID());
             preparedStatement.setString(2, settings.getSettings().toString());
             return preparedStatement.executeUpdate() == 1;
