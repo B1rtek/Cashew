@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class BestNekoDatabase {
+public class BestNekoDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BestNekoDatabase.class);
 
     private static volatile BestNekoDatabase instance;
-
-    private Connection bestNekoConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -22,6 +20,8 @@ public class BestNekoDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private BestNekoDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -31,7 +31,7 @@ public class BestNekoDatabase {
         }
 
         try {
-            bestNekoConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -39,7 +39,7 @@ public class BestNekoDatabase {
         }
 
         try {
-            PreparedStatement preparedStatement = bestNekoConnection.prepareStatement("CREATE TABLE IF NOT EXISTS bestneko(userid text, neko int)");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS bestneko(userid text, neko int)");
             preparedStatement.execute();
         } catch (SQLException e) {
             LOGGER.error("Failed to create the bestneko table");
@@ -87,7 +87,10 @@ public class BestNekoDatabase {
      */
     private boolean isInDatabase(String userID) {
         try {
-            PreparedStatement preparedStatement = bestNekoConnection.prepareStatement("SELECT COUNT(*) FROM bestneko WHERE userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM bestneko WHERE userid = ?");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -109,7 +112,10 @@ public class BestNekoDatabase {
      */
     private boolean updateNeko(String userID, int neko) {
         try {
-            PreparedStatement preparedStatement = bestNekoConnection.prepareStatement("UPDATE bestneko SET neko = ? WHERE userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE bestneko SET neko = ? WHERE userid = ?");
             preparedStatement.setInt(1, neko);
             preparedStatement.setString(2, userID);
             return preparedStatement.executeUpdate() == 1;
@@ -128,7 +134,10 @@ public class BestNekoDatabase {
      */
     private boolean insertNeko(String userID, int neko) {
         try {
-            PreparedStatement preparedStatement = bestNekoConnection.prepareStatement("INSERT INTO bestneko(userid, neko) VALUES(?, ?)");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO bestneko(userid, neko) VALUES(?, ?)");
             preparedStatement.setString(1, userID);
             preparedStatement.setInt(2, neko);
             return preparedStatement.executeUpdate() == 1;
@@ -146,7 +155,10 @@ public class BestNekoDatabase {
      */
     public int getNeko(String userID) {
         try {
-            PreparedStatement preparedStatement = bestNekoConnection.prepareStatement("SELECT neko FROM bestneko WHERE userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT neko FROM bestneko WHERE userid = ?");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -167,14 +179,17 @@ public class BestNekoDatabase {
      */
     public ArrayList<Pair<String, Integer>> getNekosDistribution() {
         BestNekoGifsDatabase database = BestNekoGifsDatabase.getInstance();
-        ArrayList<String> nekos =  database.getNekos();
-        if(nekos == null) return null;
+        ArrayList<String> nekos = database.getNekos();
+        if (nekos == null) return null;
         try {
-            PreparedStatement preparedStatement = bestNekoConnection.prepareStatement("select count(*) as total, neko from bestneko group by neko order by total desc");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select count(*) as total, neko from bestneko group by neko order by total desc");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<Pair<String, Integer>> distribution = new ArrayList<>();
-            while(results.next()) {
-                String neko = nekos.get(results.getInt(2)-1);
+            while (results.next()) {
+                String neko = nekos.get(results.getInt(2) - 1);
                 distribution.add(Pair.of(neko, results.getInt(1)));
             }
             return distribution;
