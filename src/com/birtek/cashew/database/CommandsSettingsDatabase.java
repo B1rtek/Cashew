@@ -6,13 +6,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.HashMap;
 
-public class CommandsSettingsDatabase {
+public class CommandsSettingsDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandsSettingsDatabase.class);
 
     private static volatile CommandsSettingsDatabase instance;
-
-    private Connection commandsSettingsConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -21,6 +19,8 @@ public class CommandsSettingsDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private CommandsSettingsDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -30,7 +30,7 @@ public class CommandsSettingsDatabase {
         }
 
         try {
-            commandsSettingsConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -38,7 +38,7 @@ public class CommandsSettingsDatabase {
         }
 
         try {
-            PreparedStatement preparedStatement = commandsSettingsConnection.prepareStatement("CREATE TABLE IF NOT EXISTS cmdsettings(serverid TEXT, settings TEXT)");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS cmdsettings(serverid TEXT, settings TEXT)");
             preparedStatement.execute();
         } catch (SQLException e) {
             LOGGER.error("Failed to create the cmdsettings table");
@@ -70,10 +70,13 @@ public class CommandsSettingsDatabase {
      */
     public HashMap<String, CommandsSettings> getAllCommandsSettings() {
         try {
-            PreparedStatement preparedStatement = commandsSettingsConnection.prepareStatement("SELECT * FROM cmdsettings");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT * FROM cmdsettings");
             ResultSet results = preparedStatement.executeQuery();
             HashMap<String, CommandsSettings> commandsHashMap = new HashMap<>();
-            while(results.next()) {
+            while (results.next()) {
                 commandsHashMap.put(results.getString(1), new CommandsSettings(results.getString(2)));
             }
             return commandsHashMap;
@@ -105,7 +108,10 @@ public class CommandsSettingsDatabase {
      */
     private boolean isInDatabase(String serverID) {
         try {
-            PreparedStatement preparedStatement = commandsSettingsConnection.prepareStatement("SELECT COUNT(*) FROM cmdsettings WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM cmdsettings WHERE serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -126,7 +132,10 @@ public class CommandsSettingsDatabase {
      */
     private boolean updateCommandsSettings(CommandsSettings settings) {
         try {
-            PreparedStatement preparedStatement = commandsSettingsConnection.prepareStatement("UPDATE cmdsettings SET settings = ? WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE cmdsettings SET settings = ? WHERE serverid = ?");
             preparedStatement.setString(1, settings.getSettings().toString());
             preparedStatement.setString(2, settings.getServerID());
             return preparedStatement.executeUpdate() == 1;
@@ -144,7 +153,10 @@ public class CommandsSettingsDatabase {
      */
     private boolean insertCommandsSettings(CommandsSettings settings) {
         try {
-            PreparedStatement preparedStatement = commandsSettingsConnection.prepareStatement("INSERT INTO cmdsettings(serverid, settings) VALUES(?, ?)");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO cmdsettings(serverid, settings) VALUES(?, ?)");
             preparedStatement.setString(1, settings.getServerID());
             preparedStatement.setString(2, settings.getSettings().toString());
             return preparedStatement.executeUpdate() == 1;
