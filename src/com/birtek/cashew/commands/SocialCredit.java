@@ -248,6 +248,12 @@ public class SocialCredit extends BaseCommand {
         boolean top = buttonID[4].equals("1");
         int pageNumber = Integer.parseInt(buttonID[3]);
         SocialCreditDatabase database = SocialCreditDatabase.getInstance();
+        int totalPages = database.getSocialCreditLeaderboardPageCount(Objects.requireNonNull(event.getGuild()).getId());
+        if (totalPages == -1) {
+            event.reply("Failed to obtain the page count of the social credit leaderboard, try again later").setEphemeral(true).queue();
+            return;
+        }
+        pageNumber = pageNumber < 1 ? 1 : Math.min(totalPages, pageNumber);
         ArrayList<LeaderboardRecord> leaderboardPage = database.getSocialCreditLeaderboardPage(top, pageNumber, Objects.requireNonNull(event.getGuild()).getId());
         if (leaderboardPage == null) {
             event.reply("Something went wrong while getting the leaderboard page, try again later").setEphemeral(true).queue();
@@ -256,11 +262,6 @@ public class SocialCredit extends BaseCommand {
         LeaderboardRecord callersStats = database.getSocialCreditLeaderboardUserStats(top, event.getGuild().getId(), event.getUser().getId());
         if (callersStats == null) {
             event.reply("Failed to obtain your social credit score, try again later").setEphemeral(true).queue();
-            return;
-        }
-        int totalPages = database.getSocialCreditLeaderboardPageCount(event.getGuild().getId());
-        if (totalPages == -1) {
-            event.reply("Failed to obtain the page count of the social credit leaderboard, try again later").setEphemeral(true).queue();
             return;
         }
         Pair<MessageEmbed, InputStream> leaderboardEmbed = generateLeaderboardEmbed(Objects.requireNonNull(event.getGuild()), event.getJDA(), top, leaderboardPage, callersStats, pageNumber, totalPages);
@@ -282,7 +283,7 @@ public class SocialCredit extends BaseCommand {
         if (buttonID.length < 3) return;
         if (buttonID[1].equals("socialcredit")) {
             if (!buttonID[0].equals(event.getUser().getId())) {
-                event.reply("You can't interact with this button").queue();
+                event.reply("You can't interact with this button").setEphemeral(true).queue();
                 return;
             }
             if (buttonID[2].equals("page")) {
