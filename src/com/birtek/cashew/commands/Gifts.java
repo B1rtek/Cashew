@@ -501,6 +501,10 @@ public class Gifts extends BaseCommand {
         if (buttonID.length < 3) return;
         if (!buttonID[1].equals("gift") && !buttonID[1].equals("gifts")) return;
         if (buttonID[2].equals("page")) {
+            if (!buttonID[0].equals(event.getUser().getId())) {
+                event.reply("You can't interact with this button").queue();
+                return;
+            }
             switchPage(event, buttonID);
         } else {
             obtainGift(event, buttonID);
