@@ -11,13 +11,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class CasesimInventoryDatabase {
+public class CasesimInventoryDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CasesimInventoryDatabase.class);
 
     private static volatile CasesimInventoryDatabase instance;
-
-    private Connection casesimInventoryConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -68,6 +66,8 @@ public class CasesimInventoryDatabase {
      * float parameter, and all case and knife items also have a stattrak parameter.
      */
     private CasesimInventoryDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -77,7 +77,7 @@ public class CasesimInventoryDatabase {
         }
 
         try {
-            casesimInventoryConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -85,7 +85,7 @@ public class CasesimInventoryDatabase {
         }
 
         try {
-            PreparedStatement preparedStatement = casesimInventoryConnection.prepareStatement("CREATE TABLE IF NOT EXISTS casesiminventory(userid text, inventory text)");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS casesiminventory(userid text, inventory text)");
             preparedStatement.execute();
         } catch (SQLException e) {
             LOGGER.error("Failed to create the casesiminventory table");
@@ -118,7 +118,10 @@ public class CasesimInventoryDatabase {
      */
     private boolean isInDatabase(String userID) {
         try {
-            PreparedStatement preparedStatement = casesimInventoryConnection.prepareStatement("SELECT COUNT(*) FROM casesiminventory WHERE userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM casesiminventory WHERE userid = ?");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -140,7 +143,10 @@ public class CasesimInventoryDatabase {
      */
     private JSONObject getInventoryJSON(String userID) {
         try {
-            PreparedStatement preparedStatement = casesimInventoryConnection.prepareStatement("SELECT inventory FROM casesiminventory WHERE userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT inventory FROM casesiminventory WHERE userid = ?");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -164,7 +170,10 @@ public class CasesimInventoryDatabase {
         String jsonString = inventory.toString();
         if (jsonString == null) return false;
         try {
-            PreparedStatement preparedStatement = casesimInventoryConnection.prepareStatement("INSERT INTO casesiminventory(userid, inventory) VALUES(?, ?)");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO casesiminventory(userid, inventory) VALUES(?, ?)");
             preparedStatement.setString(1, userID);
             preparedStatement.setString(2, jsonString);
             return preparedStatement.executeUpdate() == 1;
@@ -185,7 +194,10 @@ public class CasesimInventoryDatabase {
         String jsonString = inventory.toString();
         if (jsonString == null) return false;
         try {
-            PreparedStatement preparedStatement = casesimInventoryConnection.prepareStatement("UPDATE casesiminventory SET inventory = ? WHERE userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE casesiminventory SET inventory = ? WHERE userid = ?");
             preparedStatement.setString(1, jsonString);
             preparedStatement.setString(2, userID);
             return preparedStatement.executeUpdate() == 1;
@@ -342,7 +354,6 @@ public class CasesimInventoryDatabase {
             // get the SkinData object
             JSONObject inventory = getInventoryJSON(requestedUserID);
             if (inventory == null) return null;
-            ArrayList<SkinData> skinDatas = new ArrayList<>();
             JSONArray itemsArray = inventory.getJSONArray("items");
             if (itemsArray.length() <= index) {
                 return Pair.of(new SkinData("", -1, -1, 0, false), null);
