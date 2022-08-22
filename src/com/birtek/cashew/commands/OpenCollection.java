@@ -1,7 +1,7 @@
 package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
-import com.birtek.cashew.database.Database;
+import com.birtek.cashew.database.OldDatabase;
 import com.birtek.cashew.database.TwoStringsPair;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -21,7 +21,7 @@ public class OpenCollection extends BaseOpeningCommand {
     ArrayList<String> availableCollections = new ArrayList<>();
 
     public OpenCollection() {
-        Database database = Database.getInstance();
+        OldDatabase database = OldDatabase.getInstance();
         ResultSet collections = database.getCollections();
         if (collections != null) {
             try {
@@ -38,7 +38,7 @@ public class OpenCollection extends BaseOpeningCommand {
         if (collectionChoice.equals("collections") || collectionChoice.equals("list")) {
             return generateCollectionsCommandEmbed("Here's the list of available collections:");
         }
-        Database database = Database.getInstance();
+        OldDatabase database = OldDatabase.getInstance();
         ResultSet collections = database.getCollections();
         int selectedCollectionID = 0;
         String selectedCollectionName = "", selectedCollectionURL = "", selectedCollectionIconURL = "";

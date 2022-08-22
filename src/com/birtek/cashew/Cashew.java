@@ -121,11 +121,8 @@ public class Cashew {
                                 .addOption(CHANNEL, "channel", "Destination channel of the message", true, false)
                                 .addOption(STRING, "time", "Exact hour to send the message on (HH:MM:SS CET)", true, false)
                                 .addOption(STRING, "content", "Content of the message", true, false))
-                        .addSubcommands(new SubcommandData("list", "Shows all messages scheduled on this server")
-                                .addOption(INTEGER, "id", "ID of the message to display (optional)"))
-                        .addSubcommands(new SubcommandData("delete", "Deletes the specified messages")
-                                .addOption(STRING, "all", "Deletes ALL scheduled messages (type \"definitely\" to confirm)")
-                                .addOption(INTEGER, "id", "ID of the messsage to delete"))
+                        .addSubcommands(new SubcommandData("list", "Shows all messages scheduled on this server in an interactive list")
+                                .addOption(INTEGER, "page", "Page of the scheduled messages list to display"))
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("gifts", "Gift system command")
@@ -175,11 +172,7 @@ public class Cashew {
                                         .addOption(BOOLEAN, "ping", "Should the bot ping you with this reminder (default is yes)")
                         )
                         .addSubcommands(
-                                new SubcommandData("list", "List your reminders")
-                        )
-                        .addSubcommands(
-                                new SubcommandData("delete", "Delete a reminder")
-                                        .addOption(INTEGER, "id", "ID of the reminder to delete, or 0 to delete them all", true)
+                                new SubcommandData("list", "Show an interactive list of your reminders")
                         ),
                 Commands.slash("feedback", "Send feedback to Cashew's creator!")
                         .addOption(STRING, "content", "Content of your feedback message", true, false),
@@ -200,12 +193,14 @@ public class Cashew {
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("roll", "Roll a dice")
-                        .addOption(INTEGER,"sides", "Number of sides of the dice, 6 by default", false, false)
+                        .addOption(INTEGER, "sides", "Number of sides of the dice, 6 by default", false, false)
                         .addOption(INTEGER, "rolls", "Number of rolls to perform", false, false),
                 Commands.slash("cmdset", "Enable or disable commands")
                         .addOption(STRING, "toggle", "New state of the command - either ON or OFF", true, true)
                         .addOption(STRING, "command", "Command to change the settings of - leave blank to apply to all commands", false, true)
                         .addOption(CHANNEL, "channel", "Channel to apply the setting to - leave blank to apply to all channels", false, false)
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);

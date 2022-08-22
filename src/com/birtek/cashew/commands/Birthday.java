@@ -4,17 +4,20 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.BirthdayReminderDefaults;
 import com.birtek.cashew.database.BirthdayRemindersDatabase;
 import com.birtek.cashew.timings.BirthdayReminder;
+import com.birtek.cashew.timings.BirthdayRemindersManager;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Channel;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.utils.TimeFormat;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -156,18 +159,8 @@ public class Birthday extends BaseCommand {
                         if (reminder.getId() == -1) {
                             event.reply("You don't have a reminder set on this server!").setEphemeral(true).queue();
                         } else {
-                            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                            Calendar calendar = Calendar.getInstance();
-                            String dateAndTime = "";
-                            try {
-                                calendar.setTime(dateFormat.parse(reminder.getDateAndTime()));
-                                dateAndTime += calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.ENGLISH);
-                                dateFormat = new SimpleDateFormat("dd, HH:mm:ss");
-                                dateAndTime += " " + dateFormat.format(calendar.getTime());
-                            } catch (ParseException e) {
-                                event.reply("Something went wrong while displaying your reminder").setEphemeral(true).queue();
-                                return;
-                            }
+                            Instant deliveryDate = BirthdayRemindersManager.getNextRunTimeInstant(reminder.getDateAndTime());
+                            String dateAndTime = TimeFormat.DATE_LONG.format(deliveryDate) + TimeFormat.TIME_LONG.format(deliveryDate);
                             EmbedBuilder birthdayReminderEmbed = new EmbedBuilder();
                             birthdayReminderEmbed.setTitle("Your birthday reminder");
                             Channel destinationChannel = event.getGuild().getTextChannelById(reminder.getChannelID());

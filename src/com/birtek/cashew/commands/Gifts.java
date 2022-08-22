@@ -2,14 +2,18 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.database.*;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +42,6 @@ public class Gifts extends BaseCommand {
     ArrayList<GiftInfo> availableGifts;
 
     ArrayList<String> availableGiftsNames = new ArrayList<>();
-
-    HashSet<Integer> processedIDs = new HashSet<>();
 
     /**
      * Creates a Gifts command object and caches all gifts information as an ArrayList of {@link GiftInfo GiftInfos}
@@ -133,6 +135,24 @@ public class Gifts extends BaseCommand {
         }
         for (GiftInfo availableGift : availableGifts) {
             if (availableGift.getName().toLowerCase(Locale.ROOT).contains(giftName.toLowerCase(Locale.ROOT))) {
+                return availableGift;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds a gift with the provided ID
+     *
+     * @param id ID of the gift to find
+     * @return a {@link GiftInfo GiftInfo} object matching the ID, or null if none was found
+     */
+    GiftInfo findGiftByID(int id) {
+        if (id == 0) {
+            return new GiftInfo(0, "all", "", "", "", "", new Color(81, 195, 237));
+        }
+        for (GiftInfo availableGift : availableGifts) {
+            if (availableGift.id() == id) {
                 return availableGift;
             }
         }
@@ -241,7 +261,7 @@ public class Gifts extends BaseCommand {
                 event.reply("Gifts doesn't work in DMs").setEphemeral(true).queue();
                 return;
             }
-            if(cantBeExecuted(event, false)) {
+            if (cantBeExecuted(event, false)) {
                 event.reply("This command is turned off in this channel").setEphemeral(true).queue();
                 return;
             }
@@ -322,7 +342,17 @@ public class Gifts extends BaseCommand {
                     event.reply("Failed to obtain the amount of pages of the leaderboard, try again later").setEphemeral(true).queue();
                     return;
                 }
-                generateAndSendLeaderboardEmbed(leaderboard, leaderboardIndex, leaderboardPage, event, chosenGift, callersStats, pageNumber, totalPages);
+                event.deferReply().queue();
+                Pair<MessageEmbed, InputStream> leaderboardEmbed = generateLeaderboardEmbed(leaderboard, leaderboardIndex, leaderboardPage, event.getGuild(), event.getJDA(), chosenGift, callersStats, pageNumber, totalPages);
+                if (leaderboardEmbed.getRight() == null) {
+                    event.getHook().editOriginal(Objects.requireNonNull(leaderboardEmbed.getLeft().getTitle())).queue();
+                } else {
+                    ActionRow pageButtons = ActionRow.of(
+                            Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber - 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("◀️")),
+                            Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber + 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("▶️"))
+                    );
+                    event.getHook().sendFile(leaderboardEmbed.getRight(), "leaderboard.png").addEmbeds(leaderboardEmbed.getLeft()).addActionRows(pageButtons).queue();
+                }
             }
         }
     }
@@ -336,21 +366,25 @@ public class Gifts extends BaseCommand {
      *                         leaderboardTypesStrings ArrayList
      * @param leaderboardPage  an ArrayList or {@link LeaderboardRecord LeaderboardRecords} which represent a page of
      *                         the leaderboard
-     * @param event            {@link SlashCommandInteractionEvent event} that triggered this command
+     * @param server           {@link Guild server} in which the leaderboard was requested
+     * @param jda              {@link JDA JDA} instance that will be used to obtain usernames for the leaderboard
      * @param gift             {@link GiftInfo GiftInfo} object representing the gift of which the leaderboard was requested
      * @param callersStats     {@link GiftStats GiftStats} object with caller's stats
      * @param pageNumber       requested page number of the leaderboard, pages contain 10 entries
      * @param totalPages       total amount of pages of the requested leaderboard
+     * @return a {@link Pair Pair} of {@link MessageEmbed MessageEmbed} with the leaderboard and
+     * {@link InputStream InputStream} with the leaderboard image, or a pair of the embed with an error message in the
+     * title if the InputStream is null
      */
-    private void generateAndSendLeaderboardEmbed(String leaderboard, int leaderboardIndex, ArrayList<LeaderboardRecord> leaderboardPage, SlashCommandInteractionEvent event, GiftInfo gift, LeaderboardRecord callersStats, int pageNumber, int totalPages) {
+    private Pair<MessageEmbed, InputStream> generateLeaderboardEmbed(String leaderboard, int leaderboardIndex, ArrayList<LeaderboardRecord> leaderboardPage, Guild server, JDA jda, GiftInfo gift, LeaderboardRecord callersStats, int pageNumber, int totalPages) {
         String pointsName = leaderboardTypesStrings.get(leaderboardIndex).split("\\s+")[1];
         String capitalPointsName = Character.toString(pointsName.charAt(0) - 32) + pointsName.substring(1);
-        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, capitalPointsName, event.getJDA(), Objects.requireNonNull(event.getGuild()).getId(), gift.color());
-        if (generatedTableImage == null) {
-            event.reply("Something went wrong while generating the table image").setEphemeral(true).queue();
-            return;
-        }
+        InputStream generatedTableImage = generateLeaderboard(leaderboardPage, capitalPointsName, jda, server.getId(), gift.color());
         EmbedBuilder leaderboardEmbed = new EmbedBuilder();
+        if (generatedTableImage == null) {
+            leaderboardEmbed.setTitle("Something went wrong while generating the table image");
+            return Pair.of(leaderboardEmbed.build(), null);
+        }
         if (gift.getId() != 0) {
             leaderboardEmbed.setTitle("Leaderboard for " + leaderboard.toLowerCase(Locale.ROOT) + " " + gift.getName() + "s");
         } else {
@@ -364,60 +398,75 @@ public class Gifts extends BaseCommand {
         if (gift.getId() != 0) {
             leaderboardEmbed.setThumbnail(gift.imageURL());
         } else {
-            leaderboardEmbed.setThumbnail(event.getGuild().getIconUrl());
+            leaderboardEmbed.setThumbnail(server.getIconUrl());
         }
         leaderboardEmbed.setColor(gift.color().getRGB());
         leaderboardEmbed.setImage("attachment://leaderboard.png");
         leaderboardEmbed.setFooter("Page " + pageNumber + " out of " + totalPages);
-        event.replyFile(generatedTableImage, "leaderboard.png").addEmbeds(leaderboardEmbed.build()).queue();
+        return Pair.of(leaderboardEmbed.build(), generatedTableImage);
     }
 
-    @Override
-    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
-        //userID:gift:giftName:randomGiftID or userID:gift:giftName (old format)
-        String[] buttonID = event.getComponentId().split(":");
-        if (!(buttonID.length == 4 || buttonID.length == 3)) {
+    /**
+     * Switches the page of the leaderboard
+     *
+     * @param event    {@link ButtonInteractionEvent event} that was triggered by pressing the switch page button
+     * @param buttonID ID of the button that was pressed, contains the information about the leaderboard and the numnber
+     *                 of the page to switch to
+     */
+    private void switchPage(ButtonInteractionEvent event, String[] buttonID) {
+        int leaderboardIndex = Integer.parseInt(buttonID[4]);
+        String leaderboard = leaderboardTypesStrings.get(leaderboardIndex);
+        GiftsLeaderboardType leaderboardType = GiftsLeaderboardType.values()[leaderboardIndex];
+        int pageNumber = Integer.parseInt(buttonID[3]);
+        int giftID = Integer.parseInt(buttonID[5]);
+        GiftInfo chosenGift = findGiftByID(giftID);
+        GiftHistoryDatabase database = GiftHistoryDatabase.getInstance();
+        int totalPages = database.getGiftsLeaderboardPageCount(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID);
+        if (totalPages == -1) {
+            event.reply("Something went wrong while querying the database, try again later").setEphemeral(true).queue();
+            return;
+        } else if (totalPages == 0) {
+            event.editMessage("This leaderboard is empty").setEmbeds().setActionRows().queue();
             return;
         }
-        String type = buttonID[1];
-        if (!type.equals("gift")) {
+        pageNumber = pageNumber < 1 ? 1 : Math.min(pageNumber, totalPages);
+        ArrayList<LeaderboardRecord> leaderboardPage = database.getGiftsLeaderboardPage(leaderboardType, pageNumber, Objects.requireNonNull(event.getGuild()).getId(), giftID);
+        if (leaderboardPage == null) {
+            event.reply("Somethin went wrong while fetching the leaderboard page, try again later").setEphemeral(true).queue();
             return;
         }
-        String userID = buttonID[0];
-        if (event.getUser().getId().equals(userID)) {
+        LeaderboardRecord callersStats = database.getGiftsLeaderboardUserStats(leaderboardType, Objects.requireNonNull(event.getGuild()).getId(), giftID, event.getUser().getId());
+        if (callersStats == null) {
+            event.reply("Failed to obtain your stats from this leaderboard, try again later").setEphemeral(true).queue();
+            return;
+        }
+        Pair<MessageEmbed, InputStream> leaderboardEmbed = generateLeaderboardEmbed(leaderboard, leaderboardIndex, leaderboardPage, event.getGuild(), event.getJDA(), chosenGift, callersStats, pageNumber, totalPages);
+        if (leaderboardEmbed.getRight() == null) {
+            event.reply(Objects.requireNonNull(leaderboardEmbed.getLeft().getTitle())).setEphemeral(true).queue();
+        } else {
+            ActionRow pageButtons = ActionRow.of(
+                    Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber - 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("◀️")),
+                    Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber + 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("▶️"))
+            );
+            event.editMessageEmbeds(leaderboardEmbed.getLeft()).addFile(leaderboardEmbed.getRight(), "leaderboard.png").setActionRows(pageButtons).queue();
+        }
+    }
+
+    /**
+     * Checks whether the user can accept the gift, updates users stats, deletes the message and sends the
+     * "gift obtained" messages with emotes and all that
+     *
+     * @param event    {@link ButtonInteractionEvent event} triggered by pressing the ACCEPT button under a gift
+     * @param buttonID ID of the button that was pressed
+     */
+    private void obtainGift(ButtonInteractionEvent event, String[] buttonID) {
+        if (event.getUser().getId().equals(buttonID[0])) {
             event.reply("You can't accept a gift from yourself!").setEphemeral(true).queue();
             return;
         }
-        String giftName = buttonID[2];
-        GiftInfo giftInfo = findGiftByDescription(giftName);
+        GiftInfo giftInfo = findGiftByDescription(buttonID[2]);
         if (giftInfo == null) {
             event.reply("This gift doesn't exist").setEphemeral(true).queue();
-            return;
-        }
-        int randomID = -1;
-        // backwards compatibility moment
-        if (buttonID.length == 4) {
-            randomID = Integer.parseInt(buttonID[3]);
-            if (processedIDs.contains(randomID)) {
-                event.reply("This gift is already being obtained by someone else").setEphemeral(true).queue();
-                return;
-            }
-            processedIDs.add(randomID);
-        }
-        //success
-        String line1 = giftInfo.reactionLine1(), line2 = giftInfo.reactionLine2();
-        line1 = line1.replace("<@!mention>", event.getUser().getAsMention());
-        line2 = line2.replace("<@!mention>", event.getUser().getAsMention());
-        String finalLine = line2;
-        event.getChannel().sendMessage(line1).queue(message -> message.reply(finalLine).queue());
-        try {
-            event.getMessage().delete().queue();
-        } catch (Exception e) {
-            LOGGER.error("Exception thrown in Gifts.java:");
-            System.err.println("Unknown Message");
-            System.err.println("In server " + Objects.requireNonNull(event.getGuild()).getName());
-            System.err.println("In channel " + event.getChannel().getName());
-            System.err.println("While trying to accept gift: " + giftInfo.getName());
             return;
         }
         GiftHistoryDatabase database = GiftHistoryDatabase.getInstance();
@@ -426,12 +475,39 @@ public class Gifts extends BaseCommand {
             event.reply("Failed to obtain your gift stats, try obtaining the gift later").setEphemeral(true).queue();
             return;
         }
+        try {
+            event.getMessage().delete().queue();
+        } catch (Exception ignored) {
+            event.reply("Failed to remove the gift message, the gift was not obtained").setEphemeral(true).queue();
+            return;
+        }
         if (!database.updateGiftStats(new GiftStats(oldGiftStats.getAmountGifted(), oldGiftStats.getAmountReceived() + 1, oldGiftStats.getLastGifted()), giftInfo.getId(), event.getUser().getId(), event.getGuild().getId())) {
             event.reply("Updating gift stats failed, try obtaining the gift later").setEphemeral(true).queue();
             return;
         }
-        if (randomID != -1) {
-            processedIDs.remove(randomID);
+        //success
+        String line1 = giftInfo.reactionLine1(), line2 = giftInfo.reactionLine2();
+        line1 = line1.replace("<@!mention>", event.getUser().getAsMention());
+        line2 = line2.replace("<@!mention>", event.getUser().getAsMention());
+        String finalLine = line2;
+        event.getChannel().sendMessage(line1).queue(message -> message.reply(finalLine).queue());
+    }
+
+    @Override
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        //userID:gift:giftName:randomGiftID or userID:gift:giftName (old format)
+        //userID:gift:page:pagenum:leaderboardIndex:giftID
+        String[] buttonID = event.getComponentId().split(":");
+        if (buttonID.length < 3) return;
+        if (!buttonID[1].equals("gift") && !buttonID[1].equals("gifts")) return;
+        if (buttonID[2].equals("page")) {
+            if (!buttonID[0].equals(event.getUser().getId())) {
+                event.reply("You can't interact with this button").queue();
+                return;
+            }
+            switchPage(event, buttonID);
+        } else {
+            obtainGift(event, buttonID);
         }
     }
 

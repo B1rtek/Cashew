@@ -5,6 +5,7 @@ import com.birtek.cashew.database.LeaderboardRecord;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -190,6 +191,34 @@ public class BaseCommand extends ListenerAdapter {
         while ((inputLine = in.readLine()) != null) response.append(inputLine);
         in.close();
         return response.toString();
+    }
+
+    /**
+     * Gets the current page number from an embed with the text "page x out of y" in the footer
+     *
+     * @param embed {@link MessageEmbed MessageEmbed} with the text "page x out of y" in the footer
+     * @return integer with the page number (counting from 1)
+     */
+    protected int getPageNumber(MessageEmbed embed) {
+        return Integer.parseInt(Objects.requireNonNull(Objects.requireNonNull(embed.getFooter()).getText()).split("\\s+")[1]);
+    }
+
+    /**
+     * Returns the index of the selected item from a list embed
+     *
+     * @param listEmbed {@link MessageEmbed MessageEmbed} with a list made of fields
+     * @return index of the selected (underlined) item, counting from zero, or -1 if no items were selected
+     */
+    protected int getSelectedItemIndex(MessageEmbed listEmbed) {
+        int selectedItemIndex = -1, index = 0;
+        for (MessageEmbed.Field field : listEmbed.getFields()) {
+            if (Objects.requireNonNull(field.getName()).startsWith("__")) {
+                selectedItemIndex = index;
+                break;
+            }
+            index++;
+        }
+        return selectedItemIndex;
     }
 
     /**

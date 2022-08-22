@@ -824,22 +824,12 @@ public class CaseSim extends BaseCommand {
     }
 
     /**
-     * Gets the current page number from an inventory embed
-     *
-     * @param inventoryEmbed {@link MessageEmbed MessageEmbed} with someone's inventory
-     * @return integer with the page number (counting from 1)
-     */
-    private int getPageNumber(MessageEmbed inventoryEmbed) {
-        return Integer.parseInt(Objects.requireNonNull(Objects.requireNonNull(inventoryEmbed.getFooter()).getText()).split("\\s+")[1]);
-    }
-
-    /**
      * Returns the index of the selected item from the inventory embed
      *
      * @param inventoryEmbed {@link MessageEmbed MessageEmbed} with someone's inventory
      * @return index of the selected (underlined) item, counting from zero
      */
-    private int getSelectedItemIndex(MessageEmbed inventoryEmbed) {
+    private int getSelectedItemIndexCaseSim(MessageEmbed inventoryEmbed) {
         int selectedItemIndex = -1, index = 0;
         for (MessageEmbed.Field field : inventoryEmbed.getFields()) {
             if (Objects.requireNonNull(field.getName()).startsWith("__")) {
@@ -866,7 +856,7 @@ public class CaseSim extends BaseCommand {
     private void inventoryShow(ButtonInteractionEvent event, String[] buttonID, boolean asEphemeral) {
         // get the selected item index
         MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
-        int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
+        int selectedItemIndex = getSelectedItemIndexCaseSim(inventoryEmbed);
         if (selectedItemIndex == -1) {
             event.reply("Select an item first").setEphemeral(true).queue();
             return;
@@ -939,7 +929,7 @@ public class CaseSim extends BaseCommand {
     private void inventoryDelete(ButtonInteractionEvent event) {
         // get the selected item index
         MessageEmbed inventoryEmbed = event.getMessage().getEmbeds().get(0);
-        int selectedItemIndex = getSelectedItemIndex(inventoryEmbed);
+        int selectedItemIndex = getSelectedItemIndexCaseSim(inventoryEmbed);
         if (selectedItemIndex == -1) {
             event.reply("Select an item first").setEphemeral(true).queue();
             return;

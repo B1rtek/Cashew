@@ -6,13 +6,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class SocialCreditDatabase {
+public class SocialCreditDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SocialCreditDatabase.class);
 
     private static volatile SocialCreditDatabase instance;
-
-    private Connection socialCreditConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -21,6 +19,7 @@ public class SocialCreditDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private SocialCreditDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -30,7 +29,7 @@ public class SocialCreditDatabase {
         }
 
         try {
-            socialCreditConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -64,7 +63,10 @@ public class SocialCreditDatabase {
      */
     public long getSocialCredit(String userID, String serverID) {
         try {
-            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("SELECT credit FROM socialcredit WHERE serverid = ? AND userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return 0;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT credit FROM socialcredit WHERE serverid = ? AND userid = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
             ResultSet results = preparedStatement.executeQuery();
@@ -105,7 +107,10 @@ public class SocialCreditDatabase {
      */
     private boolean isInDatabase(String userID, String serverID) {
         try {
-            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("SELECT COUNT(*) FROM socialcredit WHERE userid = ? AND serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM socialcredit WHERE userid = ? AND serverid = ?");
             preparedStatement.setString(1, userID);
             preparedStatement.setString(2, serverID);
             ResultSet results = preparedStatement.executeQuery();
@@ -129,8 +134,11 @@ public class SocialCreditDatabase {
      */
     private boolean updateSocialCredit(String userID, String serverID, long credit) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
             long currentCredit = getSocialCredit(userID, serverID);
-            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("UPDATE socialcredit SET credit = ? WHERE userid = ? AND serverid = ?");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE socialcredit SET credit = ? WHERE userid = ? AND serverid = ?");
             preparedStatement.setLong(1, currentCredit + credit);
             preparedStatement.setString(2, userID);
             preparedStatement.setString(3, serverID);
@@ -151,7 +159,10 @@ public class SocialCreditDatabase {
      */
     private boolean insertSocialCredit(String userID, String serverID, long credit) {
         try {
-            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("INSERT INTO socialcredit(userid, serverid, credit) VALUES(?, ?, ?)");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO socialcredit(userid, serverid, credit) VALUES(?, ?, ?)");
             preparedStatement.setString(1, userID);
             preparedStatement.setString(2, serverID);
             preparedStatement.setLong(3, credit);
@@ -176,8 +187,11 @@ public class SocialCreditDatabase {
      */
     public ArrayList<LeaderboardRecord> getSocialCreditLeaderboardPage(boolean top, int page, String serverID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
             String selectedSorting = top ? "desc" : "asc";
-            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("select pos, userid, credit from (select ROW_NUMBER() over (order by credit " + selectedSorting + ") pos, userid, credit from socialcredit where serverid = ? order by credit " + selectedSorting + ") as subqr where pos between (?-1)*10+1 and (?-1)*10+10");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select pos, userid, credit from (select ROW_NUMBER() over (order by credit " + selectedSorting + ") pos, userid, credit from socialcredit where serverid = ? order by credit " + selectedSorting + ") as subqr where pos between (?-1)*10+1 and (?-1)*10+10");
             preparedStatement.setString(1, serverID);
             preparedStatement.setInt(2, page);
             preparedStatement.setInt(3, page);
@@ -207,12 +221,15 @@ public class SocialCreditDatabase {
      */
     public LeaderboardRecord getSocialCreditLeaderboardUserStats(boolean top, String serverID, String userID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
             String selectedSorting = top ? "desc" : "asc";
-            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("select pos, userid, credit from (select ROW_NUMBER() over (order by credit " + selectedSorting + ") pos, userid, credit from socialcredit where serverid = ? order by credit " + selectedSorting + ") as subqr where userid = ?");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select pos, userid, credit from (select ROW_NUMBER() over (order by credit " + selectedSorting + ") pos, userid, credit from socialcredit where serverid = ? order by credit " + selectedSorting + ") as subqr where userid = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
             ResultSet results = preparedStatement.executeQuery();
-            if(results.next()) {
+            if (results.next()) {
                 return new LeaderboardRecord(results.getInt(1), userID, results.getLong(3));
             }
             return new LeaderboardRecord(0, userID, 0);
@@ -225,6 +242,7 @@ public class SocialCreditDatabase {
     /**
      * Gets the amount of pages of the social credit leaderboard on the server, which just corresponds to the amount of
      * pages that would be occupied by all records in the server
+     *
      * @param serverID ID of the server from which the leaderboard request came - each server has a separate social
      *                 credit system
      * @return amount of pages of the social credit leaderboard in the server, 0 if the leaderboard doesn't exist yet,
@@ -232,10 +250,13 @@ public class SocialCreditDatabase {
      */
     public int getSocialCreditLeaderboardPageCount(String serverID) {
         try {
-            PreparedStatement preparedStatement = socialCreditConnection.prepareStatement("SELECT COUNT(*) from socialcredit where serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) from socialcredit where serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
-            if(results.next()) {
+            if (results.next()) {
                 return results.getInt(1) / 10 + (results.getInt(1) % 10 == 0 ? 0 : 1);
             }
             return 0;

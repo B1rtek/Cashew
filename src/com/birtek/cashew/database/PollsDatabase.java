@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class PollsDatabase {
+public class PollsDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PollsDatabase.class);
 
     private static volatile PollsDatabase instance;
-
-    private Connection pollsConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -22,6 +20,8 @@ public class PollsDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private PollsDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -31,7 +31,7 @@ public class PollsDatabase {
         }
 
         try {
-            pollsConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -63,7 +63,10 @@ public class PollsDatabase {
      */
     public ArrayList<PollSummarizer> getAllPolls() {
         try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("SELECT * FROM polls");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT * FROM polls");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<PollSummarizer> polls = new ArrayList<>();
             while (results.next()) {
@@ -85,7 +88,10 @@ public class PollsDatabase {
      */
     public PollSummarizer addPoll(PollSummarizer poll) {
         try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("INSERT INTO polls(channelid, messageid, endtime) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO polls(channelid, messageid, endtime) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, poll.getChannelID());
             preparedStatement.setString(2, poll.getMessageID());
             preparedStatement.setString(3, poll.getEndTime());
@@ -112,7 +118,10 @@ public class PollsDatabase {
      */
     public boolean deletePoll(int id) {
         try {
-            PreparedStatement preparedStatement = pollsConnection.prepareStatement("DELETE FROM polls WHERE _id = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("DELETE FROM polls WHERE _id = ?");
             preparedStatement.setInt(1, id);
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException e) {

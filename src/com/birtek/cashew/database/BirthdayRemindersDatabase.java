@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class BirthdayRemindersDatabase {
+public class BirthdayRemindersDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BirthdayRemindersDatabase.class);
 
     private static volatile BirthdayRemindersDatabase instance;
-
-    private Connection birthdayRemindersConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -22,6 +20,8 @@ public class BirthdayRemindersDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private BirthdayRemindersDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -31,7 +31,7 @@ public class BirthdayRemindersDatabase {
         }
 
         try {
-            birthdayRemindersConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -63,7 +63,10 @@ public class BirthdayRemindersDatabase {
      */
     public ArrayList<BirthdayReminder> getAllReminders() {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM birthdayreminders");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT * FROM birthdayreminders");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminder> reminders = new ArrayList<>();
             while (results.next()) {
@@ -84,7 +87,10 @@ public class BirthdayRemindersDatabase {
      */
     public ArrayList<BirthdayReminderDefaults> getAllDefaults() {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT serverid, channelid, override FROM defaultbirthdayreminderchannels");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT serverid, channelid, override FROM defaultbirthdayreminderchannels");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminderDefaults> defaults = new ArrayList<>();
             while (results.next()) {
@@ -131,7 +137,10 @@ public class BirthdayRemindersDatabase {
      */
     private int getBirthdayReminderID(String serverID, String userID) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT _id FROM birthdayreminders WHERE serverid = ? AND userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT _id FROM birthdayreminders WHERE serverid = ? AND userid = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
             ResultSet results = preparedStatement.executeQuery();
@@ -155,7 +164,10 @@ public class BirthdayRemindersDatabase {
      */
     private BirthdayReminder insertBirthdayReminder(BirthdayReminder reminder) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO birthdayreminders(message, dateandtime, channelid, serverid, userid) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO birthdayreminders(message, dateandtime, channelid, serverid, userid) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, reminder.getMessage());
             preparedStatement.setString(2, reminder.getDateAndTime());
             preparedStatement.setString(3, reminder.getChannelID());
@@ -182,7 +194,10 @@ public class BirthdayRemindersDatabase {
      */
     private boolean updateBirthdayReminder(BirthdayReminder reminder) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE birthdayreminders SET message = ?, dateandtime = ?, channelid = ?, serverid = ?, userid = ? WHERE _id = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE birthdayreminders SET message = ?, dateandtime = ?, channelid = ?, serverid = ?, userid = ? WHERE _id = ?");
             preparedStatement.setString(1, reminder.getMessage());
             preparedStatement.setString(2, reminder.getDateAndTime());
             preparedStatement.setString(3, reminder.getChannelID());
@@ -206,9 +221,12 @@ public class BirthdayRemindersDatabase {
      */
     public int deleteBirthdayReminder(String serverID, String userID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
             int id = getBirthdayReminderID(serverID, userID);
             if (id <= 0) return -1;
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("DELETE FROM birthdayreminders WHERE serverid = ? AND userid = ?");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("DELETE FROM birthdayreminders WHERE serverid = ? AND userid = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, userID);
             if (preparedStatement.executeUpdate() != 1) return -1;
@@ -249,7 +267,10 @@ public class BirthdayRemindersDatabase {
      */
     private int getDefaultsID(String serverID) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT _id FROM defaultbirthdayreminderchannels WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT _id FROM defaultbirthdayreminderchannels WHERE serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
             int id = 0;
@@ -272,7 +293,10 @@ public class BirthdayRemindersDatabase {
      */
     private boolean insertBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("INSERT INTO defaultbirthdayreminderchannels(serverid, channelid, override) VALUES(?, ?, ?)");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO defaultbirthdayreminderchannels(serverid, channelid, override) VALUES(?, ?, ?)");
             preparedStatement.setString(1, defaults.serverID());
             preparedStatement.setString(2, defaults.channelID());
             preparedStatement.setInt(3, defaults.override() ? 1 : 0);
@@ -292,7 +316,10 @@ public class BirthdayRemindersDatabase {
      */
     private boolean updateBirthdayRemindersDefaults(BirthdayReminderDefaults defaults) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("UPDATE defaultbirthdayreminderchannels SET channelid = ?, override = ? WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE defaultbirthdayreminderchannels SET channelid = ?, override = ? WHERE serverid = ?");
             preparedStatement.setString(1, defaults.channelID());
             preparedStatement.setInt(2, defaults.override() ? 1 : 0);
             preparedStatement.setString(3, defaults.serverID());
@@ -313,7 +340,10 @@ public class BirthdayRemindersDatabase {
      */
     public BirthdayReminder getBirthdayReminder(String userID, String serverID) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT message, dateandtime, channelid FROM birthdayreminders WHERE userid = ? AND serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT message, dateandtime, channelid FROM birthdayreminders WHERE userid = ? AND serverid = ?");
             preparedStatement.setString(1, userID);
             preparedStatement.setString(2, serverID);
             ResultSet results = preparedStatement.executeQuery();
@@ -337,7 +367,10 @@ public class BirthdayRemindersDatabase {
      */
     public BirthdayReminderDefaults getBirthdayReminderDefault(String serverID) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT channelid, override FROM defaultbirthdayreminderchannels WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT channelid, override FROM defaultbirthdayreminderchannels WHERE serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -359,7 +392,10 @@ public class BirthdayRemindersDatabase {
      */
     public ArrayList<BirthdayReminder> getBirthdayRemindersFromServer(String serverID) {
         try {
-            PreparedStatement preparedStatement = birthdayRemindersConnection.prepareStatement("SELECT * FROM birthdayreminders WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT * FROM birthdayreminders WHERE serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<BirthdayReminder> reminders = new ArrayList<>();
