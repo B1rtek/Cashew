@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class ScheduledMessagesDatabase {
+public class ScheduledMessagesDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledMessagesDatabase.class);
 
     private static volatile ScheduledMessagesDatabase instance;
-
-    private Connection scheduledMessagesConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -22,6 +20,8 @@ public class ScheduledMessagesDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private ScheduledMessagesDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -31,7 +31,7 @@ public class ScheduledMessagesDatabase {
         }
 
         try {
-            scheduledMessagesConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -61,16 +61,19 @@ public class ScheduledMessagesDatabase {
      * @param id       ID of the message to return - if the ID is equal to 0, all messages from the server will be returned
      * @param serverID ID of the server
      * @return ArrayList of ScheduledMessages matching the given criteria, since querying for all messages rather than
-     * for a single one is more common
+     * for a single one is more common, or null if an error occurred
      */
     public ArrayList<ScheduledMessage> getScheduledMessages(int id, String serverID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
             PreparedStatement preparedStatement;
             if (id != 0) {
-                preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ? AND _id = ?");
+                preparedStatement = databaseConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ? AND _id = ?");
                 preparedStatement.setInt(2, id);
             } else {
-                preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ?");
+                preparedStatement = databaseConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ?");
             }
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
@@ -91,7 +94,10 @@ public class ScheduledMessagesDatabase {
      */
     public ArrayList<ScheduledMessage> getScheduledMessagesPage(String serverID, int pageNumber) {
         try {
-            PreparedStatement preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM (SELECT ROW_NUMBER() OVER(ORDER BY _id) index, _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ?) AS subqr where index between (?-1)*10+1 and (?-1)*10+10");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM (SELECT ROW_NUMBER() OVER(ORDER BY _id) index, _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ?) AS subqr where index between (?-1)*10+1 and (?-1)*10+10");
             preparedStatement.setString(1, serverID);
             preparedStatement.setInt(2, pageNumber);
             preparedStatement.setInt(3, pageNumber);
@@ -111,7 +117,10 @@ public class ScheduledMessagesDatabase {
      */
     public int getScheduledMessagesPageCount(String serverID) {
         try {
-            PreparedStatement preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT COUNT(*) FROM scheduledmessages WHERE serverid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM scheduledmessages WHERE serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -134,7 +143,10 @@ public class ScheduledMessagesDatabase {
      */
     public ScheduledMessage getScheduledMessageByIndex(String serverID, int index) {
         try {
-            PreparedStatement preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM (SELECT ROW_NUMBER() OVER(ORDER BY _id) index, _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ?) AS subqr where index = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM (SELECT ROW_NUMBER() OVER(ORDER BY _id) index, _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages WHERE serverid = ?) AS subqr where index = ?");
             preparedStatement.setString(1, serverID);
             preparedStatement.setInt(2, index + 1);
             ResultSet results = preparedStatement.executeQuery();
@@ -157,7 +169,10 @@ public class ScheduledMessagesDatabase {
      */
     public ScheduledMessage addScheduledMessage(ScheduledMessage scheduledMessage, String serverID) {
         try {
-            PreparedStatement preparedStatement = scheduledMessagesConnection.prepareStatement("INSERT INTO scheduledmessages(messagecontent, executiontime, repetitioninterval, destinationchannelid, serverid) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO scheduledmessages(messagecontent, executiontime, repetitioninterval, destinationchannelid, serverid) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, scheduledMessage.getMessageContent());
             preparedStatement.setString(2, scheduledMessage.getExecutionTime());
             preparedStatement.setString(3, "86400");
@@ -189,9 +204,12 @@ public class ScheduledMessagesDatabase {
      */
     public boolean removeScheduledMessage(int id, String serverID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
             PreparedStatement preparedStatement;
             if (id != 0) { // check if the message exists if a single one is getting deleted
-                preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT COUNT(*) FROM scheduledmessages WHERE _id = ? AND serverid = ?");
+                preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM scheduledmessages WHERE _id = ? AND serverid = ?");
                 preparedStatement.setInt(1, id);
                 preparedStatement.setString(2, serverID);
                 ResultSet results = preparedStatement.executeQuery();
@@ -203,10 +221,10 @@ public class ScheduledMessagesDatabase {
             }
             // remove the messages
             if (id != 0) {
-                preparedStatement = scheduledMessagesConnection.prepareStatement("DELETE FROM scheduledmessages WHERE _id = ?");
+                preparedStatement = databaseConnection.prepareStatement("DELETE FROM scheduledmessages WHERE _id = ?");
                 preparedStatement.setInt(1, id);
             } else {
-                preparedStatement = scheduledMessagesConnection.prepareStatement("DELETE FROM scheduledmessages WHERE serverid = ?");
+                preparedStatement = databaseConnection.prepareStatement("DELETE FROM scheduledmessages WHERE serverid = ?");
                 preparedStatement.setString(1, serverID);
             }
             return preparedStatement.executeUpdate() != 0;
@@ -221,11 +239,14 @@ public class ScheduledMessagesDatabase {
      * schedule all messages. Separate from the {@link #getScheduledMessages(int, String)}  getScheduledMessages()} method to avoid
      * leaks if something fails
      *
-     * @return ArrayList containing all ScheduledMessages from the database
+     * @return ArrayList containing all ScheduledMessages from the database, or null if an error occurred
      */
     public ArrayList<ScheduledMessage> getAllScheduledMessages() {
         try {
-            PreparedStatement preparedStatement = scheduledMessagesConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT _id, messagecontent, executiontime, destinationchannelid FROM scheduledmessages");
             ResultSet results = preparedStatement.executeQuery();
             return resultSetToArrayList(results);
         } catch (SQLException e) {
