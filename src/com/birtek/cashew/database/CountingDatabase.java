@@ -6,13 +6,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class CountingDatabase {
+public class CountingDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CountingDatabase.class);
 
     private static volatile CountingDatabase instance;
-
-    private Connection countingConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -21,6 +19,8 @@ public class CountingDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private CountingDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -30,7 +30,7 @@ public class CountingDatabase {
         }
 
         try {
-            countingConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -77,7 +77,10 @@ public class CountingDatabase {
      */
     private boolean isInDatabase(String channelID) {
         try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT COUNT(*) FROM counting WHERE channelid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM counting WHERE channelid = ?");
             preparedStatement.setString(1, channelID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -99,7 +102,10 @@ public class CountingDatabase {
      */
     private boolean updateCountingStatus(boolean newState, String channelID) {
         try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("UPDATE counting SET activity = ? WHERE channelid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE counting SET activity = ? WHERE channelid = ?");
             preparedStatement.setBoolean(1, newState);
             preparedStatement.setString(2, channelID);
             return preparedStatement.executeUpdate() == 1;
@@ -119,7 +125,10 @@ public class CountingDatabase {
     private boolean insertCountingStatus(boolean newState, String channelID) {
         if (!newState) return true;
         try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("INSERT INTO counting(activity, current, channelid, typosleft) VALUES(?, ?, ?, ?)");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO counting(activity, current, channelid, typosleft) VALUES(?, ?, ?, ?)");
             preparedStatement.setBoolean(1, true);
             preparedStatement.setInt(2, 0);
             preparedStatement.setString(3, channelID);
@@ -139,7 +148,10 @@ public class CountingDatabase {
      */
     public CountingInfo getCountingData(String channelID) {
         try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT activity, userid, current, messageid, typosleft FROM counting WHERE channelid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT activity, userid, current, messageid, typosleft FROM counting WHERE channelid = ?");
             preparedStatement.setString(1, channelID);
             ResultSet result = preparedStatement.executeQuery();
             if (result.next()) {
@@ -161,7 +173,10 @@ public class CountingDatabase {
      */
     public boolean setCount(CountingInfo countingInfo, String channelID) {
         try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("UPDATE counting SET current = ?, userid = ?, messageid = ?, typosleft = ? WHERE channelid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("UPDATE counting SET current = ?, userid = ?, messageid = ?, typosleft = ? WHERE channelid = ?");
             preparedStatement.setInt(1, countingInfo.value());
             preparedStatement.setString(2, countingInfo.userID());
             preparedStatement.setString(3, countingInfo.messageID());
@@ -176,7 +191,10 @@ public class CountingDatabase {
 
     public ArrayList<String> getAllActiveCountingChannels() {
         try {
-            PreparedStatement preparedStatement = countingConnection.prepareStatement("SELECT channelid FROM counting WHERE activity = true");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT channelid FROM counting WHERE activity = true");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<String> channels = new ArrayList<>();
             while (results.next()) {
