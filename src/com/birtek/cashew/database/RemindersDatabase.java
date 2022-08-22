@@ -7,13 +7,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class RemindersDatabase {
+public class RemindersDatabase extends Database {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemindersDatabase.class);
 
     private static volatile RemindersDatabase instance;
-
-    private Connection remindersConnection;
 
     /**
      * Initializes the connection to the Postgres database, specifically to the
@@ -22,6 +20,8 @@ public class RemindersDatabase {
      * the bot exits with status 1 as it can't properly function without the database
      */
     private RemindersDatabase() {
+        databaseURL = System.getenv("JDBC_DATABASE_URL");
+
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
@@ -31,7 +31,7 @@ public class RemindersDatabase {
         }
 
         try {
-            remindersConnection = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
+            databaseConnection = DriverManager.getConnection(databaseURL);
         } catch (SQLException e) {
             LOGGER.error("Couldn't connect to the Postgres database - database could be offline or the url might be wrong or being currently refreshed");
             e.printStackTrace();
@@ -65,7 +65,10 @@ public class RemindersDatabase {
      */
     public ReminderRunnable addReminder(ReminderRunnable reminder) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("INSERT INTO reminders(content, timedate, userid, ping) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO reminders(content, timedate, userid, ping) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, reminder.getContent());
             preparedStatement.setString(2, reminder.getDateTime());
             preparedStatement.setString(3, reminder.getUserID());
@@ -92,7 +95,10 @@ public class RemindersDatabase {
      */
     public ArrayList<ReminderRunnable> getUserReminders(String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping FROM reminders where userid = ? order by _id");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT _id, content, timedate, ping FROM reminders where userid = ? order by _id");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<ReminderRunnable> reminders = new ArrayList<>();
@@ -117,7 +123,10 @@ public class RemindersDatabase {
      */
     public ReminderRunnable getUsersReminderByIndex(String userID, int index) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping FROM (SELECT ROW_NUMBER() OVER (ORDER BY _id) index, _id, content, timedate, ping FROM reminders where userid = ? order by _id) as subqr where index = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT _id, content, timedate, ping FROM (SELECT ROW_NUMBER() OVER (ORDER BY _id) index, _id, content, timedate, ping FROM reminders where userid = ? order by _id) as subqr where index = ?");
             preparedStatement.setString(1, userID);
             preparedStatement.setInt(2, index + 1);
             ResultSet results = preparedStatement.executeQuery();
@@ -139,7 +148,10 @@ public class RemindersDatabase {
      */
     public ArrayList<ReminderRunnable> getAllReminders() {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT _id, content, timedate, ping, userid FROM reminders");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT _id, content, timedate, ping, userid FROM reminders");
             ResultSet results = preparedStatement.executeQuery();
             ArrayList<ReminderRunnable> reminders = new ArrayList<>();
             while (results.next()) {
@@ -160,7 +172,10 @@ public class RemindersDatabase {
      */
     public int getRemindersCount(String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM reminders WHERE userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM reminders WHERE userid = ?");
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -184,8 +199,11 @@ public class RemindersDatabase {
      */
     public int deleteReminder(int id, String userID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
             if (!isBelongingTo(id, userID)) return 0;
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("DELETE FROM reminders WHERE _id = ? AND userid = ?");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("DELETE FROM reminders WHERE _id = ? AND userid = ?");
             preparedStatement.setInt(1, id);
             preparedStatement.setString(2, userID);
             int rowsDeleted = preparedStatement.executeUpdate();
@@ -205,7 +223,10 @@ public class RemindersDatabase {
      */
     private boolean isBelongingTo(int id, String userID) {
         try {
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("SELECT COUNT(*) FROM reminders where _id = ? AND userid = ?");
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(*) FROM reminders where _id = ? AND userid = ?");
             preparedStatement.setInt(1, id);
             preparedStatement.setString(2, userID);
             ResultSet results = preparedStatement.executeQuery();
@@ -227,13 +248,16 @@ public class RemindersDatabase {
      */
     public ArrayList<Integer> deleteUsersReminders(String userID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
             ArrayList<ReminderRunnable> reminders = getUserReminders(userID);
             if (reminders == null || reminders.isEmpty()) return null;
             ArrayList<Integer> remindersIDs = new ArrayList<>();
             for (ReminderRunnable reminder : reminders) {
                 remindersIDs.add(reminder.getId());
             }
-            PreparedStatement preparedStatement = remindersConnection.prepareStatement("DELETE FROM reminders WHERE userid = ?");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("DELETE FROM reminders WHERE userid = ?");
             preparedStatement.setString(1, userID);
             if (preparedStatement.executeUpdate() == 0) return null;
             else return remindersIDs;
