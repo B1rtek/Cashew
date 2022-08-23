@@ -264,15 +264,17 @@ public class SocialCredit extends BaseCommand {
             event.reply("Failed to obtain your social credit score, try again later").setEphemeral(true).queue();
             return;
         }
+        event.deferReply().queue();
         Pair<MessageEmbed, InputStream> leaderboardEmbed = generateLeaderboardEmbed(Objects.requireNonNull(event.getGuild()), event.getJDA(), top, leaderboardPage, callersStats, pageNumber, totalPages);
         if (leaderboardEmbed.getRight() == null) {
-            event.reply(Objects.requireNonNull(leaderboardEmbed.getLeft().getTitle())).setEphemeral(true).queue();
+            event.getHook().editOriginal(Objects.requireNonNull(leaderboardEmbed.getLeft().getTitle())).queue();
         } else {
             ActionRow pageButtons = ActionRow.of(
                     Button.primary(event.getUser().getId() + ":socialcredit:page:" + (pageNumber - 1) + ":" + (top ? "1" : "0"), Emoji.fromUnicode("◀️")),
                     Button.primary(event.getUser().getId() + ":socialcredit:page:" + (pageNumber + 1) + ":" + (top ? "1" : "0"), Emoji.fromUnicode("▶️"))
             );
-            event.editMessageEmbeds(leaderboardEmbed.getLeft()).addFile(leaderboardEmbed.getRight(), "leaderboard.png").setActionRows(pageButtons).queue();
+            event.getHook().deleteOriginal().queue();
+            event.getMessage().editMessageEmbeds(leaderboardEmbed.getLeft()).addFile(leaderboardEmbed.getRight(), "leaderboard.png").setActionRows(pageButtons).queue();
         }
     }
 
