@@ -440,15 +440,17 @@ public class Gifts extends BaseCommand {
             event.reply("Failed to obtain your stats from this leaderboard, try again later").setEphemeral(true).queue();
             return;
         }
+        event.deferReply().queue();
         Pair<MessageEmbed, InputStream> leaderboardEmbed = generateLeaderboardEmbed(leaderboard, leaderboardIndex, leaderboardPage, event.getGuild(), event.getJDA(), chosenGift, callersStats, pageNumber, totalPages);
         if (leaderboardEmbed.getRight() == null) {
-            event.reply(Objects.requireNonNull(leaderboardEmbed.getLeft().getTitle())).setEphemeral(true).queue();
+            event.getHook().editOriginal(Objects.requireNonNull(leaderboardEmbed.getLeft().getTitle())).queue();
         } else {
             ActionRow pageButtons = ActionRow.of(
                     Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber - 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("◀️")),
                     Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber + 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("▶️"))
             );
-            event.editMessageEmbeds(leaderboardEmbed.getLeft()).addFile(leaderboardEmbed.getRight(), "leaderboard.png").setActionRows(pageButtons).queue();
+            event.getHook().deleteOriginal().queue();
+            event.getMessage().editMessageEmbeds(leaderboardEmbed.getLeft()).addFile(leaderboardEmbed.getRight(), "leaderboard.png").setActionRows(pageButtons).queue();
         }
     }
 
@@ -502,7 +504,7 @@ public class Gifts extends BaseCommand {
         if (!buttonID[1].equals("gift") && !buttonID[1].equals("gifts")) return;
         if (buttonID[2].equals("page")) {
             if (!buttonID[0].equals(event.getUser().getId())) {
-                event.reply("You can't interact with this button").queue();
+                event.reply("You can't interact with this button").setEphemeral(true).queue();
                 return;
             }
             switchPage(event, buttonID);
