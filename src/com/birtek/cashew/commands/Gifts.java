@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -21,7 +22,10 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Random;
 
 public class Gifts extends BaseCommand {
 
@@ -351,7 +355,7 @@ public class Gifts extends BaseCommand {
                             Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber - 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("◀️")),
                             Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber + 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("▶️"))
                     );
-                    event.getHook().sendFile(leaderboardEmbed.getRight(), "leaderboard.png").addEmbeds(leaderboardEmbed.getLeft()).addActionRows(pageButtons).queue();
+                    event.getHook().sendFiles(FileUpload.fromData(leaderboardEmbed.getRight(), "leaderboard.png")).addEmbeds(leaderboardEmbed.getLeft()).addComponents(pageButtons).queue();
                 }
             }
         }
@@ -426,7 +430,7 @@ public class Gifts extends BaseCommand {
             event.reply("Something went wrong while querying the database, try again later").setEphemeral(true).queue();
             return;
         } else if (totalPages == 0) {
-            event.editMessage("This leaderboard is empty").setEmbeds().setActionRows().queue();
+            event.editMessage("This leaderboard is empty").setEmbeds().setComponents().queue();
             return;
         }
         pageNumber = pageNumber < 1 ? 1 : Math.min(pageNumber, totalPages);
@@ -450,7 +454,7 @@ public class Gifts extends BaseCommand {
                     Button.primary(event.getUser().getId() + ":gifts:page:" + (pageNumber + 1) + ":" + leaderboardIndex + ":" + giftID, Emoji.fromUnicode("▶️"))
             );
             event.getHook().deleteOriginal().queue();
-            event.getMessage().editMessageEmbeds(leaderboardEmbed.getLeft()).addFile(leaderboardEmbed.getRight(), "leaderboard.png").setActionRows(pageButtons).queue();
+            event.getMessage().editMessageEmbeds(leaderboardEmbed.getLeft()).setFiles(FileUpload.fromData(leaderboardEmbed.getRight(), "leaderboard.png")).setComponents(pageButtons).queue();
         }
     }
 

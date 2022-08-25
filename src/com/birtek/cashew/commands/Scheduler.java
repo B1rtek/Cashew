@@ -178,7 +178,7 @@ public class Scheduler extends BaseCommand {
                 }
                 MessageEmbed scheduledMessagesEmbed = generateScheduledMessagesEmbed(messages, event.getGuild(), page);
                 Pair<ActionRow, ActionRow> schedulerListActionRows = generateScheduledMessagesListActionRows(messages, event.getUser(), false);
-                event.replyEmbeds(scheduledMessagesEmbed).addActionRows(schedulerListActionRows.getLeft(), schedulerListActionRows.getRight()).setEphemeral(true).queue();
+                event.replyEmbeds(scheduledMessagesEmbed).addComponents(schedulerListActionRows.getLeft(), schedulerListActionRows.getRight()).setEphemeral(true).queue();
             }
         }
     }
@@ -201,12 +201,12 @@ public class Scheduler extends BaseCommand {
             return;
         }
         if (messages.isEmpty()) {
-            event.editMessage("There are no scheduled messages on this server").setEmbeds().setActionRows().queue();
+            event.editMessage("There are no scheduled messages on this server").setEmbeds().setComponents().queue();
             return;
         }
         MessageEmbed scheduledMessagesEmbed = generateScheduledMessagesEmbed(messages, event.getGuild(), page);
         Pair<ActionRow, ActionRow> schedulerListActionRows = generateScheduledMessagesListActionRows(messages, event.getUser(), deleteAllConfirm);
-        event.editMessageEmbeds(scheduledMessagesEmbed).setActionRows(schedulerListActionRows.getLeft(), schedulerListActionRows.getRight()).queue();
+        event.editMessageEmbeds(scheduledMessagesEmbed).setComponents(schedulerListActionRows.getLeft(), schedulerListActionRows.getRight()).queue();
     }
 
     /**
@@ -234,7 +234,7 @@ public class Scheduler extends BaseCommand {
                 Button.secondary(event.getUser().getId() + ":scheduler:back:" + pageNumber, "Back"),
                 Button.danger(event.getUser().getId() + ":scheduler:delete:" + chosenMessageIndex, "Delete")
         );
-        event.editMessageEmbeds(scheduledMessageDetailsEmbed).setActionRows(scheduledMessageDetailsActionRow).queue();
+        event.editMessageEmbeds(scheduledMessageDetailsEmbed).setComponents(scheduledMessageDetailsActionRow).queue();
     }
 
     /**

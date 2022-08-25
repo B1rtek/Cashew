@@ -50,7 +50,7 @@ public class ReminderRunnable implements Runnable {
             reminderEmbed.setTitle(Objects.requireNonNull(privateChannel.getUser()).getName() + ", your reminder:");
             reminderEmbed.setDescription(this.content);
             if (this.ping) {
-                privateChannel.sendMessageEmbeds(reminderEmbed.build()).append(privateChannel.getUser().getAsMention()).queue();
+                privateChannel.sendMessage(privateChannel.getUser().getAsMention()).addEmbeds(reminderEmbed.build()).queue();
             } else {
                 privateChannel.sendMessageEmbeds(reminderEmbed.build()).queue();
             }

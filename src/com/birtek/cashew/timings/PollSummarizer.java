@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class PollSummarizer implements Runnable {
     private static int randomReadableRGB(boolean bright) {
         Random random = new Random();
         int rand = random.nextInt(256);
-        if(bright) {
+        if (bright) {
             return (rand < 150 ? 150 : (Math.min(rand, 220)));
         } else {
             return (rand < 75 ? 75 : (Math.min(rand, 125)));
@@ -87,10 +88,10 @@ public class PollSummarizer implements Runnable {
 
     private ArrayList<Pair<String, Integer>> generatePiechartCompatibleVotes(ArrayList<Pair<String, Integer>> votes) {
         ArrayList<Pair<String, Integer>> shortVotes = new ArrayList<>();
-        for(Pair<String, Integer> vote: votes) {
-            if(vote.getRight() == 0) continue;
+        for (Pair<String, Integer> vote : votes) {
+            if (vote.getRight() == 0) continue;
             String optionName = vote.getLeft();
-            if(optionName.length() > 15) optionName = optionName.substring(0, 12) + "...";
+            if (optionName.length() > 15) optionName = optionName.substring(0, 12) + "...";
             shortVotes.add(Pair.of(optionName, vote.getRight()));
         }
         return shortVotes;
@@ -139,7 +140,7 @@ public class PollSummarizer implements Runnable {
                 pollEmbedMessage.editMessageEmbeds(resultsEmbed.build()).queue();
             } else {
                 resultsEmbed.setImage("attachment://piechart.png");
-                pollEmbedMessage.editMessageEmbeds(resultsEmbed.build()).addFile(pieChart, "piechart.png").queue();
+                pollEmbedMessage.editMessageEmbeds(resultsEmbed.build()).setFiles(FileUpload.fromData(pieChart, "piechart.png")).queue();
             }
         } catch (NullPointerException ignored) {
         }
