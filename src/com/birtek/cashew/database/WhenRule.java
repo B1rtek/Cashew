@@ -9,8 +9,6 @@ package com.birtek.cashew.database;
  * 4 - member removes a reaction
  * 5 - member edits a message
  * 6 - member deletes a message
- * All types require their parameters - for example 3 and 4 require the sourceMessageID,
- * the correctness of data can be verified with {@link #verify() verify()}
  * There are following actions that can be performed:
  * 1 - send a message
  * 2 - add a role to the interacting user
@@ -20,33 +18,24 @@ package com.birtek.cashew.database;
 public class WhenRule {
 
     final String serverID;
-    final int ruleType;
-    String sourceMessageID, sourceChannelID, sourceReaction, targetChannelID, targetMessageContent, targetRoleID, targetUserID;
-    private int actionType;
+    private String sourceMessageID, sourceChannelID, sourceReaction, targetChannelID, targetMessageContent, targetRoleID, targetUserID;
+    private int triggerType, actionType;
 
     /**
-     * Constructor that takes all input parameters. Actions to perform can be configured with dedicated methods
+     * Creates the
      *
-     * @param serverID        ID of the server where the rule is being set up
-     * @param ruleType        ID of the rule, types of rules are listed above
-     * @param sourceMessageID (optional) source message matching the rule type, set to null if not needed
-     * @param sourceChannelID (optional) source channel matching the rule type, set to null if not needed
-     * @param sourceReaction  (optional) source reaction unicode string matching the rule type, set to null if not needed
+     * @param serverID ID of the server where the rule is being set up
      */
-    public WhenRule(String serverID, int ruleType, String sourceMessageID, String sourceChannelID, String sourceReaction) {
+    public WhenRule(String serverID) {
         this.serverID = serverID;
-        this.ruleType = ruleType;
-        this.sourceMessageID = sourceMessageID;
-        this.sourceChannelID = sourceChannelID;
-        this.sourceReaction = sourceReaction;
     }
 
     public String getServerID() {
         return serverID;
     }
 
-    public int getRuleType() {
-        return ruleType;
+    public int getTriggerType() {
+        return triggerType;
     }
 
     public int getActionType() {
@@ -82,25 +71,86 @@ public class WhenRule {
     }
 
     /**
-     * Verifies whether the rule has all input parameters set up correctly
-     *
-     * @return true if it's correct, false otherwise
+     * Removes all trigger data
      */
-    boolean verify() {
-        if (ruleType == 3 || ruleType == 4) {
-            return sourceMessageID != null;
-        }
-        return true;
+    private void clearTrigger() {
+        sourceReaction = null;
+        sourceChannelID = null;
+        sourceMessageID = null;
     }
 
     /**
      * Removes all action data
      */
-    private void clearData() {
+    private void clearAction() {
         targetChannelID = null;
         targetMessageContent = null;
         targetRoleID = null;
         targetUserID = null;
+    }
+
+    /**
+     * Sets up the member join trigger (1)
+     */
+    public void memberJoinTrigger() {
+        clearTrigger();
+        triggerType = 1;
+    }
+
+    /**
+     * Sets up the member leave trigger (2)
+     */
+    public void memberLeaveTrigger() {
+        clearTrigger();
+        triggerType = 2;
+    }
+
+    /**
+     * Sets up the member reaction to a message trigger (3)
+     *
+     * @param sourceMessageID ID of the message to which reacting will trigger the action, cannot be null
+     * @param sourceReaction  unicode string representing the reaction emoji, cannot be null
+     */
+    public void memberReactsTrigger(String sourceMessageID, String sourceReaction) {
+        clearTrigger();
+        triggerType = 3;
+        this.sourceMessageID = sourceMessageID;
+        this.sourceReaction = sourceReaction;
+    }
+
+    /**
+     * Sets up the member reaction removal trigger (4)
+     *
+     * @param sourceMessageID ID of the message from which removing a reaction will trigger the action, cannot be null
+     * @param sourceReaction  unicode string representing the reaction emoji, cannot be null
+     */
+    public void memberRemovesReactionTrigger(String sourceMessageID, String sourceReaction) {
+        clearTrigger();
+        triggerType = 4;
+        this.sourceMessageID = sourceMessageID;
+        this.sourceReaction = sourceReaction;
+    }
+
+    /**
+     * Sets up the member edits a message trigger (5)
+     *
+     * @param sourceChannelID channel in which editing a message triggers the action, can be null for server-wide detection
+     */
+    public void memberEditsMessageTrigger(String sourceChannelID) {
+        clearTrigger();
+        triggerType = 5;
+        this.sourceChannelID = sourceChannelID;
+    }
+
+    /**
+     * Sets up the member deletes a message trigger (6)
+     *
+     * @param sourceChannelID channel in which removing a message triggers the action, can be null for server-wide detection
+     */
+    public void memberDeletesMessageTrigger(String sourceChannelID) {
+        clearTrigger();
+        triggerType = 6;
+        this.sourceChannelID = sourceChannelID;
     }
 
     /**
@@ -109,8 +159,8 @@ public class WhenRule {
      * @param targetMessageContent content of the message that will be sent when triggered
      * @param targetChannelID      ID of the channel in which the message will be sent
      */
-    public void sendMessage(String targetMessageContent, String targetChannelID) {
-        clearData();
+    public void sendMessageAction(String targetMessageContent, String targetChannelID) {
+        clearAction();
         this.targetMessageContent = targetMessageContent;
         this.targetChannelID = targetChannelID;
         actionType = 1;
@@ -121,8 +171,8 @@ public class WhenRule {
      *
      * @param targetRoleID ID of the role to add to the interacting user when triggered
      */
-    public void addRole(String targetRoleID) {
-        clearData();
+    public void addRoleAction(String targetRoleID) {
+        clearAction();
         this.targetRoleID = targetRoleID;
         actionType = 2;
     }
@@ -132,8 +182,8 @@ public class WhenRule {
      *
      * @param targetRoleID ID of the role to remove from the interacting user when triggered
      */
-    public void removeRole(String targetRoleID) {
-        clearData();
+    public void removeRoleAction(String targetRoleID) {
+        clearAction();
         this.targetRoleID = targetRoleID;
         actionType = 3;
     }
@@ -143,8 +193,8 @@ public class WhenRule {
      *
      * @param targetUserID ID of the user to whom the action will be passed
      */
-    public void passToDM(String targetUserID) {
-        clearData();
+    public void passToDMAction(String targetUserID) {
+        clearAction();
         this.targetUserID = targetUserID;
         actionType = 4;
     }
