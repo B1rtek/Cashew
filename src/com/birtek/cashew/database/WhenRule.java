@@ -14,6 +14,7 @@ package com.birtek.cashew.database;
  * 2 - add a role to the interacting user
  * 3 - remove a role from the interacting user
  * 4 - pass the information to setter's DMs
+ * 5 - pass the information to a channel
  */
 public class WhenRule {
 
@@ -178,7 +179,7 @@ public class WhenRule {
     }
 
     /**
-     * Sets up the add role action (3)
+     * Sets up the remove role action (3)
      *
      * @param targetRoleID ID of the role to remove from the interacting user when triggered
      */
@@ -197,5 +198,16 @@ public class WhenRule {
         clearAction();
         this.targetUserID = targetUserID;
         actionType = 4;
+    }
+
+    /**
+     * Sets up the pass to channel action (5)
+     *
+     * @param targetChannelID ID of the channel to pass the action to
+     */
+    public void passToChannel(String targetChannelID) {
+        clearAction();
+        this.targetChannelID = targetChannelID;
+        actionType = 5;
     }
 }
