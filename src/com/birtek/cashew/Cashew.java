@@ -6,6 +6,7 @@ import com.birtek.cashew.events.CountingMessageModificationDetector;
 import com.birtek.cashew.events.GuildMemberJoinAndLeave;
 import com.birtek.cashew.reactions.Counter;
 import com.birtek.cashew.reactions.ReactionsExecutor;
+import com.birtek.cashew.reactions.WhenExecutor;
 import com.birtek.cashew.timings.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -37,6 +38,7 @@ public class Cashew {
     public static PollManager pollManager;
     public static ReactionsSettingsManager reactionsSettingsManager;
     public static CommandsSettingsManager commandsSettingsManager;
+    public static WhenSettingsManager whenSettingsManager;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
 
@@ -49,7 +51,7 @@ public class Cashew {
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), //commands
-                        new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
+                        new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
                         new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
@@ -210,5 +212,6 @@ public class Cashew {
         pollManager.start(jda);
         reactionsSettingsManager = new ReactionsSettingsManager();
         commandsSettingsManager = new CommandsSettingsManager();
+        whenSettingsManager = new WhenSettingsManager();
     }
 }
