@@ -31,7 +31,7 @@ public class WhenExecutor extends ListenerAdapter {
                 embedToPass.setDescription(event.getUser().getName() + " (" + event.getUser().getId() + ")");
                 performPassAction(rule, event.getGuild(), embedToPass.build());
             } else {
-                performAction(rule, event.getGuild(), event.getMember());
+                performAction(rule, event.getGuild(), null, event.getUser());
             }
         }
     }
@@ -50,7 +50,7 @@ public class WhenExecutor extends ListenerAdapter {
                 embedToPass.setDescription(event.getUser().getName() + " (" + event.getUser().getId() + ")");
                 performPassAction(rule, event.getGuild(), embedToPass.build());
             } else {
-                performAction(rule, event.getGuild(), event.getMember());
+                performAction(rule, event.getGuild(), null, event.getUser());
             }
         }
     }
@@ -72,7 +72,7 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.addField("Message link", event.retrieveMessage().complete().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
-                    performAction(rule, event.getGuild(), event.getMember());
+                    performAction(rule, event.getGuild(), event.getMember(), null);
                 }
             }
         }
@@ -95,7 +95,7 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.addField("Message link", event.retrieveMessage().complete().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
-                    performAction(rule, event.getGuild(), event.getMember());
+                    performAction(rule, event.getGuild(), event.getMember(), null);
                 }
             }
         }
@@ -119,7 +119,7 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.addField("Message link", event.getMessage().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
-                    performAction(rule, event.getGuild(), event.getMember());
+                    performAction(rule, event.getGuild(), event.getMember(), null);
                 }
             }
         }
@@ -140,7 +140,7 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.setTitle("A message in channel " + event.getChannel().getName() + " (" + event.getChannel().getId() + ") was deleted");
                     embedToPass.setDescription("In server " + event.getGuild().getName() + " (" + event.getGuild().getId() + ")");
                 } else {
-                    performAction(rule, event.getGuild(), null);
+                    performAction(rule, event.getGuild(), null, null);
                 }
             }
         }
@@ -153,11 +153,11 @@ public class WhenExecutor extends ListenerAdapter {
      * @param server {@link Guild server} on which the action is going to be performed
      * @param member {@link Member member} of the server who might be affected by the action
      */
-    private void performAction(WhenRule rule, Guild server, Member member) {
+    private void performAction(WhenRule rule, Guild server, Member member, User user) {
         switch (rule.getActionType()) {
             case 1 -> {
                 TextChannel targetChannel = server.getChannelById(TextChannel.class, rule.getTargetChannelID());
-                actionSendMessage(rule.getTargetMessageContent(), targetChannel, member);
+                actionSendMessage(rule.getTargetMessageContent(), targetChannel, user);
             }
             case 2 -> {
                 if (member == null) return;
@@ -192,11 +192,11 @@ public class WhenExecutor extends ListenerAdapter {
      *
      * @param messageContent content of the message to send, with all "@user"s replaced with a mention of the user
      * @param targetChannel  {@link TextChannel channel} in which the message will be sent
-     * @param member         {@link Member member} whose name will be placed in the message, replacing all "@user" occurrences
+     * @param user           {@link User user} whose name will be placed in the message, replacing all "@user" occurrences
      */
-    private void actionSendMessage(String messageContent, TextChannel targetChannel, Member member) {
+    private void actionSendMessage(String messageContent, TextChannel targetChannel, User user) {
         if (targetChannel == null) return;
-        messageContent = messageContent.replace("@user", member.getAsMention());
+        messageContent = messageContent.replace("@user", user.getAsMention());
         targetChannel.sendMessage(messageContent).queue();
     }
 
