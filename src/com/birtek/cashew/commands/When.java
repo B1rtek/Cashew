@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class When extends BaseCommand {
 
-    private ArrayList<String> availableTriggers = new ArrayList<>() {
+    private final ArrayList<String> availableTriggers = new ArrayList<>() {
         {
             add("a user joins the server");
             add("a user leaves the server");
@@ -32,7 +32,7 @@ public class When extends BaseCommand {
         }
     };
 
-    private ArrayList<String> availableActions = new ArrayList<>() {
+    private final ArrayList<String> availableActions = new ArrayList<>() {
         {
             add("send a message <messageContent> in <#targetChannel>");
             add("add <@targetRole> to the interacting user");
@@ -274,6 +274,65 @@ public class When extends BaseCommand {
         }
     }
 
+    /**
+     * Shows the chosen page of the WhenRules list
+     *
+     * @param event            {@link ButtonInteractionEvent event} that triggered a refresh of the scheduled messages list embed
+     * @param page             number of the page to show
+     * @param deleteAllConfirm if set to true, will set the second action row to the version with the
+     *                         "delete all confirm" button
+     */
+    private void showPage(ButtonInteractionEvent event, int page, boolean deleteAllConfirm) {
+        int pageCount = Cashew.whenSettingsManager.getWhenRulesPageCount(Objects.requireNonNull(event.getGuild()).getId());
+        page = page < 1 ? 1 : (Math.min(page, pageCount));
+        ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getWhenRulesPage(event.getGuild().getId(), page);
+        if (rules == null) {
+            event.reply("Something went wrong while fetching the list of WhenRules, try again later").setEphemeral(true).queue();
+            return;
+        }
+        if (rules.isEmpty()) {
+            event.editMessage("There are no WhenRules set on this server").setEmbeds().setComponents().queue();
+            return;
+        }
+        MessageEmbed rulesListEmbed = generateRulesListEmbed(rules, event.getGuild(), page);
+        Pair<ActionRow, ActionRow> rulesListActionRows = generateRulesListActionRows(rules, event.getUser(), page, deleteAllConfirm);
+        event.editMessageEmbeds(rulesListEmbed).setComponents(rulesListActionRows.getLeft(), rulesListActionRows.getRight()).queue();
+    }
+
+    /**
+     * Deletes the selected rule and refreshes the embed
+     *
+     * @param event {@link ButtonInteractionEvent event} that was triggered by clicking the "delete" button
+     */
+    private void deleteRule(ButtonInteractionEvent event) {
+        MessageEmbed whenRulesListEmbed = event.getMessage().getEmbeds().get(0);
+        int chosenRuleIndex = getSelectedItemIndex(whenRulesListEmbed);
+        int pageNumber = getPageNumber(whenRulesListEmbed);
+        if (chosenRuleIndex == -1) {
+            event.reply("Select a message first").setEphemeral(true).queue();
+            return;
+        }
+        chosenRuleIndex += (pageNumber - 1) * 10;
+        if (Cashew.whenSettingsManager.removeWhenRuleByIndex(Objects.requireNonNull(event.getGuild()).getId(), chosenRuleIndex)) {
+            showPage(event, pageNumber, false);
+        } else {
+            event.reply("Something went wrong while removing the WhenRule, try again later").setEphemeral(true).queue();
+        }
+    }
+
+    /**
+     * Deletes all WhenRules and refreshes the list embed
+     *
+     * @param event {@link ButtonInteractionEvent event} that was triggered by clicking the "delete all confirm" button
+     */
+    private void deleteAll(ButtonInteractionEvent event) {
+        if (Cashew.whenSettingsManager.removeWhenRuleByIndex(Objects.requireNonNull(event.getGuild()).getId(), 0)) {
+            showPage(event, 1, true);
+        } else {
+            event.reply("Something went wrong while removing the WhenRules, try again later").setEphemeral(true).queue();
+        }
+    }
+
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         String[] buttonID = event.getComponentId().split(":");
@@ -284,17 +343,12 @@ public class When extends BaseCommand {
                 return;
             }
             switch (buttonID[2]) {
-                case "delete" -> {
-
-                }
-                case "deleteall" -> {
-
-                }
-                case "deleteall2" -> {
-
-                }
+                case "delete" -> deleteRule(event);
+                case "deleteall" -> showPage(event, getPageNumber(event.getMessage().getEmbeds().get(0)), true);
+                case "deleteall2" -> deleteAll(event);
                 case "page" -> {
-
+                    int pageNumber = Integer.parseInt(buttonID[3]);
+                    showPage(event, pageNumber, false);
                 }
             }
         }
