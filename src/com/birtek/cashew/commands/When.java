@@ -4,9 +4,14 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.WhenRule;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -119,6 +124,41 @@ public class When extends BaseCommand {
         return rulesListEmbed.build();
     }
 
+    /**
+     * Creates a {@link Pair Pair} of ActionRows - one of them being a {@link SelectMenu SelectMenu} used to choose the
+     * rule, other one with buttons to interact with the chosen rule
+     *
+     * @param rules            ArrayList of {@link WhenRule WhenRules}, consisting of 10 items at most
+     * @param user             {@link User user} who will be able to interact with the components in the ActionRows
+     * @param page             number of the page that is displayed above the ActionRows
+     * @param deleteAllConfirm if set to true, will generate with the "delete all confirmation" button instead of the
+     *                         "delete all" button
+     * @return a {@link Pair Pair} of {@link ActionRow ActionRows} - the first one with a {@link SelectMenu SelectMenu}
+     * with which the user selects the rule to interact with, and the othe one with a set of 4 buttons - "Delete",
+     * "Delete all/confirm delete all", "<" and ">" (used to switch between pages)
+     */
+    private Pair<ActionRow, ActionRow> generateRulesListActionRows(ArrayList<WhenRule> rules, User user, int page, boolean deleteAllConfirm) {
+        SelectMenu.Builder whenRulesSelectMenu = SelectMenu.create(user.getId() + ":when:list")
+                .setPlaceholder("Select a rule")
+                .setRequiredRange(1, 1);
+        int index = 0;
+        for (WhenRule rule : rules) {
+            whenRulesSelectMenu.addOption("Rule " + (page - 1) * 10 + index + 1, String.valueOf(index));
+            index++;
+        }
+        ArrayList<Button> whenRulesButtons = new ArrayList<>();
+        whenRulesButtons.add(Button.danger(user.getId() + ":when:delete", "Delete"));
+        if (deleteAllConfirm) {
+            whenRulesButtons.add(Button.danger(user.getId() + ":when:deleteall2", "[!] Confirm delete all [!]"));
+        } else {
+            whenRulesButtons.add(Button.danger(user.getId() + ":when:deleteall", "Delete all"));
+        }
+        whenRulesButtons.add(Button.primary(user.getId() + ":when:page:" + (page - 1), Emoji.fromUnicode("◀️")));
+        whenRulesButtons.add(Button.primary(user.getId() + ":when:page:" + (page + 1), Emoji.fromUnicode("▶️")));
+        return Pair.of(ActionRow.of(whenRulesSelectMenu.build()), ActionRow.of(whenRulesButtons));
+    }
+
+
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         if (event.getName().equals("when")) {
@@ -227,9 +267,34 @@ public class When extends BaseCommand {
                     return;
                 }
                 MessageEmbed rulesListEmbed = generateRulesListEmbed(rules, event.getGuild(), page);
-                event.replyEmbeds(rulesListEmbed).setEphemeral(true).queue();
-//                Pair<ActionRow, ActionRow> rulesListActionRows = generateRulesListActionRows(rules, event.getUser(), false);
-//                event.replyEmbeds(rulesListEmbed).addComponents(rulesListActionRows.getLeft(), rulesListActionRows.getRight()).setEphemeral(true).queue();
+                Pair<ActionRow, ActionRow> rulesListActionRows = generateRulesListActionRows(rules, event.getUser(), page, false);
+                event.replyEmbeds(rulesListEmbed).addComponents(rulesListActionRows.getLeft(), rulesListActionRows.getRight()).setEphemeral(true).queue();
+            }
+        }
+    }
+
+    @Override
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        String[] buttonID = event.getComponentId().split(":");
+        if(buttonID.length < 3) return;
+        if(buttonID[1].equals("when")) {
+            if(!event.getUser().getId().equals(buttonID[0])) {
+                event.reply("You can't interact with this embed").setEphemeral(true).queue();
+                return;
+            }
+            switch (buttonID[2]) {
+                case "delete" -> {
+
+                }
+                case "deleteall" -> {
+
+                }
+                case "deleteall2" -> {
+
+                }
+                case "page" -> {
+
+                }
             }
         }
     }
