@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -143,7 +144,7 @@ public class When extends BaseCommand {
                 .setRequiredRange(1, 1);
         int index = 0;
         for (WhenRule rule : rules) {
-            whenRulesSelectMenu.addOption("Rule " + (page - 1) * 10 + index + 1, String.valueOf(index));
+            whenRulesSelectMenu.addOption("Rule " + ((page - 1) * 10 + index + 1), String.valueOf(index));
             index++;
         }
         ArrayList<Button> whenRulesButtons = new ArrayList<>();
@@ -276,9 +277,9 @@ public class When extends BaseCommand {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         String[] buttonID = event.getComponentId().split(":");
-        if(buttonID.length < 3) return;
-        if(buttonID[1].equals("when")) {
-            if(!event.getUser().getId().equals(buttonID[0])) {
+        if (buttonID.length < 3) return;
+        if (buttonID[1].equals("when")) {
+            if (!event.getUser().getId().equals(buttonID[0])) {
                 event.reply("You can't interact with this embed").setEphemeral(true).queue();
                 return;
             }
@@ -312,6 +313,41 @@ public class When extends BaseCommand {
             if (!autocompletions.isEmpty()) {
                 event.replyChoiceStrings(autocompletions).queue();
             }
+        }
+    }
+
+    @Override
+    public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
+        String[] menuID = event.getComponentId().split(":");
+        if (menuID.length < 3) return;
+        if (menuID[1].equals("when")) {
+            if (!event.getUser().getId().equals(menuID[0])) {
+                event.reply("You can't interact with this select menu").setEphemeral(true).queue();
+                return;
+            }
+            MessageEmbed whenRulesListEmbed = event.getMessage().getEmbeds().get(0);
+            EmbedBuilder selectedWhenRulesListEmbed = new EmbedBuilder();
+            selectedWhenRulesListEmbed.setTitle(whenRulesListEmbed.getTitle());
+            selectedWhenRulesListEmbed.setThumbnail(Objects.requireNonNull(whenRulesListEmbed.getThumbnail()).getUrl());
+            selectedWhenRulesListEmbed.setFooter(Objects.requireNonNull(whenRulesListEmbed.getFooter()).getText());
+            int index = 0;
+            for (MessageEmbed.Field field : whenRulesListEmbed.getFields()) {
+                String fieldName = field.getName();
+                String fieldValue = field.getValue();
+                assert fieldName != null;
+                assert fieldValue != null;
+                if (fieldName.startsWith("__")) {
+                    fieldName = fieldName.substring(2, fieldName.length() - 2);
+                    fieldValue = fieldValue.substring(2, fieldValue.length() - 2);
+                }
+                if (index == Integer.parseInt(event.getSelectedOptions().get(0).getValue())) {
+                    selectedWhenRulesListEmbed.addField("__" + fieldName + "__", "__" + fieldValue + "__", field.isInline());
+                } else {
+                    selectedWhenRulesListEmbed.addField(fieldName, fieldValue, field.isInline());
+                }
+                index++;
+            }
+            event.editMessageEmbeds(selectedWhenRulesListEmbed.build()).queue();
         }
     }
 }
