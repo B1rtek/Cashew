@@ -159,6 +159,20 @@ public class WhenSettings {
     }
 
     /**
+     * Gets the number of pages (each containing max. 10 entries) of when rules
+     *
+     * @return the number of pages
+     */
+    public int getRulesPageCount() {
+        int total = 0;
+        for (int ruleType = 1; ruleType <= triggersCount; ruleType++) {
+            if (!settings.has(String.valueOf(ruleType))) continue;
+            total += settings.getJSONArray(String.valueOf(ruleType)).length();
+        }
+        return total / 10 + (total % 10 == 0 ? 0 : 1);
+    }
+
+    /**
      * Gets a rule by its index on the rules list
      *
      * @param index index of the rule, counting from 0

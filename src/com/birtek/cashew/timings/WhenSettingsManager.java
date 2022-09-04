@@ -66,6 +66,18 @@ public class WhenSettingsManager {
     }
 
     /**
+     * Gets the number of pages of when rules on the server
+     *
+     * @param serverID ID of the server to get the number of pages of
+     * @return the number of pages of when rules on the server
+     */
+    public int getWhenRulesPageCount(String serverID) {
+        WhenSettings settings = settingsMap.get(serverID);
+        if (settings == null) return 0;
+        return settings.getRulesPageCount();
+    }
+
+    /**
      * Gets the rule with the selected index from the server settings
      *
      * @param serverID ID of the server where the rule was requested

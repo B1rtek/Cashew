@@ -2,12 +2,12 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.WhenRule;
-import net.dv8tion.jda.api.entities.Channel;
-import net.dv8tion.jda.api.entities.ChannelType;
-import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -17,24 +17,107 @@ public class When extends BaseCommand {
 
     private ArrayList<String> availableTriggers = new ArrayList<>() {
         {
-            add("member joins the server");
-            add("member leaves the server");
-            add("member reacts to a message <sourceMessageID> <sourceReactionEmote>");
-            add("member removes a reaction <sourceMessageID> <sourceReactionEmote>");
-            add("member edits a message [#sourceChannel, optional]");
-            add("member deletes a message [#sourceChannel, optional]");
+            add("a user joins the server");
+            add("a user leaves the server");
+            add("a member reacts to the message <sourceMessageID> with <sourceReactionEmote>");
+            add("a member removes reaction <sourceReactionEmote> from message <sourceMessageID>");
+            add("a member edits a message [#sourceChannel, optional]");
+            add("a member deletes a message [#sourceChannel, optional]");
         }
     };
 
     private ArrayList<String> availableActions = new ArrayList<>() {
         {
-            add("send a message <messageContent> <#targetChannel>");
-            add("add a role to the interacting user <@targetRole>");
-            add("remove a role from the interacting user <@targetRole>");
+            add("send a message <messageContent> in <#targetChannel>");
+            add("add <@targetRole> to the interacting user");
+            add("remove <@targetRole> from the interacting user");
             add("pass the information about the event to your DM");
             add("pass the information to a channel <#targetChannel>");
         }
     };
+
+    private Pair<String, String> generateRuleContents(WhenRule rule, Guild server) {
+        String triggerDescription = "When ";
+        switch (rule.getTriggerType()) {
+            case 1, 2 -> triggerDescription += availableTriggers.get(rule.getTriggerType() - 1);
+            case 3, 4 -> {
+                String sourceMessageID = rule.getSourceMessageID();
+                String sourceReactionEmote = rule.getSourceReaction();
+                triggerDescription += availableTriggers.get(rule.getTriggerType() - 1).replace("<sourceReactionEmote>", sourceReactionEmote).replace("<sourceMessageID>", sourceMessageID);
+            }
+            case 5, 6 -> {
+                String sourceChannelID = rule.getSourceChannelID();
+                String sourceChannelName = "";
+                if (sourceChannelID != null) {
+                    TextChannel sourceChannel = server.getChannelById(TextChannel.class, sourceChannelID);
+                    if (sourceChannel != null) sourceChannelName = "in #" + sourceChannel.getName();
+                }
+                triggerDescription += availableTriggers.get(rule.getTriggerType() - 1).replace("[#sourceChannel, optional]", "in " + sourceChannelName);
+            }
+        }
+        String actionDescription = "";
+        switch (rule.getActionType()) {
+            case 1 -> {
+                String targetMessageContent = "\"" + rule.getTargetMessageContent() + "\"";
+                String targetChannelName = rule.getTargetChannelID();
+                TextChannel targetChannel = server.getChannelById(TextChannel.class, targetChannelName);
+                if (targetChannel != null) {
+                    targetChannelName = "#" + targetChannel.getName();
+                }
+                actionDescription = availableActions.get(rule.getActionType() - 1).replace("<messageContent>", targetMessageContent).replace("<#targetChannel>", targetChannelName);
+            }
+            case 2, 3 -> {
+                String targetRoleName = rule.getTargetRoleID();
+                Role targetRole = server.getRoleById(targetRoleName);
+                if (targetRole != null) {
+                    targetRoleName = targetRole.getAsMention();
+                }
+                actionDescription = availableActions.get(rule.getActionType() - 1).replace("<@targetRole>", targetRoleName);
+            }
+            case 4 -> {
+                String targetUserName = rule.getTargetUserID();
+                Member targetMember = server.retrieveMemberById(targetUserName).complete();
+                if (targetMember != null) {
+                    targetUserName = targetMember.getAsMention();
+                }
+                actionDescription = "pass the information about the event to " + targetUserName + " 's DM";
+            }
+            case 5 -> {
+                String targetChannelName = rule.getTargetChannelID();
+                TextChannel targetChannel = server.getChannelById(TextChannel.class, targetChannelName);
+                if (targetChannel != null) {
+                    targetChannelName = "#" + targetChannel.getName();
+                }
+                actionDescription = availableActions.get(rule.getActionType() - 1).replace("<#targetChannel>", targetChannelName);
+            }
+        }
+        return Pair.of(triggerDescription, actionDescription);
+    }
+
+    /**
+     * Generates an {@link MessageEmbed embed} with the provided {@link WhenRule WhenRules} list, showing their contents
+     *
+     * @param rules  ArrayList of {@link WhenRule WhenRules} representing a page of the list, with no more than 10 rules
+     * @param server {@link Guild server} from which the rules are listed
+     * @param page   number of the page to display
+     * @return a {@link MessageEmbed MessageEmbed} with the title "WhenRules on (server)", with a page of rules below,
+     * with the trigger in the title and the action in the description, number of the current page in the footer as well
+     * as the number of total pages, and the server icon in the thumbnail
+     */
+    private MessageEmbed generateRulesListEmbed(ArrayList<WhenRule> rules, Guild server, int page) {
+        EmbedBuilder rulesListEmbed = new EmbedBuilder();
+        rulesListEmbed.setTitle("WhenRules set on " + server.getName());
+        rulesListEmbed.setThumbnail(server.getIconUrl());
+        int index = 1;
+        for (WhenRule rule : rules) {
+            Pair<String, String> ruleContents = generateRuleContents(rule, server);
+            rulesListEmbed.addField((index + (page - 1) * 10) + ". " + ruleContents.getLeft(), ruleContents.getRight(), false);
+            index++;
+        }
+        int pageCount = Cashew.whenSettingsManager.getWhenRulesPageCount(server.getId());
+        rulesListEmbed.setFooter("Page " + page + " out of " + pageCount);
+        return rulesListEmbed.build();
+    }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
@@ -131,7 +214,22 @@ public class When extends BaseCommand {
                     event.reply("Something went wrong while saving the new rule, try again later").setEphemeral(true).queue();
                 }
             } else if (event.getSubcommandName().equals("list")) {
-                event.reply("//TODO not implemented yet").setEphemeral(true).queue();
+                int page = event.getOption("page", 1, OptionMapping::getAsInt);
+                int pageCount = Cashew.whenSettingsManager.getWhenRulesPageCount(Objects.requireNonNull(event.getGuild()).getId());
+                if (pageCount == 0) {
+                    event.reply("There are no WhenRules set on this server yet").setEphemeral(true).queue();
+                    return;
+                }
+                page = page < 1 ? 1 : (Math.min(page, pageCount));
+                ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getWhenRulesPage(event.getGuild().getId(), page);
+                if (rules == null) {
+                    event.reply("Something went wrong while fetching the list of WhenRules, try again later").setEphemeral(true).queue();
+                    return;
+                }
+                MessageEmbed rulesListEmbed = generateRulesListEmbed(rules, event.getGuild(), page);
+                event.replyEmbeds(rulesListEmbed).setEphemeral(true).queue();
+//                Pair<ActionRow, ActionRow> rulesListActionRows = generateRulesListActionRows(rules, event.getUser(), false);
+//                event.replyEmbeds(rulesListEmbed).addComponents(rulesListActionRows.getLeft(), rulesListActionRows.getRight()).setEphemeral(true).queue();
             }
         }
     }
