@@ -27,8 +27,9 @@ public class WhenExecutor extends ListenerAdapter {
         for (WhenRule rule : rules) {
             if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                 EmbedBuilder embedToPass = new EmbedBuilder();
-                embedToPass.setTitle("User joined the server " + event.getGuild().getName());
-                embedToPass.setDescription(event.getUser().getName() + " (" + event.getUser().getId() + ")");
+                String title = "User joined the server" + (rule.getActionType() == 5 ? "" : " " + event.getGuild().getName());
+                embedToPass.setTitle(title);
+                embedToPass.setDescription(event.getUser().getAsMention() + " (" + event.getUser().getId() + ")");
                 performPassAction(rule, event.getGuild(), embedToPass.build());
             } else {
                 performAction(rule, event.getGuild(), event.getUser());
@@ -46,8 +47,9 @@ public class WhenExecutor extends ListenerAdapter {
         for (WhenRule rule : rules) {
             if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                 EmbedBuilder embedToPass = new EmbedBuilder();
-                embedToPass.setTitle("User left the server " + event.getGuild().getName());
-                embedToPass.setDescription(event.getUser().getName() + " (" + event.getUser().getId() + ")");
+                String title = "User left the server" + (rule.getActionType() == 5 ? "" : " " + event.getGuild().getName());
+                embedToPass.setTitle(title);
+                embedToPass.setDescription(event.getUser().getAsMention() + " (" + event.getUser().getId() + ")");
                 performPassAction(rule, event.getGuild(), embedToPass.build());
             } else {
                 performAction(rule, event.getGuild(), event.getUser());
@@ -67,8 +69,13 @@ public class WhenExecutor extends ListenerAdapter {
             if (event.getMessageId().equals(rule.getSourceMessageID()) && event.getEmoji().getAsReactionCode().equals(rule.getSourceReaction())) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                     EmbedBuilder embedToPass = new EmbedBuilder();
-                    embedToPass.setTitle("User " + event.retrieveUser().complete().getName() + " reacted with " + rule.getSourceReaction());
-                    embedToPass.setDescription("In server " + event.getGuild().getName() + " (" + event.getGuild().getId() + ")");
+                    embedToPass.setTitle("Member reacted with " + rule.getSourceReaction());
+                    User interactingUser = event.retrieveUser().complete();
+                    String description = interactingUser.getAsMention() + " (" + interactingUser.getId() + ")";
+                    if (rule.getActionType() != 5) {
+                        description += ", in server " + event.getGuild().getName();
+                    }
+                    embedToPass.setDescription(description);
                     embedToPass.addField("Message link", event.retrieveMessage().complete().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
@@ -90,8 +97,12 @@ public class WhenExecutor extends ListenerAdapter {
             if (event.getMessageId().equals(rule.getSourceMessageID()) && event.getEmoji().getAsReactionCode().equals(rule.getSourceReaction())) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                     EmbedBuilder embedToPass = new EmbedBuilder();
-                    embedToPass.setTitle("User " + event.retrieveUser().complete().getName() + " removed a reaction " + rule.getSourceReaction());
-                    embedToPass.setDescription("In server " + event.getGuild().getName() + " (" + event.getGuild().getId() + ")");
+                    embedToPass.setTitle("Member removed a reaction " + rule.getSourceReaction());
+                    User interactingUser = event.retrieveUser().complete();
+                    String description = interactingUser.getAsMention() + " (" + interactingUser.getId() + ")";                    if (rule.getActionType() != 5) {
+                        description += ", in server " + event.getGuild().getName();
+                    }
+                    embedToPass.setDescription(description);
                     embedToPass.addField("Message link", event.retrieveMessage().complete().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
@@ -113,8 +124,9 @@ public class WhenExecutor extends ListenerAdapter {
             if ((rule.getSourceChannelID() == null) || (rule.getSourceChannelID().equals(event.getChannel().getId()))) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                     EmbedBuilder embedToPass = new EmbedBuilder();
-                    embedToPass.setTitle("User " + event.getAuthor().getId() + " edited their message");
-                    embedToPass.setDescription("In server " + event.getGuild().getName() + " (" + event.getGuild().getId() + ")");
+                    embedToPass.setTitle("Member edited their message");
+                    String description = event.getAuthor().getAsMention() + " (" + event.getAuthor().getId() + "), in " + (rule.getActionType() != 5 ? ("server " + event.getGuild().getName()) + ", " : "") + "<#" + event.getChannel().getId() + ">";
+                    embedToPass.setDescription(description);
                     embedToPass.addField("New content", event.getMessage().getContentRaw(), false);
                     embedToPass.addField("Message link", event.getMessage().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
@@ -137,8 +149,9 @@ public class WhenExecutor extends ListenerAdapter {
             if ((rule.getSourceChannelID() == null) || (rule.getSourceChannelID().equals(event.getChannel().getId()))) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                     EmbedBuilder embedToPass = new EmbedBuilder();
-                    embedToPass.setTitle("A message in channel " + event.getChannel().getName() + " (" + event.getChannel().getId() + ") was deleted");
-                    embedToPass.setDescription("In server " + event.getGuild().getName() + " (" + event.getGuild().getId() + ")");
+                    embedToPass.setTitle("A message was deleted");
+                    String description = "In " + (rule.getActionType() != 5 ? ("server " + event.getGuild().getName()) + ", in " : "") + "<#" + event.getChannel().getId() + ">";
+                    embedToPass.setDescription(description);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
                     performAction(rule, event.getGuild(), null);

@@ -56,7 +56,7 @@ public class When extends BaseCommand {
                 String sourceChannelName = "";
                 if (sourceChannelID != null) {
                     TextChannel sourceChannel = server.getChannelById(TextChannel.class, sourceChannelID);
-                    if (sourceChannel != null) sourceChannelName = "in #" + sourceChannel.getName();
+                    if (sourceChannel != null) sourceChannelName = "in <#" + sourceChannel.getId() + ">";
                 }
                 triggerDescription += availableTriggers.get(rule.getTriggerType() - 1).replace("[#sourceChannel, optional]", sourceChannelName);
             }
@@ -68,7 +68,7 @@ public class When extends BaseCommand {
                 String targetChannelName = rule.getTargetChannelID();
                 TextChannel targetChannel = server.getChannelById(TextChannel.class, targetChannelName);
                 if (targetChannel != null) {
-                    targetChannelName = "#" + targetChannel.getName();
+                    targetChannelName = "<#" + targetChannel.getId() + ">";
                 }
                 actionDescription = availableActions.get(rule.getActionType() - 1).replace("<messageContent>", targetMessageContent).replace("<#targetChannel>", targetChannelName);
             }
@@ -92,7 +92,7 @@ public class When extends BaseCommand {
                 String targetChannelName = rule.getTargetChannelID();
                 TextChannel targetChannel = server.getChannelById(TextChannel.class, targetChannelName);
                 if (targetChannel != null) {
-                    targetChannelName = "#" + targetChannel.getName();
+                    targetChannelName = "<#" + targetChannel.getId() + ">";
                 }
                 actionDescription = availableActions.get(rule.getActionType() - 1).replace("<#targetChannel>", targetChannelName);
             }
