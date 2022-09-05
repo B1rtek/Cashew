@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.birtek.cashew'
-version '2.24.1'
+version '2.25'
 compileJava.options.encoding = 'UTF-8'
 
 
@@ -39,7 +39,7 @@ build.mustRunAfter clean
 
 jar {
     manifest {
-        attributes 'Class-Path': 'build/libs/Cashew-2.24.1-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
+        attributes 'Class-Path': 'build/libs/Cashew-2.25-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
     }
 }
 
@@ -48,7 +48,7 @@ wrapper {
 }
 
 shadowJar {
-    archiveFileName = "Cashew-2.24.1-all.jar"
+    archiveFileName = "Cashew-2.25-all.jar"
 }
 
 //
