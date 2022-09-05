@@ -1,8 +1,8 @@
 package com.birtek.cashew;
 
 import com.birtek.cashew.commands.*;
-import com.birtek.cashew.events.CountingMessageDeletionDetector;
-import com.birtek.cashew.events.CountingMessageModificationDetector;
+import com.birtek.cashew.reactions.CountingMessageDeletionDetector;
+import com.birtek.cashew.reactions.CountingMessageModificationDetector;
 import com.birtek.cashew.reactions.Counter;
 import com.birtek.cashew.reactions.ReactionsExecutor;
 import com.birtek.cashew.reactions.WhenExecutor;
