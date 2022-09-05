@@ -31,7 +31,7 @@ public class WhenExecutor extends ListenerAdapter {
                 embedToPass.setDescription(event.getUser().getName() + " (" + event.getUser().getId() + ")");
                 performPassAction(rule, event.getGuild(), embedToPass.build());
             } else {
-                performAction(rule, event.getGuild(), null, event.getUser());
+                performAction(rule, event.getGuild(), event.getUser());
             }
         }
     }
@@ -50,7 +50,7 @@ public class WhenExecutor extends ListenerAdapter {
                 embedToPass.setDescription(event.getUser().getName() + " (" + event.getUser().getId() + ")");
                 performPassAction(rule, event.getGuild(), embedToPass.build());
             } else {
-                performAction(rule, event.getGuild(), null, event.getUser());
+                performAction(rule, event.getGuild(), event.getUser());
             }
         }
     }
@@ -72,7 +72,7 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.addField("Message link", event.retrieveMessage().complete().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
-                    performAction(rule, event.getGuild(), event.getMember(), null);
+                    performAction(rule, event.getGuild(), event.getUser());
                 }
             }
         }
@@ -95,7 +95,7 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.addField("Message link", event.retrieveMessage().complete().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
-                    performAction(rule, event.getGuild(), event.getMember(), null);
+                    performAction(rule, event.getGuild(), event.getUser());
                 }
             }
         }
@@ -119,7 +119,7 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.addField("Message link", event.getMessage().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
-                    performAction(rule, event.getGuild(), event.getMember(), null);
+                    performAction(rule, event.getGuild(), event.getAuthor());
                 }
             }
         }
@@ -139,8 +139,9 @@ public class WhenExecutor extends ListenerAdapter {
                     EmbedBuilder embedToPass = new EmbedBuilder();
                     embedToPass.setTitle("A message in channel " + event.getChannel().getName() + " (" + event.getChannel().getId() + ") was deleted");
                     embedToPass.setDescription("In server " + event.getGuild().getName() + " (" + event.getGuild().getId() + ")");
+                    performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
-                    performAction(rule, event.getGuild(), null, null);
+                    performAction(rule, event.getGuild(), null);
                 }
             }
         }
@@ -151,21 +152,21 @@ public class WhenExecutor extends ListenerAdapter {
      *
      * @param rule   {@link WhenRule WhenRule} which specifies what needs to be done
      * @param server {@link Guild server} on which the action is going to be performed
-     * @param member {@link Member member} of the server who might be affected by the action
+     * @param user   {@link User user (member)} of the server who might be affected by the action
      */
-    private void performAction(WhenRule rule, Guild server, Member member, User user) {
+    private void performAction(WhenRule rule, Guild server, User user) {
         switch (rule.getActionType()) {
             case 1 -> {
                 TextChannel targetChannel = server.getChannelById(TextChannel.class, rule.getTargetChannelID());
                 actionSendMessage(rule.getTargetMessageContent(), targetChannel, user);
             }
             case 2 -> {
-                if (member == null) return;
-                actionAddRole(member, server, rule.getTargetRoleID());
+                if (user == null) return;
+                actionAddRole(user, server, rule.getTargetRoleID());
             }
             case 3 -> {
-                if (member == null) return;
-                actionRemoveRole(member, server, rule.getTargetRoleID());
+                if (user == null) return;
+                actionRemoveRole(user, server, rule.getTargetRoleID());
             }
         }
     }
@@ -196,34 +197,44 @@ public class WhenExecutor extends ListenerAdapter {
      */
     private void actionSendMessage(String messageContent, TextChannel targetChannel, User user) {
         if (targetChannel == null) return;
-        messageContent = messageContent.replace("@user", user.getAsMention());
-        targetChannel.sendMessage(messageContent).queue();
+        String userMention = user == null ? "A user" : user.getAsMention();
+        messageContent = messageContent.replace("@user", userMention);
+        try {
+            targetChannel.sendMessage(messageContent).complete();
+        } catch (Exception ignored) {
+        }
     }
 
     /**
      * Performs the second action - adds a role to a member
      *
-     * @param targetMember {@link Member member} who will get a role assigned
+     * @param targetUser   {@link User user} who will get a role assigned
      * @param server       {@link Guild server} on which the role assignment will take place
      * @param targetRoleID ID of the role to assign, if the role doesn't exist, nothing will happen
      */
-    private void actionAddRole(Member targetMember, Guild server, String targetRoleID) {
+    private void actionAddRole(User targetUser, Guild server, String targetRoleID) {
         Role roleToAdd = server.getRoleById(targetRoleID);
         if (roleToAdd == null) return;
-        server.addRoleToMember(targetMember.getUser(), roleToAdd).queue();
+        try {
+            server.addRoleToMember(targetUser, roleToAdd).complete();
+        } catch (Exception ignored) {
+        }
     }
 
     /**
      * Performs the third action - removes a member's role
      *
-     * @param targetMember {@link Member member} who will get a role removed
+     * @param targetUser   {@link User user} who will get a role removed
      * @param server       {@link Guild server} on which the role removal will take place
      * @param targetRoleID ID of the role to remove, if the role doesn't exist, nothing will happen
      */
-    private void actionRemoveRole(Member targetMember, Guild server, String targetRoleID) {
+    private void actionRemoveRole(User targetUser, Guild server, String targetRoleID) {
         Role roleToAdd = server.getRoleById(targetRoleID);
         if (roleToAdd == null) return;
-        server.removeRoleFromMember(targetMember.getUser(), roleToAdd).queue();
+        try {
+            server.removeRoleFromMember(targetUser, roleToAdd).complete();
+        } catch (Exception ignored) {
+        }
     }
 
     /**
@@ -235,7 +246,7 @@ public class WhenExecutor extends ListenerAdapter {
     private void passToDM(MessageEmbed embedToPass, User targetUser) {
         if (targetUser == null) return;
         try {
-            targetUser.openPrivateChannel().complete().sendMessageEmbeds(embedToPass).queue();
+            targetUser.openPrivateChannel().complete().sendMessageEmbeds(embedToPass).complete();
         } catch (Exception ignored) {
         }
     }
@@ -248,6 +259,9 @@ public class WhenExecutor extends ListenerAdapter {
      */
     private void passToChannel(MessageEmbed embedToPass, TextChannel targetChannel) {
         if (targetChannel == null) return;
-        targetChannel.sendMessageEmbeds(embedToPass).queue();
+        try {
+            targetChannel.sendMessageEmbeds(embedToPass).complete();
+        } catch (Exception ignored) {
+        }
     }
 }

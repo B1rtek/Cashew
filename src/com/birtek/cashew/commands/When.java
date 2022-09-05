@@ -58,7 +58,7 @@ public class When extends BaseCommand {
                     TextChannel sourceChannel = server.getChannelById(TextChannel.class, sourceChannelID);
                     if (sourceChannel != null) sourceChannelName = "in #" + sourceChannel.getName();
                 }
-                triggerDescription += availableTriggers.get(rule.getTriggerType() - 1).replace("[#sourceChannel, optional]", "in " + sourceChannelName);
+                triggerDescription += availableTriggers.get(rule.getTriggerType() - 1).replace("[#sourceChannel, optional]", sourceChannelName);
             }
         }
         String actionDescription = "";

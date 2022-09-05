@@ -133,16 +133,19 @@ public class WhenSettings {
      * @return an ArrayList of {@link WhenRule WhenRules} making up that page
      */
     public ArrayList<WhenRule> getRulesPage(int pageNumber) {
-        int firstIndex = pageNumber * 10, currentIndex = 0;
+        int firstIndex = (pageNumber - 1) * 10, currentIndex = 0;
         ArrayList<WhenRule> rulesPage = new ArrayList<>();
         for (int ruleType = 1; ruleType <= triggersCount; ruleType++) {
             if (!settings.has(String.valueOf(ruleType))) continue;
             int rulesTypeLength = settings.getJSONArray(String.valueOf(ruleType)).length();
-            if (currentIndex < firstIndex && currentIndex + rulesTypeLength > firstIndex) {
+            if (currentIndex + rulesTypeLength <= firstIndex) {
+                currentIndex += rulesTypeLength;
+            } else if (currentIndex < firstIndex && currentIndex + rulesTypeLength > firstIndex) {
                 int insideIndex = firstIndex - currentIndex;
                 ArrayList<WhenRule> rulesOfType = getRulesByType(ruleType);
                 while (insideIndex < rulesTypeLength && rulesPage.size() < 10) {
                     rulesPage.add(rulesOfType.get(insideIndex));
+                    insideIndex++;
                 }
                 currentIndex += rulesTypeLength;
             } else if (currentIndex < firstIndex + 10) {
