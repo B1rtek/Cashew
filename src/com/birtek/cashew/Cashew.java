@@ -3,7 +3,6 @@ package com.birtek.cashew;
 import com.birtek.cashew.commands.*;
 import com.birtek.cashew.events.CountingMessageDeletionDetector;
 import com.birtek.cashew.events.CountingMessageModificationDetector;
-import com.birtek.cashew.events.GuildMemberJoinAndLeave;
 import com.birtek.cashew.reactions.Counter;
 import com.birtek.cashew.reactions.ReactionsExecutor;
 import com.birtek.cashew.reactions.WhenExecutor;
@@ -28,10 +27,7 @@ import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 public class Cashew {
 
     public static String COMMAND_PREFIX = "$";
-    public static String CASHEW_USER_ID = "856980494175174747";
     public static String BIRTEK_USER_ID = "288000870187139073";
-    public static String NEKOPARA_EMOTES_UWU_SERVER_ID = "852811110158827530";
-    public static String PI_SERVER_ID = "848907956379582484";
     public static ScheduledMessagesManager scheduledMessagesManager;
     public static BirthdayRemindersManager birthdayRemindersManager;
     public static RemindersManager remindersManager;
@@ -51,7 +47,7 @@ public class Cashew {
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), //commands
-                        new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
+                        new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
                         new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
