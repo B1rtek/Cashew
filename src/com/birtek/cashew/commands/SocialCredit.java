@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -230,7 +231,7 @@ public class SocialCredit extends BaseCommand {
                             Button.primary(event.getUser().getId() + ":socialcredit:page:" + (pageNumber - 1) + ":" + (top ? "1" : "0"), Emoji.fromUnicode("◀️")),
                             Button.primary(event.getUser().getId() + ":socialcredit:page:" + (pageNumber + 1) + ":" + (top ? "1" : "0"), Emoji.fromUnicode("▶️"))
                     );
-                    event.getHook().setEphemeral(false).sendFile(leaderboardEmbed.getRight(), "leaderboard.png").addEmbeds(leaderboardEmbed.getLeft()).addActionRows(pageButtons).queue();
+                    event.getHook().setEphemeral(false).sendFiles(FileUpload.fromData(leaderboardEmbed.getRight(), "leaderboard.png")).addEmbeds(leaderboardEmbed.getLeft()).addComponents(pageButtons).queue();
                 }
             } else {
                 event.reply("Invalid subcommand (how?!)").setEphemeral(true).queue();
@@ -274,7 +275,7 @@ public class SocialCredit extends BaseCommand {
                     Button.primary(event.getUser().getId() + ":socialcredit:page:" + (pageNumber + 1) + ":" + (top ? "1" : "0"), Emoji.fromUnicode("▶️"))
             );
             event.getHook().deleteOriginal().queue();
-            event.getMessage().editMessageEmbeds(leaderboardEmbed.getLeft()).addFile(leaderboardEmbed.getRight(), "leaderboard.png").setActionRows(pageButtons).queue();
+            event.getMessage().editMessageEmbeds(leaderboardEmbed.getLeft()).setFiles(FileUpload.fromData(leaderboardEmbed.getRight(), "leaderboard.png")).setComponents(pageButtons).queue();
         }
     }
 

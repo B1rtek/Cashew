@@ -641,7 +641,7 @@ public class CaseSim extends BaseCommand {
         CasesimInvStats inventoryStats = database.getInventoryStats(event.getUser().getId(), requestedUser.getId());
         boolean asEphemeral = !inventoryStats.isPublic();
         Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), requestedUser, inventoryEmbed, asEphemeral, userName, null);
-        event.replyEmbeds(inventoryEmbed).addActionRows(actionRows.getLeft(), actionRows.getRight()).setEphemeral(asEphemeral).queue();
+        event.replyEmbeds(inventoryEmbed).setComponents(actionRows.getLeft(), actionRows.getRight()).setEphemeral(asEphemeral).queue();
     }
 
     /**
@@ -870,7 +870,7 @@ public class CaseSim extends BaseCommand {
         }
         if (item.getRight() == null) {
             if (item.getLeft() == null) {
-                event.editMessage("This inventory is private").setEmbeds().setActionRows().queue();
+                event.editMessage("This inventory is private").setEmbeds().setComponents().queue();
             } else {
                 event.reply("This item doesn't exist").setEphemeral(true).queue();
             }
@@ -947,11 +947,11 @@ public class CaseSim extends BaseCommand {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
         } else if (inventoryEmbed.getFields().isEmpty()) {
-            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setActionRows().queue();
+            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setComponents().queue();
             return;
         }
         Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), event.getUser(), inventoryEmbed, event.getMessage().isEphemeral(), "Your", null);
-        event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
+        event.editMessageEmbeds(inventoryEmbed).setComponents(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
     /**
@@ -980,11 +980,11 @@ public class CaseSim extends BaseCommand {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
         } else if (inventoryEmbed.getFields().isEmpty()) {
-            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setActionRows().queue();
+            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setComponents().queue();
             return;
         }
         Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), null, inventoryEmbed, event.getMessage().isEphemeral(), requestedUserName.toString(), buttonID[4]);
-        event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
+        event.editMessageEmbeds(inventoryEmbed).setComponents(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
     /**
@@ -1034,11 +1034,11 @@ public class CaseSim extends BaseCommand {
             event.reply("Something went wrong, try again later").setEphemeral(true).queue();
             return;
         } else if (inventoryEmbed.getFields().isEmpty()) {
-            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setActionRows().queue();
+            event.editMessage(Objects.requireNonNull(inventoryEmbed.getTitle())).setEmbeds().setComponents().queue();
             return;
         }
         Pair<ActionRow, ActionRow> actionRows = getInventoryEmbedActionRows(event.getUser(), null, inventoryEmbed, event.getMessage().isEphemeral(), requestedUserName.toString(), buttonID[4]);
-        event.editMessageEmbeds(inventoryEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
+        event.editMessageEmbeds(inventoryEmbed).setComponents(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
     /**

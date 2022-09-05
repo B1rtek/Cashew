@@ -1,6 +1,5 @@
 package com.birtek.cashew.reactions;
 
-import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.jetbrains.annotations.NotNull;
@@ -12,13 +11,15 @@ public class OwosEtc extends BaseReaction {
 
     String maplegasm = "https://cdn.discordapp.com/attachments/852812258677358592/857877021756620810/856925111809474610.png";
     String whentheimposterissus = "https://cdn.discordapp.com/attachments/857711843282649158/858835663179481118/maxresdefault.png";
+    public static String CASHEW_USER_ID = "856980494175174747";
+    String NEKOPARA_EMOTES_UWU_SERVER_ID = "something, this literally isn't used anymore so idc";
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String message = event.getMessage().getContentDisplay().toLowerCase(Locale.ROOT);
         String rawMessage = event.getMessage().getContentRaw().toLowerCase(Locale.ROOT);
         //System.out.println(message);
-        if (!event.getAuthor().getId().equals(Cashew.CASHEW_USER_ID) && checkIfNotBot(event)) {
+        if (!event.getAuthor().getId().equals(CASHEW_USER_ID) && checkIfNotBot(event)) {
             String reactionMessage = "";
             if (message.contains("owo") && rawMessage.contains("owo") && checkActivitySettings(event, 1)) {
                 reactionMessage += "OwO ";
@@ -52,7 +53,7 @@ public class OwosEtc extends BaseReaction {
                 event.getMessage().reply(reactionMessage).mentionRepliedUser(false).queue();
             }
             if (message.contains("( ͡° ͜ʖ ͡°)") && rawMessage.contains("( ͡° ͜ʖ ͡°)") && checkActivitySettings(event, 1)) {
-                if (event.getGuild().getId().equals(Cashew.NEKOPARA_EMOTES_UWU_SERVER_ID)) {
+                if (event.getGuild().getId().equals(NEKOPARA_EMOTES_UWU_SERVER_ID)) {
                     event.getMessage().reply(maplegasm).mentionRepliedUser(false).queue();
                 }
                 event.getMessage().reply("( ͡° ͜ʖ ͡°)( ͡° ͜ʖ ͡°)( ͡° ͜ʖ ͡°)").mentionRepliedUser(false).queue();

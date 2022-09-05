@@ -1,6 +1,5 @@
 package com.birtek.cashew.reactions;
 
-import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -107,7 +106,7 @@ public class ReactToMaple extends BaseReaction {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String message = event.getMessage().getContentDisplay().toLowerCase(Locale.ROOT);
-        if(!event.getAuthor().getId().equals(Cashew.CASHEW_USER_ID) && checkIfNotBot(event) && checkActivitySettings(event, 2)) {
+        if(!event.getAuthor().getId().equals(OwosEtc.CASHEW_USER_ID) && checkIfNotBot(event) && checkActivitySettings(event, 2)) {
             for(String mention: mapleMentions) {
                 if(message.contains(mention)) {
                     if(mention.equals("best catgirl") || mention.equals("best neko")) {

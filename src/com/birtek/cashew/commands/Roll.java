@@ -3,6 +3,7 @@ package com.birtek.cashew.commands;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +35,7 @@ public class Roll extends BaseCommand {
                 stringResults = new StringBuilder(stringResults.toString().replace(", ", "\n"));
                 stringResults.append("\n Sum: ").append(sum).append(", mean: ").append(mean);
                 event.reply("Results were too long to fit in an embed, so here's a file with all of them").queue();
-                event.getChannel().sendFile(new ByteArrayInputStream(stringResults.toString().getBytes()), "results.txt").queue();
+                event.getChannel().sendFiles(FileUpload.fromData(new ByteArrayInputStream(stringResults.toString().getBytes()), "results.txt")).queue();
             } else {
                 EmbedBuilder rollEmbed = new EmbedBuilder();
                 rollEmbed.setTitle("Roll");

@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -146,7 +147,7 @@ public class BestNeko extends BaseCommand {
                 piechartEmbed.setImage("attachment://piechart.png");
                 piechartEmbed.setColor(nekoColors.get(distribution.get(0).getLeft()));
                 piechartEmbed.setFooter("Total votes: " + (int) total);
-                event.replyFile(bestNekoPiechart, "piechart.png").addEmbeds(piechartEmbed.build()).queue();
+                event.replyFiles(FileUpload.fromData(bestNekoPiechart, "piechart.png")).addEmbeds(piechartEmbed.build()).queue();
             } else {
                 event.reply("No subcommand specified (how???)").setEphemeral(true).queue();
             }

@@ -1,11 +1,11 @@
 package com.birtek.cashew;
 
 import com.birtek.cashew.commands.*;
-import com.birtek.cashew.events.CountingMessageDeletionDetector;
-import com.birtek.cashew.events.CountingMessageModificationDetector;
-import com.birtek.cashew.events.GuildMemberJoinAndLeave;
+import com.birtek.cashew.reactions.CountingMessageDeletionDetector;
+import com.birtek.cashew.reactions.CountingMessageModificationDetector;
 import com.birtek.cashew.reactions.Counter;
 import com.birtek.cashew.reactions.ReactionsExecutor;
+import com.birtek.cashew.reactions.WhenExecutor;
 import com.birtek.cashew.timings.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -27,16 +27,14 @@ import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 public class Cashew {
 
     public static String COMMAND_PREFIX = "$";
-    public static String CASHEW_USER_ID = "856980494175174747";
     public static String BIRTEK_USER_ID = "288000870187139073";
-    public static String NEKOPARA_EMOTES_UWU_SERVER_ID = "852811110158827530";
-    public static String PI_SERVER_ID = "848907956379582484";
     public static ScheduledMessagesManager scheduledMessagesManager;
     public static BirthdayRemindersManager birthdayRemindersManager;
     public static RemindersManager remindersManager;
     public static PollManager pollManager;
     public static ReactionsSettingsManager reactionsSettingsManager;
     public static CommandsSettingsManager commandsSettingsManager;
+    public static WhenSettingsManager whenSettingsManager;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
 
@@ -48,8 +46,8 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), //commands
-                        new GuildMemberJoinAndLeave(), new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), //events
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), //commands
+                        new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
                         new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
@@ -200,6 +198,21 @@ public class Cashew {
                         .addOption(STRING, "command", "Command to change the settings of - leave blank to apply to all commands", false, true)
                         .addOption(CHANNEL, "channel", "Channel to apply the setting to - leave blank to apply to all channels", false, false)
                         .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true),
+                Commands.slash("when", "Cashew's custom trigger-action rules system")
+                        .addSubcommands(
+                                new SubcommandData("when", "Create a new rule")
+                                        .addOption(STRING, "trigger", "Trigger for the action", true, true)
+                                        .addOption(STRING, "action", "Action to perform", true, true)
+                                        .addOption(STRING, "sourcemessageid", "ID of the source message for the trigger")
+                                        .addOption(STRING, "sourcereactionemote", "Emote for the reaction trigger")
+                                        .addOption(CHANNEL, "sourcechannel", "Source channel for the trigger")
+                                        .addOption(STRING, "targetmessage", "Message content for the action")
+                                        .addOption(CHANNEL, "targetchannel", "Target channel for the action")
+                                        .addOption(ROLE, "targetrole", "Target role for the action"),
+                                new SubcommandData("list", "Displays an interactive list of custom rules set on this server")
+                                        .addOption(INTEGER, "page", "Number of the page of the rules to display, by default set to 1", false, false))
+                        .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
@@ -210,5 +223,6 @@ public class Cashew {
         pollManager.start(jda);
         reactionsSettingsManager = new ReactionsSettingsManager();
         commandsSettingsManager = new CommandsSettingsManager();
+        whenSettingsManager = new WhenSettingsManager();
     }
 }

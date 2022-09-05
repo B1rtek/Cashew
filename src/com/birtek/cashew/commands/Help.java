@@ -43,6 +43,7 @@ public class Help extends BaseCommand {
             add("roll");
             add("scheduler");
             add("socialcredit");
+            add("when");
         }
     };
 
@@ -243,6 +244,14 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.addField("`/socialcredit check <user>`", "Checks user's social credit score, by default yours.", false);
                 specificHelpEmbed.addField("`/socialcredit leaderboard <scoreboard> <page>`", "Displays server's social credit leaderboard", false);
             }
+            case "when" -> {
+                specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+                specificHelpEmbed.addField("Works in DMs", "No", true);
+                specificHelpEmbed.setTitle("When");
+                specificHelpEmbed.setDescription("Custom trigger-action rules system");
+                specificHelpEmbed.addField("`/when when <trigger> <action> [options relevant to the rule]`", "Creates a new rule. All options that need to be set are included in the trigger and action descriptions. The message deletion trigger does not pass information about the user who deleted the message, so certain features such as assigning roles to that user don't work. Reactions currently don't work with custom emotes.", false);
+                specificHelpEmbed.addField("`/when list [page]`", "Shows an interactive list of all rules, the list allows for deleting the rules", false);
+            }
             default -> {
                 specificHelpEmbed.setTitle("Unknown");
                 specificHelpEmbed.addField("There is no such command", "Try again :(", false);
@@ -258,7 +267,7 @@ public class Help extends BaseCommand {
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`, `/roll`", false);
         helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `/counting`, `dadjoke`, `/gifts`, `insp`, `korwin`, `kromer`, `nekoichi`, `ping`, `/socialcredit`", false);
-        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/cmdset`, `/poll`, `/reactions`, `/scheduler`", false);
+        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/cmdset`, `/poll`, `/reactions`, `/scheduler`, `/when`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;

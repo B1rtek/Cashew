@@ -141,7 +141,7 @@ public class Reminder extends BaseCommand {
                     }
                     MessageEmbed remindersEmbed = generateRemindersEmbed(reminders, event.getUser());
                     Pair<ActionRow, ActionRow> actionRows = generateListActionRows(reminders, event.getUser(), false);
-                    event.replyEmbeds(remindersEmbed).addActionRows(actionRows.getLeft(), actionRows.getRight()).setEphemeral(true).queue();
+                    event.replyEmbeds(remindersEmbed).addComponents(actionRows.getLeft(), actionRows.getRight()).setEphemeral(true).queue();
                 }
 //                case "delete" -> {
 //                    int id = event.getOption("id", -1, OptionMapping::getAsInt);
@@ -220,7 +220,7 @@ public class Reminder extends BaseCommand {
         ActionRow reminderDetailsButtons = ActionRow.of(
                 Button.secondary(event.getUser().getId() + ":reminder:back", "Back"),
                 Button.danger(event.getUser().getId() + ":reminder:delete:" + selectedItemIndex, "Delete"));
-        event.editMessageEmbeds(reminderDetailsEmbed).setActionRows(reminderDetailsButtons).queue();
+        event.editMessageEmbeds(reminderDetailsEmbed).setComponents(reminderDetailsButtons).queue();
     }
 
     /**
@@ -236,12 +236,12 @@ public class Reminder extends BaseCommand {
             return;
         }
         if (reminders.isEmpty()) {
-            event.editMessage("You don't have any reminders set").setEmbeds().setActionRows().queue();
+            event.editMessage("You don't have any reminders set").setEmbeds().setComponents().queue();
             return;
         }
         MessageEmbed remindersEmbed = generateRemindersEmbed(reminders, event.getUser());
         Pair<ActionRow, ActionRow> actionRows = generateListActionRows(reminders, event.getUser(), deleteAllConfirm);
-        event.editMessageEmbeds(remindersEmbed).setActionRows(actionRows.getLeft(), actionRows.getRight()).queue();
+        event.editMessageEmbeds(remindersEmbed).setComponents(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
     /**
@@ -280,7 +280,7 @@ public class Reminder extends BaseCommand {
      */
     private void deleteAllReminders(ButtonInteractionEvent event) {
         if(Cashew.remindersManager.deleteAllReminders(event.getUser().getId())) {
-            event.editMessage("Successfully removed all reminders!").setEmbeds().setActionRows().queue();
+            event.editMessage("Successfully removed all reminders!").setEmbeds().setComponents().queue();
         } else {
             event.reply("Something went wrong while removing all reminders").setEphemeral(true).queue();
         }
