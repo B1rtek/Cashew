@@ -34,7 +34,7 @@ public class When extends BaseCommand {
 
     private final ArrayList<String> availableActions = new ArrayList<>() {
         {
-            add("send a message <messageContent> in <#targetChannel>");
+            add("send a message <targetMessage> in <#targetChannel>");
             add("add <@targetRole> to the interacting user");
             add("remove <@targetRole> from the interacting user");
             add("pass the information about the event to your DM");
@@ -70,7 +70,7 @@ public class When extends BaseCommand {
                 if (targetChannel != null) {
                     targetChannelName = "<#" + targetChannel.getId() + ">";
                 }
-                actionDescription = availableActions.get(rule.getActionType() - 1).replace("<messageContent>", targetMessageContent).replace("<#targetChannel>", targetChannelName);
+                actionDescription = availableActions.get(rule.getActionType() - 1).replace("<targetMessage>", targetMessageContent).replace("<#targetChannel>", targetChannelName);
             }
             case 2, 3 -> {
                 String targetRoleName = rule.getTargetRoleID();
