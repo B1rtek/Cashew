@@ -20,7 +20,8 @@ Currently there is no way to run Cashew yourself because there is a bit of code 
 - Bot with server members and message content intents
 - Discord API key for a bot
 - A Postgres database
-You need to set two environment variables:
+
+You'll need to set two environment variables:
 - `TOKEN` - your API key
 - `JDBC_DATABASE_URL` - JDBC URL for the postgres database
 After that, create a JAR with the stage task and run the compiled JAR
