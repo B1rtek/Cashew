@@ -32,6 +32,7 @@ If you encounter any issues, you can:
 - Send a `/feedback` about the issue
 - Open a new issue on github describing the problem
 Issues can be used to suggest new features too
+To see what is currently being worked on, see [Cashew's Trello board](https://trello.com/b/R432WEsW/cashew-bot)
 
 ## If you really like Cashew
 [You can buy me a tea :)](https://ko-fi.com/b1rtek)
