@@ -66,7 +66,7 @@ public class WhenExecutor extends ListenerAdapter {
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 3);
         for (WhenRule rule : rules) {
-            if (event.getMessageId().equals(rule.getSourceMessageID()) && event.getEmoji().getAsReactionCode().equals(rule.getSourceReaction())) {
+            if (event.getMessageId().equals(rule.getSourceMessageID()) && event.getEmoji().getFormatted().equals(rule.getSourceReaction())) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                     EmbedBuilder embedToPass = new EmbedBuilder();
                     embedToPass.setTitle("Member reacted with " + rule.getSourceReaction());
@@ -94,7 +94,7 @@ public class WhenExecutor extends ListenerAdapter {
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 4);
         for (WhenRule rule : rules) {
-            if (event.getMessageId().equals(rule.getSourceMessageID()) && event.getEmoji().getAsReactionCode().equals(rule.getSourceReaction())) {
+            if (event.getMessageId().equals(rule.getSourceMessageID()) && event.getEmoji().getFormatted().equals(rule.getSourceReaction())) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                     EmbedBuilder embedToPass = new EmbedBuilder();
                     embedToPass.setTitle("Member removed a reaction " + rule.getSourceReaction());
