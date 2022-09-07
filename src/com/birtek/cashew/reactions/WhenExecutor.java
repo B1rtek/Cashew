@@ -22,6 +22,7 @@ public class WhenExecutor extends ListenerAdapter {
      */
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
+        if(event.getUser().getId().equals(event.getJDA().getSelfUser().getId())) return;
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 1);
         for (WhenRule rule : rules) {
@@ -42,6 +43,7 @@ public class WhenExecutor extends ListenerAdapter {
      */
     @Override
     public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
+        if(event.getUser().getId().equals(event.getJDA().getSelfUser().getId())) return;
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 2);
         for (WhenRule rule : rules) {
@@ -62,6 +64,7 @@ public class WhenExecutor extends ListenerAdapter {
      */
     @Override
     public void onMessageReactionAdd(@NotNull MessageReactionAddEvent event) {
+        if(event.retrieveUser().complete().getId().equals(event.getJDA().getSelfUser().getId())) return;
         if (!event.isFromGuild()) return;
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 3);
@@ -90,6 +93,7 @@ public class WhenExecutor extends ListenerAdapter {
      */
     @Override
     public void onMessageReactionRemove(@NotNull MessageReactionRemoveEvent event) {
+        if(event.retrieveUser().complete().getId().equals(event.getJDA().getSelfUser().getId())) return;
         if (!event.isFromGuild()) return;
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 4);
@@ -99,7 +103,8 @@ public class WhenExecutor extends ListenerAdapter {
                     EmbedBuilder embedToPass = new EmbedBuilder();
                     embedToPass.setTitle("Member removed a reaction " + rule.getSourceReaction());
                     User interactingUser = event.retrieveUser().complete();
-                    String description = interactingUser.getAsMention() + " (" + interactingUser.getId() + ")";                    if (rule.getActionType() != 5) {
+                    String description = interactingUser.getAsMention() + " (" + interactingUser.getId() + ")";
+                    if (rule.getActionType() != 5) {
                         description += ", in server " + event.getGuild().getName();
                     }
                     embedToPass.setDescription(description);
@@ -117,6 +122,7 @@ public class WhenExecutor extends ListenerAdapter {
      */
     @Override
     public void onMessageUpdate(@NotNull MessageUpdateEvent event) {
+        if(event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) return;
         if (!event.isFromGuild()) return;
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 5);
