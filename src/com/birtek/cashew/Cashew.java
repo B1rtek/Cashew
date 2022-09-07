@@ -46,7 +46,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), //commands
                         new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
                         new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
@@ -212,6 +212,30 @@ public class Cashew {
                                         .addOption(ROLE, "targetrole", "Target role for the action"),
                                 new SubcommandData("list", "Displays an interactive list of custom rules set on this server")
                                         .addOption(INTEGER, "page", "Number of the page of the rules to display, by default set to 1", false, false))
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true),
+                Commands.slash("reactionroles", "Create an embed from which members can obtain roles by reacting")
+                        .addOption(STRING, "title", "Title of the reaction roles embed")
+                        .addOption(STRING, "role1", "Emote and role mention for the first reaction role, separated by space")
+                        .addOption(STRING, "role2", "Emote and role mention for the second reaction role, separated by space")
+                        .addOption(STRING, "role3", "Emote and role mention for the third reaction role, separated by space")
+                        .addOption(STRING, "role4", "Emote and role mention for the fourth reaction role, separated by space")
+                        .addOption(STRING, "role5", "Emote and role mention for the fifth reaction role, separated by space")
+                        .addOption(STRING, "role6", "Emote and role mention for the sixth reaction role, separated by space")
+                        .addOption(STRING, "role7", "Emote and role mention for the seventh reaction role, separated by space")
+                        .addOption(STRING, "role8", "Emote and role mention for the eighth reaction role, separated by space")
+                        .addOption(STRING, "role9", "Emote and role mention for the ninth reaction role, separated by space")
+                        .addOption(STRING, "role10", "Emote and role mention for the tenth reaction role, separated by space")
+                        .addOption(STRING, "role11", "Emote and role mention for the eleventh reaction role, separated by space")
+                        .addOption(STRING, "role12", "Emote and role mention for the twelfth reaction role, separated by space")
+                        .addOption(STRING, "role13", "Emote and role mention for the thirteenth reaction role, separated by space")
+                        .addOption(STRING, "role14", "Emote and role mention for the fourteenth reaction role, separated by space")
+                        .addOption(STRING, "role15", "Emote and role mention for the fifteenth reaction role, separated by space")
+                        .addOption(STRING, "role16", "Emote and role mention for the sixteenth reaction role, separated by space")
+                        .addOption(STRING, "role17", "Emote and role mention for the seventeenth reaction role, separated by space")
+                        .addOption(STRING, "role18", "Emote and role mention for the eighteenth reaction role, separated by space")
+                        .addOption(STRING, "role19", "Emote and role mention for the nineteenth reaction role, separated by space")
+                        .addOption(STRING, "role20", "Emote and role mention for the twentieth reaction role, separated by space")
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true)
         ).queue();
