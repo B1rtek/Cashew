@@ -187,7 +187,12 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.setDescription(description);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
-                    performAction(rule, event.getGuild(), null);
+                    User targetUser = null;
+                    if(oldVersion != null) {
+                        Member author = event.getGuild().retrieveMemberById(oldVersion.userID()).complete();
+                        if(author != null) targetUser = author.getUser();
+                    }
+                    performAction(rule, event.getGuild(), targetUser);
                 }
             }
         }
