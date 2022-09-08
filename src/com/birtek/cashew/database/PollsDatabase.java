@@ -37,6 +37,15 @@ public class PollsDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists polls ( _id bigserial constraint idx_16725_polls_pkey primary key, channelid text, messageid text, endtime text );");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create the polls table");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**

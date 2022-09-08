@@ -37,6 +37,15 @@ public class ScheduledMessagesDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists scheduledmessages ( _id bigserial constraint idx_16761_scheduledmessages_pkey primary key, messagecontent text, executiontime text, repetitioninterval text, destinationchannelid text, serverid text );");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create the scheduledmessages table");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**

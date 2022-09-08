@@ -36,6 +36,15 @@ public class CountingDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists counting ( _id bigserial constraint idx_16692_counting_pkey primary key, activity boolean, current bigint, channelid text, userid text, messageid text, typosleft integer );");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create the counting table");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**
