@@ -7,22 +7,27 @@ import java.util.HashMap;
 public class MessageCache {
 
     HashMap<String, HashMap<String, CachedMessage>> cachingMap;
+    HashMap<String, Integer> cacheCounter;
 
     public MessageCache() {
         cachingMap = new HashMap<>();
+        cacheCounter = new HashMap<>();
     }
 
     /**
-     * Adds a new message to the cache and removes all messages older than 1 hour
+     * Adds a new message to the cache and removes all messages older than 1 hour if the cache counter for the server
+     * is equal to 100
      *
      * @param message  {@link CachedMessage message} to cache
      * @param serverID ID of the server from which the message came
      */
     public void newMessage(CachedMessage message, String serverID) {
         HashMap<String, CachedMessage> serverMessages = cachingMap.get(serverID);
+        cacheCounter.putIfAbsent(serverID, 0);
+        cacheCounter.put(serverID, cacheCounter.get(serverID) + 1);
         if (serverMessages == null) {
             serverMessages = new HashMap<>();
-        } else {
+        } else if (cacheCounter.get(serverID) == 100) {
             long currentTimestamp = Instant.now().toEpochMilli();
             ArrayList<String> toRemove = new ArrayList<>();
             for (String id : serverMessages.keySet()) {
@@ -33,6 +38,7 @@ public class MessageCache {
             for (String id : toRemove) {
                 serverMessages.remove(id);
             }
+            cacheCounter.put(serverID, 0);
         }
         serverMessages.put(message.messageID(), message);
         cachingMap.put(serverID, serverMessages);
@@ -58,8 +64,9 @@ public class MessageCache {
 
     /**
      * Removes a message from the cache
+     *
      * @param messageID ID of the message to remove from cache
-     * @param serverID ID of the server from which the message came
+     * @param serverID  ID of the server from which the message came
      */
     public void deleteCachedMessage(String messageID, String serverID) {
         HashMap<String, CachedMessage> serverMessages = cachingMap.get(serverID);
