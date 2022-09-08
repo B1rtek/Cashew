@@ -1,12 +1,14 @@
 package com.birtek.cashew.reactions;
 
 import com.birtek.cashew.Cashew;
+import com.birtek.cashew.database.CachedMessage;
 import com.birtek.cashew.database.WhenRule;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
@@ -118,6 +120,16 @@ public class WhenExecutor extends ListenerAdapter {
     }
 
     /**
+     * Caches messages for the edition/deletion triggers
+     */
+    @Override
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+        if(!event.isFromGuild()) return;
+        CachedMessage message = new CachedMessage(event.getMessageId(), event.getAuthor().getId(), event.getMessage().getContentRaw());
+        Cashew.messageCache.newMessage(message, event.getGuild().getId());
+    }
+
+    /**
      * Detects the fifth trigger - member editing their message
      */
     @Override
@@ -126,6 +138,7 @@ public class WhenExecutor extends ListenerAdapter {
         if (!event.isFromGuild()) return;
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 5);
+        CachedMessage oldVersion = Cashew.messageCache.getMessage(event.getMessageId(), event.getGuild().getId());
         for (WhenRule rule : rules) {
             if ((rule.getSourceChannelID() == null) || (rule.getSourceChannelID().equals(event.getChannel().getId()))) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
@@ -133,6 +146,9 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.setTitle("Member edited their message");
                     String description = event.getAuthor().getAsMention() + " (" + event.getAuthor().getId() + "), in " + (rule.getActionType() != 5 ? ("server " + event.getGuild().getName()) + ", " : "") + "<#" + event.getChannel().getId() + ">";
                     embedToPass.setDescription(description);
+                    if(oldVersion != null) {
+                        embedToPass.addField("Old content", oldVersion.content(), false);
+                    }
                     embedToPass.addField("New content", event.getMessage().getContentRaw(), false);
                     embedToPass.addField("Message link", event.getMessage().getJumpUrl(), false);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
@@ -141,6 +157,8 @@ public class WhenExecutor extends ListenerAdapter {
                 }
             }
         }
+        CachedMessage newVersion = new CachedMessage(event.getMessageId(), event.getAuthor().getId(), event.getMessage().getContentRaw());
+        Cashew.messageCache.newMessage(newVersion, event.getGuild().getId());
     }
 
     /**
@@ -151,12 +169,21 @@ public class WhenExecutor extends ListenerAdapter {
         if (!event.isFromGuild()) return;
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 6);
+        CachedMessage oldVersion = Cashew.messageCache.getMessage(event.getMessageId(), event.getGuild().getId());
         for (WhenRule rule : rules) {
             if ((rule.getSourceChannelID() == null) || (rule.getSourceChannelID().equals(event.getChannel().getId()))) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
                     EmbedBuilder embedToPass = new EmbedBuilder();
                     embedToPass.setTitle("A message was deleted");
-                    String description = "In " + (rule.getActionType() != 5 ? ("server " + event.getGuild().getName()) + ", in " : "") + "<#" + event.getChannel().getId() + ">";
+                    String description;
+                    if(oldVersion != null) {
+                        Member author = event.getGuild().retrieveMemberById(oldVersion.userID()).complete();
+                        String authorPart = author != null ? author.getAsMention() + " (" + oldVersion.userID() + ")" : oldVersion.userID();
+                        description = authorPart + ", in " + (rule.getActionType() != 5 ? ("server " + event.getGuild().getName()) + ", " : "") + "<#" + event.getChannel().getId() + ">";
+                        embedToPass.addField("Deleted content", oldVersion.content(), false);
+                    } else {
+                        description = "In " + (rule.getActionType() != 5 ? ("server " + event.getGuild().getName()) + ", in " : "") + "<#" + event.getChannel().getId() + ">";
+                    }
                     embedToPass.setDescription(description);
                     performPassAction(rule, event.getGuild(), embedToPass.build());
                 } else {
@@ -164,6 +191,7 @@ public class WhenExecutor extends ListenerAdapter {
                 }
             }
         }
+        Cashew.messageCache.deleteCachedMessage(event.getMessageId(), event.getGuild().getId());
     }
 
     /**

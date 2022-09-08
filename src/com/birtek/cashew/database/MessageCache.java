@@ -49,9 +49,25 @@ public class MessageCache {
         HashMap<String, CachedMessage> serverMessages = cachingMap.get(serverID);
         if (serverMessages == null) {
             serverMessages = new HashMap<>();
+            cachingMap.put(serverID, serverMessages);
             return null;
         } else {
             return serverMessages.get(messageID);
         }
+    }
+
+    /**
+     * Removes a message from the cache
+     * @param messageID ID of the message to remove from cache
+     * @param serverID ID of the server from which the message came
+     */
+    public void deleteCachedMessage(String messageID, String serverID) {
+        HashMap<String, CachedMessage> serverMessages = cachingMap.get(serverID);
+        if (serverMessages == null) {
+            serverMessages = new HashMap<>();
+        } else {
+            serverMessages.remove(messageID);
+        }
+        cachingMap.put(serverID, serverMessages);
     }
 }

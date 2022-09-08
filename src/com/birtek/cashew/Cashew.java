@@ -1,6 +1,7 @@
 package com.birtek.cashew;
 
 import com.birtek.cashew.commands.*;
+import com.birtek.cashew.database.MessageCache;
 import com.birtek.cashew.reactions.CountingMessageDeletionDetector;
 import com.birtek.cashew.reactions.CountingMessageModificationDetector;
 import com.birtek.cashew.reactions.Counter;
@@ -35,9 +36,9 @@ public class Cashew {
     public static ReactionsSettingsManager reactionsSettingsManager;
     public static CommandsSettingsManager commandsSettingsManager;
     public static WhenSettingsManager whenSettingsManager;
+    public static MessageCache messageCache;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
-
 
     public static void main(String[] args) throws LoginException {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
@@ -248,5 +249,6 @@ public class Cashew {
         reactionsSettingsManager = new ReactionsSettingsManager();
         commandsSettingsManager = new CommandsSettingsManager();
         whenSettingsManager = new WhenSettingsManager();
+        messageCache = new MessageCache();
     }
 }
