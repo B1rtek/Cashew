@@ -38,6 +38,7 @@ public class Help extends BaseCommand {
             add("pat");
             add("ping");
             add("poll");
+            add("reactionroles");
             add("reactions");
             add("reminder");
             add("roll");
@@ -206,6 +207,13 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.setTitle("Poll");
                 specificHelpEmbed.addField("`/poll <title> <option1> <option2> [option3..10] [timetovote] [unit]`", "Creates a poll. Poll can have between two and ten options inclusive. By default polls have time to vote set to 24 hours, this can be changed by setting the `timetovote` and `unit` options.", false);
             }
+            case "reactionroles" -> {
+                specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+                specificHelpEmbed.addField("Works in DMs", "No", true);
+                specificHelpEmbed.setTitle("Reaction Roles");
+                specificHelpEmbed.setDescription("Create an embed where server members can obtain roles by reacting");
+                specificHelpEmbed.addField("`/reactionroles [title] [role1..20]`", "Creates an embed with the list of obtainable roles. You can set a custom title of the embed if you feel like it. The role fields should be filled with an emote and a @role that will be obtained by reacting with the emote, separated by space, in order emote, role. It's a shortcut for setting up a bunch of WhenRules that would do the same thing, all WhenRules that make this work will be added to the list when this command is successfully executed.", false);
+            }
             case "reactions" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
                 specificHelpEmbed.addField("Works in DMs", "No", true);
@@ -249,7 +257,7 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.addField("Works in DMs", "No", true);
                 specificHelpEmbed.setTitle("When");
                 specificHelpEmbed.setDescription("Custom trigger-action rules system");
-                specificHelpEmbed.addField("`/when when <trigger> <action> [options relevant to the rule]`", "Creates a new rule. All options that need to be set are included in the trigger and action descriptions. The message deletion trigger does not pass information about the user who deleted the message, so certain features such as assigning roles to that user don't work. Reactions currently don't work with custom emotes.", false);
+                specificHelpEmbed.addField("`/when when <trigger> <action> [options relevant to the rule]`", "Creates a new rule. All options that need to be set are included in the trigger and action descriptions. The message deletion trigger does not pass information about the user who deleted the message, so certain features such as assigning roles to that user might not work if the message isn't in message cache anymore (usually that means that the message is older than 1 hour)", false);
                 specificHelpEmbed.addField("`/when list [page]`", "Shows an interactive list of all rules, the list allows for deleting the rules", false);
             }
             default -> {
@@ -267,7 +275,7 @@ public class Help extends BaseCommand {
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`, `/roll`", false);
         helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `/counting`, `dadjoke`, `/gifts`, `insp`, `korwin`, `kromer`, `nekoichi`, `ping`, `/socialcredit`", false);
-        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/cmdset`, `/poll`, `/reactions`, `/scheduler`, `/when`", false);
+        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/cmdset`, `/poll`, `/reactionroles`, `/reactions`, `/scheduler`, `/when`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
