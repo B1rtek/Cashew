@@ -17,7 +17,7 @@ A fun Discord bot with lots of cool commands, themed around the visual novel ser
 Right now it's not available to everyone, but that will soon change. You can join one of the servers where Cashew was already added to try it out, such as [Nekord](https://discord.gg/EVcdmJuM). If you want to invite it, DM me on Discord (B1rtek#2383)
 
 ## Running it yourself
-Currently there is no way to run Cashew yourself because there is a bit of code missing that would create crucial tables in the database. That will be fixed soon, and the only requirements to run Cashew will be:
+The only requirements to run Cashew are:
 - Bot with server members and message content intents
 - Discord API key for a bot
 - A Postgres database
@@ -25,13 +25,13 @@ Currently there is no way to run Cashew yourself because there is a bit of code 
 You'll need to set two environment variables:
 - `TOKEN` - your API key
 - `JDBC_DATABASE_URL` - JDBC URL for the postgres database
-After that, create a JAR with the stage task and run the compiled JAR
+After that, create a JAR with the stage task and run the compiled JAR. Or just run it in the IDE, because why not.
 
 ## Support
-If you encounter any issues, you can:
+If you encounter any problems, you can:
 - Contact me on Discord (B1rtek#2383) to tell me about the issue
 - Send a `/feedback` about the issue
-- Open a new issue on github describing the problem
+- Open a new issue describing the problem
 Issues can be used to suggest new features too
 To see what is currently being worked on, see [Cashew's Trello board](https://trello.com/b/R432WEsW/cashew-bot)
 
