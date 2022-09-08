@@ -9,6 +9,7 @@ A fun Discord bot with lots of cool commands, themed around the visual novel ser
 - `/when` - a system allowing for creation of your own rules, based on triggers such as member reacting to a message, and actions - adding a role to the member who reacted
 - `/reminder` - schedule reminders for yourself
 - `/birthday` - let everyone on the server know that it's your birthday (and make the bot wish you happy birthday too)
+- `/reactionroles` - set up a nice embed where members can obtain roles by reacting
 - Roleplay commands featuring gifs from the Nekopara anime
 - And more (and the list is growing!)
 
