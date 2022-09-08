@@ -39,15 +39,6 @@ public class ReactionsSettingsDatabase extends Database {
         }
 
         try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("DROP TABLE IF EXISTS channelactivity");
-            preparedStatement.execute();
-        } catch (SQLException e) {
-            LOGGER.error("Failed to remove the channelactivity table!");
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        try {
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("CREATE TABLE IF NOT EXISTS reactions(serverid TEXT, settings TEXT)");
             preparedStatement.execute();
         } catch (SQLException e) {

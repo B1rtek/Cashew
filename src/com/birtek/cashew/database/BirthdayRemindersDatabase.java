@@ -37,6 +37,24 @@ public class BirthdayRemindersDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists birthdayreminders ( _id bigserial constraint idx_16657_birthdayreminders_pkey primary key, message text, dateandtime text, channelid text, serverid text, userid text );");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create the birthdayreminders table");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists defaultbirthdayreminderchannels ( _id bigserial constraint idx_16664_defaultbirthdayreminderchannels_pkey primary key, serverid text, channelid text, override bigint );");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create the defaultbirthdayreminderchannels table");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**

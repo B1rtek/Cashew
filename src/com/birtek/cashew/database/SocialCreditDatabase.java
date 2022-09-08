@@ -35,6 +35,15 @@ public class SocialCreditDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists socialcredit ( _id bigserial constraint idx_16749_socialcredit_pkey primary key, serverid text, userid text, credit bigint );");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create the socialcredit table");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**

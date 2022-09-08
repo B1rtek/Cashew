@@ -37,6 +37,15 @@ public class RemindersDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists reminders ( _id bigserial constraint idx_16737_reminders_pkey primary key, content text, timedate text, userid text, ping bigint );");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create the reminders table");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**

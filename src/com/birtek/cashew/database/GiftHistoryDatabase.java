@@ -37,6 +37,15 @@ public class GiftHistoryDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists gifthistory ( _id bigserial constraint idx_16711_gifthistory_pkey primary key, serverid text, userid text, giftid bigint, amountgifted bigint, amountreceived bigint, lastgifted bigint );");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create the gifthistory table");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**
