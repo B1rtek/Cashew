@@ -49,6 +49,23 @@ public class WhenSettingsManager {
     }
 
     /**
+     * Gets all rules from a server
+     *
+     * @param serverID ID of the server to get all rules from
+     * @return ArrayList of {@link WhenRule WhenRules} containing all rules from the server or null if an error occurred
+     */
+    public ArrayList<WhenRule> getAllRulesFromServer(String serverID) {
+        ArrayList<WhenRule> allRules = getRulesOfTriggerType(serverID, 1);
+        if(allRules == null) return null;
+        for(int i=2; i<=WhenSettings.triggersCount; i++) {
+            ArrayList<WhenRule> rulesOfType = getRulesOfTriggerType(serverID, i);
+            if(rulesOfType == null) return null;
+            allRules.addAll(rulesOfType);
+        }
+        return allRules;
+    }
+
+    /**
      * Gets the selected page of rules from the settings map
      *
      * @param serverID   ID of the server where the rules were requested

@@ -10,7 +10,7 @@ public class WhenSettings {
     private final String serverID;
     private final JSONObject settings;
 
-    private final int triggersCount = 6;
+    public static final int triggersCount = 6;
 
     public WhenSettings(JSONObject jsonSettings, String serverID) {
         this.settings = jsonSettings;

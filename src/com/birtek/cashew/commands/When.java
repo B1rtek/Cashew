@@ -218,7 +218,7 @@ public class When extends BaseCommand {
                         }
                         Channel targetChannel = event.getOption("targetchannel", null, OptionMapping::getAsChannel);
                         if (targetChannel == null || !targetChannel.getType().equals(ChannelType.TEXT)) {
-                            event.reply("Invalid `targetchannal` selected").setEphemeral(true).queue();
+                            event.reply("Invalid `targetchannel` selected").setEphemeral(true).queue();
                             return;
                         }
                         newRule.sendMessageAction(targetMessageContent, targetChannel.getId());
