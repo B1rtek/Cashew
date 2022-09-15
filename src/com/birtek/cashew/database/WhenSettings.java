@@ -207,6 +207,7 @@ public class WhenSettings {
             this.settings.clear();
             return true;
         }
+        index--;
         int currentIndex = 0;
         for (int ruleType = 0; ruleType <= triggersCount; ruleType++) {
             if (!settings.has(String.valueOf(ruleType))) continue;

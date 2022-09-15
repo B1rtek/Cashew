@@ -312,7 +312,7 @@ public class When extends BaseCommand {
             event.reply("Select a message first").setEphemeral(true).queue();
             return;
         }
-        chosenRuleIndex += (pageNumber - 1) * 10;
+        chosenRuleIndex += (pageNumber - 1) * 10 + 1;
         if (Cashew.whenSettingsManager.removeWhenRuleByIndex(Objects.requireNonNull(event.getGuild()).getId(), chosenRuleIndex)) {
             showPage(event, pageNumber, false);
         } else {

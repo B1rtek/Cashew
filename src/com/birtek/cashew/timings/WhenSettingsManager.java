@@ -128,7 +128,7 @@ public class WhenSettingsManager {
      * Removes a rule from server's settings and saves the changes to the database
      *
      * @param serverID ID of the server where the rule has been added
-     * @param index    index of the rule to remove
+     * @param index    index of the rule to remove, starting from 1
      * @return true if the deletion was successful, false otherwise
      */
     public boolean removeWhenRuleByIndex(String serverID, int index) {
