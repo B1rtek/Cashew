@@ -170,6 +170,13 @@ public class WhenExecutor extends ListenerAdapter {
         String serverID = event.getGuild().getId();
         ArrayList<WhenRule> rules = Cashew.whenSettingsManager.getRulesOfTriggerType(serverID, 6);
         CachedMessage oldVersion = Cashew.messageCache.getMessage(event.getMessageId(), event.getGuild().getId());
+        Member author = null;
+        if(oldVersion != null) {
+            author = event.getGuild().retrieveMemberById(oldVersion.userID()).complete();
+            if(author != null) {
+                if(author.getId().equals(event.getJDA().getSelfUser().getId())) return;
+            }
+        }
         for (WhenRule rule : rules) {
             if ((rule.getSourceChannelID() == null) || (rule.getSourceChannelID().equals(event.getChannel().getId()))) {
                 if (rule.getActionType() == 4 || rule.getActionType() == 5) {
@@ -177,7 +184,6 @@ public class WhenExecutor extends ListenerAdapter {
                     embedToPass.setTitle("A message was deleted");
                     String description;
                     if(oldVersion != null) {
-                        Member author = event.getGuild().retrieveMemberById(oldVersion.userID()).complete();
                         String authorPart = author != null ? author.getAsMention() + " (" + oldVersion.userID() + ")" : oldVersion.userID();
                         description = authorPart + ", in " + (rule.getActionType() != 5 ? ("server " + event.getGuild().getName()) + ", " : "") + "<#" + event.getChannel().getId() + ">";
                         embedToPass.addField("Deleted content", oldVersion.content(), false);
@@ -189,7 +195,6 @@ public class WhenExecutor extends ListenerAdapter {
                 } else {
                     User targetUser = null;
                     if(oldVersion != null) {
-                        Member author = event.getGuild().retrieveMemberById(oldVersion.userID()).complete();
                         if(author != null) targetUser = author.getUser();
                     }
                     performAction(rule, event.getGuild(), targetUser);
