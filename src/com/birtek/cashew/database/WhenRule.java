@@ -1,5 +1,7 @@
 package com.birtek.cashew.database;
 
+import java.util.Objects;
+
 /**
  * Class that saves the information about a rule set up by server moderators
  * Rule types are as follows:
@@ -17,7 +19,6 @@ package com.birtek.cashew.database;
  * 5 - pass the information to a channel
  */
 public class WhenRule {
-
     final String serverID;
     private String sourceMessageID, sourceChannelID, sourceReaction, targetChannelID, targetMessageContent, targetRoleID, targetUserID;
     private int triggerType, actionType;
@@ -209,5 +210,18 @@ public class WhenRule {
         clearAction();
         this.targetChannelID = targetChannelID;
         actionType = 5;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WhenRule whenRule = (WhenRule) o;
+        return triggerType == whenRule.triggerType && actionType == whenRule.actionType && Objects.equals(serverID, whenRule.serverID) && Objects.equals(sourceMessageID, whenRule.sourceMessageID) && Objects.equals(sourceChannelID, whenRule.sourceChannelID) && Objects.equals(sourceReaction, whenRule.sourceReaction) && Objects.equals(targetChannelID, whenRule.targetChannelID) && Objects.equals(targetMessageContent, whenRule.targetMessageContent) && Objects.equals(targetRoleID, whenRule.targetRoleID) && Objects.equals(targetUserID, whenRule.targetUserID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serverID, sourceMessageID, sourceChannelID, sourceReaction, targetChannelID, targetMessageContent, targetRoleID, targetUserID, triggerType, actionType);
     }
 }

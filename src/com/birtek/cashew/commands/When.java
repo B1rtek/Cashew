@@ -56,7 +56,7 @@ public class When extends BaseCommand {
                 String sourceChannelName = "";
                 if (sourceChannelID != null) {
                     TextChannel sourceChannel = server.getChannelById(TextChannel.class, sourceChannelID);
-                    if (sourceChannel != null) sourceChannelName = "in <#" + sourceChannel.getId() + ">";
+                    if (sourceChannel != null) sourceChannelName = "in #" + sourceChannel.getName();
                 }
                 triggerDescription += availableTriggers.get(rule.getTriggerType() - 1).replace("[#sourceChannel, optional]", sourceChannelName);
             }
@@ -218,7 +218,7 @@ public class When extends BaseCommand {
                         }
                         Channel targetChannel = event.getOption("targetchannel", null, OptionMapping::getAsChannel);
                         if (targetChannel == null || !targetChannel.getType().equals(ChannelType.TEXT)) {
-                            event.reply("Invalid `targetchannal` selected").setEphemeral(true).queue();
+                            event.reply("Invalid `targetchannel` selected").setEphemeral(true).queue();
                             return;
                         }
                         newRule.sendMessageAction(targetMessageContent, targetChannel.getId());
@@ -312,7 +312,7 @@ public class When extends BaseCommand {
             event.reply("Select a message first").setEphemeral(true).queue();
             return;
         }
-        chosenRuleIndex += (pageNumber - 1) * 10;
+        chosenRuleIndex += (pageNumber - 1) * 10 + 1;
         if (Cashew.whenSettingsManager.removeWhenRuleByIndex(Objects.requireNonNull(event.getGuild()).getId(), chosenRuleIndex)) {
             showPage(event, pageNumber, false);
         } else {

@@ -10,7 +10,7 @@ public class WhenSettings {
     private final String serverID;
     private final JSONObject settings;
 
-    private final int triggersCount = 6;
+    public static final int triggersCount = 6;
 
     public WhenSettings(JSONObject jsonSettings, String serverID) {
         this.settings = jsonSettings;
@@ -207,6 +207,7 @@ public class WhenSettings {
             this.settings.clear();
             return true;
         }
+        index--;
         int currentIndex = 0;
         for (int ruleType = 0; ruleType <= triggersCount; ruleType++) {
             if (!settings.has(String.valueOf(ruleType))) continue;

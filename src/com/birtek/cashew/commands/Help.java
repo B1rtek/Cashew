@@ -212,7 +212,8 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.addField("Works in DMs", "No", true);
                 specificHelpEmbed.setTitle("Reaction Roles");
                 specificHelpEmbed.setDescription("Create an embed where server members can obtain roles by reacting");
-                specificHelpEmbed.addField("`/reactionroles [title] [role1..20]`", "Creates an embed with the list of obtainable roles. You can set a custom title of the embed if you feel like it. The role fields should be filled with an emote and a @role that will be obtained by reacting with the emote, separated by space, in order emote, role. It's a shortcut for setting up a bunch of WhenRules that would do the same thing, all WhenRules that make this work will be added to the list when this command is successfully executed.", false);
+                specificHelpEmbed.addField("`/reactionroles create [title] [role1..20]`", "Creates an embed with the list of obtainable roles. You can set a custom title of the embed if you feel like it. The role fields should be filled with an emote and a @role that will be obtained by reacting with the emote, separated by space, in order emote, role. It's a shortcut for setting up a bunch of WhenRules that would do the same thing, all WhenRules that make this work will be added to the list when this command is successfully executed.", false);
+                specificHelpEmbed.addField("`/reactionroles remove <messageID>`", "Removes WhenRules associated with reaction roles given out from the message with provided ID", false);
             }
             case "reactions" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
