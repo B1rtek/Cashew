@@ -69,6 +69,22 @@ public class BirthdayRemindersManager {
     }
 
     /**
+     * Calculates the Instant of the next time of execution for a birthday reminder with the provided birthday date
+     *
+     * @param executionDateTimeString execution time set by the user who created the {@link BirthdayReminder reminder}
+     * @return Instant of the next time the birthday reminder should be delivered
+     */
+    public static Instant getNextRunTimeInstant(String executionDateTimeString) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.of("Europe/Warsaw"));
+        ZonedDateTime timeOfNextRun = LocalDateTime.parse(executionDateTimeString, dateTimeFormatter).atZone(ZoneId.of("Europe/Warsaw"));
+        while(timeOfNextRun.isBefore(now)) {
+            timeOfNextRun = timeOfNextRun.plusYears(1);
+        }
+        return timeOfNextRun.toInstant();
+    }
+
+    /**
      * Schedules a reminder by applying default settings of the server on which the reminder was set up, calculates
      * initial delay needed to schedule the task and then schedules them with calculated parameters
      *
@@ -82,22 +98,8 @@ public class BirthdayRemindersManager {
                 reminder.setChannelID(defaults.channelID());
             }
         }
-        int initialDelay = calculateInitialDelay(reminder.getDateAndTime());
+        long initialDelay = calculateInitialDelay(reminder.getDateAndTime());
         return scheduler.scheduleAtFixedRate(reminder, initialDelay, 31536000, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Calculates the Instant of the next time of execution for a birthday reminder with the provided birthday date
-     *
-     * @param executionDateTimeString execution time set by the user who created the {@link BirthdayReminder reminder}
-     * @return Instant of the next time the birthday reminder should be delivered
-     */
-    public static Instant getNextRunTimeInstant(String executionDateTimeString) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.of("Europe/Warsaw"));
-        ZonedDateTime timeOfNextRun = LocalDateTime.parse(executionDateTimeString, dateTimeFormatter).atZone(ZoneId.of("Europe/Warsaw"));
-        timeOfNextRun = timeOfNextRun.plusYears(now.getYear() - timeOfNextRun.getYear());
-        return timeOfNextRun.toInstant();
     }
 
     /**
@@ -108,9 +110,9 @@ public class BirthdayRemindersManager {
      * @param executionDateTimeString execution time set by the user who created the {@link BirthdayReminder reminder}
      * @return number of seconds before the planned execution specified by the executionDateTimeString as an integer
      */
-    private int calculateInitialDelay(String executionDateTimeString) {
+    private long calculateInitialDelay(String executionDateTimeString) {
         Duration diff = Duration.between(Instant.now(), getNextRunTimeInstant(executionDateTimeString));
-        return (int) diff.toSeconds() + 1;
+        return diff.toSeconds() + 1;
     }
 
     private void createDefaultsMap(ArrayList<BirthdayReminderDefaults> defaultsList) {
