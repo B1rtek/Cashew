@@ -47,7 +47,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), new Trivia(), //commands
                         new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
                         new ReactionsExecutor(), new Counter()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
@@ -239,7 +239,12 @@ public class Cashew {
                                         .addOption(STRING, "role19", "Emote and role mention for the nineteenth reaction role, separated by space")
                                         .addOption(STRING, "role20", "Emote and role mention for the twentieth reaction role, separated by space"),
                                 new SubcommandData("remove", "Removes the ReactionRoles WhenRules")
-                                        .addOption(STRING, "messageid", "ID of the message with the ReactionRoles embed to remove", true))
+                                        .addOption(STRING, "messageid", "ID of the message with the ReactionRoles embed to remove", true)),
+                Commands.slash("trivia", "Test your Nekopara knowledge")
+                        .addSubcommands(new SubcommandData("question", "Gives you a random question about Nekopara to answer")
+                                        .addOption(STRING, "difficulty", "Difficulty of the question, by default random", false, true),
+                                new SubcommandData("stats", "Shows trivia stats, such as % of correct answers")
+                                        .addOption(USER, "user", "User to show the stats of, by default set to you", false))
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true)
         ).queue();
