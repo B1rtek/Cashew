@@ -1,5 +1,6 @@
 package com.birtek.cashew.commands;
 
+import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.TriviaQuestion;
 import com.birtek.cashew.database.TriviaQuestionsDatabase;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -34,7 +35,7 @@ public class Trivia extends BaseCommand {
         EmbedBuilder questionEmbed = new EmbedBuilder();
         questionEmbed.setTitle(question.question());
         questionEmbed.setImage(question.imageURL());
-        questionEmbed.setDescription("Time left: " + TimeFormat.RELATIVE.format(Instant.now().plusSeconds(15)));
+        questionEmbed.setDescription("Ends " + TimeFormat.RELATIVE.format(Instant.now().plusSeconds(15)));
         int color = switch (question.difficulty()) {
             case 1 -> 0x04c907;
             case 2 -> 0xfff203;
@@ -59,7 +60,11 @@ public class Trivia extends BaseCommand {
                 TriviaQuestionsDatabase database = TriviaQuestionsDatabase.getInstance();
                 TriviaQuestion question = database.getRandomQuestion(difficulty);
                 MessageEmbed questionEmbed = generateQuestionEmbed(question);
-                event.replyEmbeds(questionEmbed).queue();
+                if(Cashew.triviaQuestionsManager.addQuestion(event.getUser().getId(), event.getChannel().getId(), question)) {
+                    event.replyEmbeds(questionEmbed).queue();
+                } else {
+                    event.reply("You're already playing a game of trivia!").setEphemeral(true).queue();
+                }
             } else {
                 event.reply("Not implemented yet").setEphemeral(true).queue();
             }

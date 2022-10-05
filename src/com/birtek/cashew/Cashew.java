@@ -2,11 +2,7 @@ package com.birtek.cashew;
 
 import com.birtek.cashew.commands.*;
 import com.birtek.cashew.database.MessageCache;
-import com.birtek.cashew.reactions.CountingMessageDeletionDetector;
-import com.birtek.cashew.reactions.CountingMessageModificationDetector;
-import com.birtek.cashew.reactions.Counter;
-import com.birtek.cashew.reactions.ReactionsExecutor;
-import com.birtek.cashew.reactions.WhenExecutor;
+import com.birtek.cashew.reactions.*;
 import com.birtek.cashew.timings.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -36,6 +32,7 @@ public class Cashew {
     public static ReactionsSettingsManager reactionsSettingsManager;
     public static CommandsSettingsManager commandsSettingsManager;
     public static WhenSettingsManager whenSettingsManager;
+    public static TriviaQuestionsManager triviaQuestionsManager;
     public static MessageCache messageCache;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
@@ -49,7 +46,7 @@ public class Cashew {
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), new Trivia(), //commands
                         new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
-                        new ReactionsExecutor(), new Counter()) //messagereations
+                        new ReactionsExecutor(), new Counter(), new TriviaQuestionsListener()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .build();
@@ -239,14 +236,14 @@ public class Cashew {
                                         .addOption(STRING, "role19", "Emote and role mention for the nineteenth reaction role, separated by space")
                                         .addOption(STRING, "role20", "Emote and role mention for the twentieth reaction role, separated by space"),
                                 new SubcommandData("remove", "Removes the ReactionRoles WhenRules")
-                                        .addOption(STRING, "messageid", "ID of the message with the ReactionRoles embed to remove", true)),
+                                        .addOption(STRING, "messageid", "ID of the message with the ReactionRoles embed to remove", true))
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true),
                 Commands.slash("trivia", "Test your Nekopara knowledge")
                         .addSubcommands(new SubcommandData("question", "Gives you a random question about Nekopara to answer")
                                         .addOption(STRING, "difficulty", "Difficulty of the question, by default random", false, true),
                                 new SubcommandData("stats", "Shows trivia stats, such as % of correct answers")
                                         .addOption(USER, "user", "User to show the stats of, by default set to you", false))
-                        .setDefaultPermissions(moderatorPermissions)
-                        .setGuildOnly(true)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
@@ -257,6 +254,7 @@ public class Cashew {
         reactionsSettingsManager = new ReactionsSettingsManager();
         commandsSettingsManager = new CommandsSettingsManager();
         whenSettingsManager = new WhenSettingsManager();
+        triviaQuestionsManager = new TriviaQuestionsManager(jda);
         messageCache = new MessageCache();
     }
 }
