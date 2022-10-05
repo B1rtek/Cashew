@@ -376,7 +376,9 @@ public class CaseSim extends BaseCommand {
         if (skinData.containterType() < 4) {
             containerUnboxEmbed.setFooter(skinInfo.description());
             containerUnboxEmbed.addField("Condition: " + getConditionFromFloat(skinData.floatValue()), String.valueOf(skinData.floatValue()), true);
-            containerUnboxEmbed.addField("Finish style", skinInfo.finishStyle(), true);
+            if(skinInfo.finishStyle() != null) {
+                containerUnboxEmbed.addField("Finish style", skinInfo.finishStyle(), true);
+            }
             containerUnboxEmbed.setDescription(skinInfo.flavorText());
         }
         return containerUnboxEmbed.build();
