@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 
 public class TriviaQuestionsDatabase {
 
@@ -74,7 +75,7 @@ public class TriviaQuestionsDatabase {
             }
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
-                String[] answers = results.getString(4).split(",");
+                String[] answers = results.getString(4).toLowerCase(Locale.ROOT).split(",");
                 ArrayList<String> correctAnswers = new ArrayList<>(Arrays.asList(answers));
                 return new TriviaQuestion(results.getInt(1), results.getString(2), correctAnswers, results.getInt(3), results.getString(5));
             } else return null;
