@@ -1,12 +1,12 @@
 package com.birtek.cashew.database;
 
-import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class TriviaQuestionsDatabase {
@@ -16,6 +16,8 @@ public class TriviaQuestionsDatabase {
     private static volatile TriviaQuestionsDatabase instance;
 
     private Connection triviaQuestionsConnection;
+
+    private final ArrayList<Integer> hardnessMap = new ArrayList<>();
 
     /**
      * Initializes the connection to the database located at
@@ -40,6 +42,26 @@ public class TriviaQuestionsDatabase {
             System.exit(1);
         }
 
+        createHardnessMap();
+    }
+
+    /**
+     * Creates a list telling the difficulty of each question
+     */
+    private void createHardnessMap() {
+        try {
+            PreparedStatement preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT difficulty FROM Questions ORDER BY _id ASC");
+            ResultSet results = preparedStatement.executeQuery();
+            while(results.next()) {
+                hardnessMap.add(results.getInt(1));
+            }
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at TriviaQuestionsDatabase.createHardnessMap()");
+        }
+    }
+
+    public ArrayList<Integer> getHardnessMap() {
+        return hardnessMap;
     }
 
     /**
@@ -86,18 +108,18 @@ public class TriviaQuestionsDatabase {
     }
 
     /**
-     * Gets an ArrayList of pairs describing how many questions there are of each type
+     * Gets a HashMap describing how many questions there are of each type
      *
-     * @return an ArrayList of {@link Pair Pairs} - the left item describes the number, the right item describes the
+     * @return a HashMap where the left item describes the number, the right item describes the
      * difficulty of which there is (left number) questions, or null if an error occurred
      */
-    public ArrayList<Pair<Integer, Integer>> getQuestionsCountByType() {
+    public HashMap<Integer, Integer> getQuestionsCountByType() {
         try {
             PreparedStatement preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT COUNT(*), difficulty FROM Questions GROUP BY difficulty ORDER BY difficulty ASC");
             ResultSet results = preparedStatement.executeQuery();
-            ArrayList<Pair<Integer, Integer>> questionsCount = new ArrayList<>();
+            HashMap<Integer, Integer> questionsCount = new HashMap<>();
             while (results.next()) {
-                questionsCount.add(Pair.of(results.getInt(1), results.getInt(2)));
+                questionsCount.put(results.getInt(1), results.getInt(2));
             }
             return questionsCount;
         } catch (SQLException e) {
