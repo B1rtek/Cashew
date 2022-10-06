@@ -19,6 +19,8 @@ public class TriviaQuestionsDatabase {
 
     private final ArrayList<Integer> hardnessMap = new ArrayList<>();
 
+    private final HashMap<Integer, Integer> questionsDistribution = new HashMap<>();
+
     /**
      * Initializes the connection to the database located at
      * databases/data/trivia.db
@@ -43,6 +45,7 @@ public class TriviaQuestionsDatabase {
         }
 
         createHardnessMap();
+        createDistributionMap();
     }
 
     /**
@@ -94,6 +97,7 @@ public class TriviaQuestionsDatabase {
                 preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT * FROM Questions ORDER BY RANDOM() LIMIT 1");
             } else {
                 preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT * FROM Questions WHERE difficulty = ? ORDER BY RANDOM() LIMIT 1");
+                preparedStatement.setInt(1, difficulty);
             }
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
@@ -108,23 +112,26 @@ public class TriviaQuestionsDatabase {
     }
 
     /**
-     * Gets a HashMap describing how many questions there are of each type
-     *
-     * @return a HashMap where the left item describes the number, the right item describes the
-     * difficulty of which there is (left number) questions, or null if an error occurred
+     * Creates the map describing how many questions there are of each type
      */
-    public HashMap<Integer, Integer> getQuestionsCountByType() {
+    private void createDistributionMap() {
         try {
             PreparedStatement preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT COUNT(*), difficulty FROM Questions GROUP BY difficulty ORDER BY difficulty ASC");
             ResultSet results = preparedStatement.executeQuery();
-            HashMap<Integer, Integer> questionsCount = new HashMap<>();
             while (results.next()) {
-                questionsCount.put(results.getInt(1), results.getInt(2));
+                questionsDistribution.put(results.getInt(2), results.getInt(1));
             }
-            return questionsCount;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at TriviaQuestionsDatabase.getQuestionsCountByType()");
-            return null;
         }
+    }
+
+    /**
+     * Gets a HashMap describing how many questions there are of each type
+     *
+     * @return a HashMap which maps the difficulty to the number of questions of that difficulty
+     */
+    public HashMap<Integer, Integer> getQuestionsCountByType() {
+        return questionsDistribution;
     }
 }

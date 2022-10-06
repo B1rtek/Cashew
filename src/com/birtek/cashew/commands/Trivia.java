@@ -56,11 +56,11 @@ public class Trivia extends BaseCommand {
             if (Objects.equals(event.getSubcommandName(), "question")) {
                 String dif = event.getOption("difficulty", "", OptionMapping::getAsString);
                 int difficulty = difficulties.indexOf(dif);
-                if (difficulty == -1) difficulty = 0;
+                difficulty = difficulty == -1 ? 0 : difficulty+1;
                 TriviaQuestionsDatabase database = TriviaQuestionsDatabase.getInstance();
                 TriviaQuestion question = database.getRandomQuestion(difficulty);
                 MessageEmbed questionEmbed = generateQuestionEmbed(question);
-                if(Cashew.triviaQuestionsManager.addQuestion(event.getUser().getId(), event.getChannel().getId(), question)) {
+                if (Cashew.triviaQuestionsManager.addQuestion(event.getUser().getId(), event.getChannel().getId(), question)) {
                     event.replyEmbeds(questionEmbed).queue();
                 } else {
                     event.reply("You're already playing a game of trivia!").setEphemeral(true).queue();
@@ -73,7 +73,7 @@ public class Trivia extends BaseCommand {
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
-        if (event.getName().startsWith("gifts")) {
+        if (event.getName().startsWith("trivia")) {
             if (event.getFocusedOption().getName().equals("difficulty")) {
                 String typed = event.getOption("difficulty", "", OptionMapping::getAsString);
                 event.replyChoiceStrings(autocompleteFromList(difficulties, typed)).queue();

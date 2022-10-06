@@ -92,6 +92,30 @@ public class TriviaStatsDatabase extends Database {
     }
 
     /**
+     * Creates a {@link TriviaStats TriviaStats} object from the given data
+     * @param userID ID of the user to whom these stats belong
+     * @param progress progress string describing which questions have been completed
+     * @param gamesPlayed number od games played
+     * @param gamesWon number of games won
+     * @return a {@link TriviaStats TriviaStats} object describing the data
+     */
+    private TriviaStats createStatsFromData(String userID, String progress, int gamesPlayed, int gamesWon) {
+        TriviaQuestionsDatabase database = TriviaQuestionsDatabase.getInstance();
+        ArrayList<Integer> hardnessMap = database.getHardnessMap();
+        int easy = 0, medium = 0, hard = 0;
+        for (int i = 0; i < progress.length(); i++) {
+            if (progress.charAt(i) == '1') {
+                switch (hardnessMap.get(i)) {
+                    case 1 -> easy++;
+                    case 2 -> medium++;
+                    case 3 -> hard++;
+                }
+            }
+        }
+        return new TriviaStats(userID, easy, medium, hard, gamesPlayed, gamesWon);
+    }
+
+    /**
      * Gets user's {@link TriviaStats TriviaStats}
      *
      * @param userID ID of the user to get stats of
@@ -107,20 +131,8 @@ public class TriviaStatsDatabase extends Database {
             preparedStatement.setString(1, userID);
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
-                TriviaQuestionsDatabase database = TriviaQuestionsDatabase.getInstance();
-                ArrayList<Integer> hardnessMap = database.getHardnessMap();
-                int easy = 0, medium = 0, hard = 0;
                 String progress = results.getString(2);
-                for (int i = 0; i < progress.length(); i++) {
-                    if(progress.charAt(i) == '1') {
-                        switch (hardnessMap.get(i)) {
-                            case 1 -> easy++;
-                            case 2 -> medium++;
-                            case 3 -> hard++;
-                        }
-                    }
-                }
-                return new TriviaStats(userID, easy, medium, hard, results.getInt(3), results.getInt(4));
+                return createStatsFromData(userID, progress, results.getInt(3), results.getInt(4));
             }
             return null;
         } catch (SQLException e) {
@@ -141,7 +153,7 @@ public class TriviaStatsDatabase extends Database {
     public int updateUserStats(String userID, boolean won, TriviaQuestion question) {
         if (!isInDatabase(userID)) {
             String progress = "";
-            progress = extendToResult(progress, won, question.id());
+            progress = saveProgress(progress, won, question);
             if (insertStatsRecord(userID, won, progress)) return 0;
             else return -1;
         } else {
@@ -157,21 +169,28 @@ public class TriviaStatsDatabase extends Database {
                 int gamesPlayed, gamesWon;
                 ResultSet results = preparedStatement.executeQuery();
                 if (results.next()) {
-                    progress = extendToResult(results.getString(2), won, question.id());
+                    progress = saveProgress(results.getString(2), won, question);
                     gamesPlayed = oldUserStats.gamesPlayed() + 1;
                     gamesWon = oldUserStats.gamesWon() + (won ? 1 : 0);
                 } else return -1;
                 if (!updateStatsRecord(userID, progress, gamesPlayed, gamesWon)) return -1;
-                if(!won) return 0;
+                if (!won) return 0;
+                TriviaStats newUserStats = createStatsFromData(userID, progress, gamesPlayed, gamesWon);
                 TriviaQuestionsDatabase database = TriviaQuestionsDatabase.getInstance();
                 HashMap<Integer, Integer> distribution = database.getQuestionsCountByType();
-                int completedQuestionsOfType = switch (question.difficulty()) {
+                int oldCompletedQuestionsOfType = switch (question.difficulty()) {
                     case 1 -> oldUserStats.easy();
                     case 2 -> oldUserStats.medium();
                     case 3 -> oldUserStats.hard();
                     default -> 0;
                 };
-                if (distribution.get(question.difficulty()) == completedQuestionsOfType + 1) return 1;
+                int newCompletedQuestionsOfType = switch (question.difficulty()) {
+                    case 1 -> newUserStats.easy();
+                    case 2 -> newUserStats.medium();
+                    case 3 -> newUserStats.hard();
+                    default -> 0;
+                };
+                if (distribution.get(question.difficulty()) == newCompletedQuestionsOfType && newCompletedQuestionsOfType == oldCompletedQuestionsOfType + 1) return 1;
                 else return 0;
             } catch (SQLException e) {
                 LOGGER.warn(e + " thrown at TriviaStatsDatabase.updateUserStats()");
@@ -182,18 +201,22 @@ public class TriviaStatsDatabase extends Database {
 
     /**
      * Extends the progress String (1 and 0s describing which questions have already been answered correctly by a player)
-     * to minimum length required by the newly answered question
+     * to minimum length required by the newly answered question and saves the new progress
      *
      * @param progress progress String, as mentioned above
      * @param won      true if the recent game was won
      * @param question number of the recent question
      * @return progress String extended to accommodate the recent question
      */
-    private String extendToResult(String progress, boolean won, int question) {
+    private String saveProgress(String progress, boolean won, TriviaQuestion question) {
         if (!won) return progress;
-        int toExtend = question - progress.length() - 1;
-        return progress + "0".repeat(Math.max(0, toExtend)) +
-                '1';
+        int toExtend = question.id() - progress.length();
+        if (toExtend > 0) {
+            progress = progress + "0".repeat(toExtend);
+        }
+        StringBuilder pb = new StringBuilder(progress);
+        pb.setCharAt(question.id() - 1, '1');
+        return pb.toString();
     }
 
     /**
@@ -223,10 +246,11 @@ public class TriviaStatsDatabase extends Database {
 
     /**
      * Updates user's record in the TriviaStats database
-     * @param userID ID of the user whose record will be updated
-     * @param progress updated progress String from user's stats
+     *
+     * @param userID      ID of the user whose record will be updated
+     * @param progress    updated progress String from user's stats
      * @param gamesPlayed amount of games played by the user
-     * @param gamesWon amount of games won by the user
+     * @param gamesWon    amount of games won by the user
      * @return true if the update was successful, false otherwise
      */
     private boolean updateStatsRecord(String userID, String progress, int gamesPlayed, int gamesWon) {
