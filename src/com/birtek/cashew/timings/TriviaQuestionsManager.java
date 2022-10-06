@@ -35,7 +35,7 @@ public class TriviaQuestionsManager {
     public boolean addQuestion(String userID, String channelID, TriviaQuestion question) {
         if (players.containsKey(userID)) return false;
         players.put(userID, channelID);
-        if(gamesPlayedPerChannel.containsKey(channelID)) {
+        if (gamesPlayedPerChannel.containsKey(channelID)) {
             gamesPlayedPerChannel.put(channelID, gamesPlayedPerChannel.get(channelID) + 1);
         } else {
             gamesPlayedPerChannel.put(channelID, 1);
@@ -49,15 +49,16 @@ public class TriviaQuestionsManager {
 
     /**
      * Checks whether user's response to the question is correct or not
+     *
      * @param userID ID of the user responding to the question
      * @param answer answer of the user
      * @return true if the answer is correct, false otherwise or if an error occurs
      */
     public boolean checkAnswer(String userID, String answer) {
-        if(!activeQuestions.containsKey(userID)) return false;
+        if (!activeQuestions.containsKey(userID)) return false;
         ArrayList<String> correctAnswers = activeQuestions.get(userID).answers();
         answer = answer.toLowerCase(Locale.ROOT);
-        if(correctAnswers.contains(answer)) {
+        if (correctAnswers.contains(answer)) {
             removeQuestion(userID);
             return true;
         } else {
@@ -67,6 +68,7 @@ public class TriviaQuestionsManager {
 
     /**
      * Removes a question from the manager's lists
+     *
      * @param userID ID of the user whose question is being removed from the lists
      */
     public void removeQuestion(String userID) {
@@ -74,7 +76,7 @@ public class TriviaQuestionsManager {
         questionFutures.get(userID).cancel(false);
         questionFutures.remove(userID);
         int currentGames = gamesPlayedPerChannel.get(players.get(userID)) - 1;
-        if(currentGames == 0) {
+        if (currentGames == 0) {
             gamesPlayedPerChannel.remove(players.get(userID));
         } else {
             gamesPlayedPerChannel.put(players.get(userID), currentGames);
@@ -84,10 +86,21 @@ public class TriviaQuestionsManager {
 
     /**
      * Checks whether there is a game going on in a certain channel
+     *
      * @param channelID ID of the channel to check for the game
      * @return true if there is a game going on in the channel, false otherwise
      */
     public boolean isBeingPlayedIn(String channelID) {
         return gamesPlayedPerChannel.containsKey(channelID);
+    }
+
+    /**
+     * Gets the active question of a user
+     *
+     * @param userID ID of the user to get the current question of
+     * @return active {@link TriviaQuestion TriviaQuestion} of that user or null if they aren't playing
+     */
+    public TriviaQuestion getUsersQuestion(String userID) {
+        return activeQuestions.get(userID);
     }
 }
