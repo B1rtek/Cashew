@@ -1,6 +1,7 @@
 package com.birtek.cashew.timings;
 
 import com.birtek.cashew.database.TriviaQuestion;
+import com.birtek.cashew.database.TriviaStatsDatabase;
 import net.dv8tion.jda.api.JDA;
 
 import java.util.ArrayList;
@@ -52,17 +53,24 @@ public class TriviaQuestionsManager {
      *
      * @param userID ID of the user responding to the question
      * @param answer answer of the user
-     * @return true if the answer is correct, false otherwise or if an error occurs
+     * @return 1 if the question was answered correctly, 0 if it wasn't, or -1 if the responses limit was hit
      */
-    public boolean checkAnswer(String userID, String answer) {
-        if (!activeQuestions.containsKey(userID)) return false;
+    public int checkAnswer(String userID, String answer) {
+        if (!activeQuestions.containsKey(userID)) return 0;
         ArrayList<String> correctAnswers = activeQuestions.get(userID).answers();
         answer = answer.toLowerCase(Locale.ROOT);
         if (correctAnswers.contains(answer)) {
             removeQuestion(userID);
-            return true;
+            return 1;
         } else {
-            return false;
+            if(activeQuestions.get(userID).responsesLimitHit()) {
+                removeQuestion(userID);
+                TriviaStatsDatabase database = TriviaStatsDatabase.getInstance();
+                database.updateUserStats(userID, false, null);
+                return -1;
+            } else {
+                return 0;
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package com.birtek.cashew.reactions;
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.TriviaQuestion;
 import com.birtek.cashew.database.TriviaStatsDatabase;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +16,8 @@ public class TriviaQuestionsListener extends ListenerAdapter {
         if(Cashew.triviaQuestionsManager.isBeingPlayedIn(event.getChannel().getId())) {
             TriviaQuestion usersQuestion = Cashew.triviaQuestionsManager.getUsersQuestion(event.getAuthor().getId());
             if(usersQuestion == null) return;
-            if(Cashew.triviaQuestionsManager.checkAnswer(event.getAuthor().getId(), event.getMessage().getContentRaw().toLowerCase(Locale.ROOT))) {
+            int result = Cashew.triviaQuestionsManager.checkAnswer(event.getAuthor().getId(), event.getMessage().getContentRaw().toLowerCase(Locale.ROOT));
+            if(result == 1) {
                 event.getMessage().reply("Correct!").mentionRepliedUser(false).queue();
                 TriviaStatsDatabase database = TriviaStatsDatabase.getInstance();
                 int updateResult = database.updateUserStats(event.getAuthor().getId(), true, usersQuestion);
@@ -29,6 +31,13 @@ public class TriviaQuestionsListener extends ListenerAdapter {
                         default -> "random (?) idk there was an error";
                     };
                     event.getMessage().reply("You have completed all " + difficultyName + " questions!").mentionRepliedUser(false).queue();
+                }
+            } else {
+                if (usersQuestion.isResponseLimited()) {
+                    event.getMessage().addReaction(Emoji.fromUnicode("❌")).queue();
+                }
+                if (result == -1) {
+                    event.getMessage().reply("You answered wrong too many times!").mentionRepliedUser(false).queue();
                 }
             }
         }

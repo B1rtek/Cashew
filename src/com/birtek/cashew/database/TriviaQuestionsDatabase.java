@@ -53,7 +53,7 @@ public class TriviaQuestionsDatabase {
      */
     private void createHardnessMap() {
         try {
-            PreparedStatement preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT difficulty FROM Questions ORDER BY _id ASC");
+            PreparedStatement preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT difficulty FROM Questions ORDER BY _id");
             ResultSet results = preparedStatement.executeQuery();
             while(results.next()) {
                 hardnessMap.add(results.getInt(1));
@@ -103,7 +103,7 @@ public class TriviaQuestionsDatabase {
             if (results.next()) {
                 String[] answers = results.getString(4).toLowerCase(Locale.ROOT).split(",");
                 ArrayList<String> correctAnswers = new ArrayList<>(Arrays.asList(answers));
-                return new TriviaQuestion(results.getInt(1), results.getString(2), correctAnswers, results.getInt(3), results.getString(5));
+                return new TriviaQuestion(results.getInt(1), results.getString(2), correctAnswers, results.getInt(3), results.getString(5), results.getInt(6));
             } else return null;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at TriviaQuestionsDatabase.getRandomQuestion()");
@@ -116,7 +116,7 @@ public class TriviaQuestionsDatabase {
      */
     private void createDistributionMap() {
         try {
-            PreparedStatement preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT COUNT(*), difficulty FROM Questions GROUP BY difficulty ORDER BY difficulty ASC");
+            PreparedStatement preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT COUNT(*), difficulty FROM Questions GROUP BY difficulty ORDER BY difficulty");
             ResultSet results = preparedStatement.executeQuery();
             while (results.next()) {
                 questionsDistribution.put(results.getInt(2), results.getInt(1));

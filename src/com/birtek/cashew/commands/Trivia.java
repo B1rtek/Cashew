@@ -36,6 +36,9 @@ public class Trivia extends BaseCommand {
         questionEmbed.setTitle(question.question());
         questionEmbed.setImage(question.imageURL());
         questionEmbed.setDescription("Ends " + TimeFormat.RELATIVE.format(Instant.now().plusSeconds(15)));
+        if(question.isResponseLimited()) {
+            questionEmbed.setFooter("You have " + question.getResponsesLeft() + " attempt" + (question.getResponsesLeft()==1?"":"s") + " to answer this question");
+        }
         int color = switch (question.difficulty()) {
             case 1 -> 0x04c907;
             case 2 -> 0xfff203;
