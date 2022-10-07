@@ -3,7 +3,7 @@ package com.birtek.cashew.timings;
 import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

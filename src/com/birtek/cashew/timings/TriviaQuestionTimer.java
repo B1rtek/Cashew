@@ -4,7 +4,7 @@ import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.TriviaStatsDatabase;
 import com.birtek.cashew.reactions.TriviaQuestionsListener;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 public record TriviaQuestionTimer(String channelID, String userID) implements Runnable {
 
