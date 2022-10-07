@@ -45,6 +45,17 @@ public class TriviaQuestionsListener extends ListenerAdapter {
         return progressEmbed.build();
     }
 
+    /**
+     * Generates a simple embed saying that the questions wasn't answered correctly
+     * @param message message saying why the attempt has failed
+     * @return a {@link MessageEmbed MessageEmbed} with the failure message formatted nicely
+     */
+    public static MessageEmbed generateFailEmbed(String message) {
+        EmbedBuilder failEmbed = new EmbedBuilder();
+        failEmbed.setTitle("❌ " + message);
+        return failEmbed.build();
+    }
+
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         if (Cashew.triviaQuestionsManager.isBeingPlayedIn(event.getChannel().getId())) {
@@ -58,7 +69,7 @@ public class TriviaQuestionsListener extends ListenerAdapter {
                     event.getMessage().addReaction(Emoji.fromUnicode("❌")).queue();
                 }
                 if (result == -1) {
-                    event.getMessage().reply("You answered wrong too many times!").mentionRepliedUser(false).queue();
+                    event.getMessage().replyEmbeds(generateFailEmbed("You ran out of attempts to answer this question!")).mentionRepliedUser(true).queue();
                 }
             }
         }

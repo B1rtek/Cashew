@@ -2,6 +2,7 @@ package com.birtek.cashew.timings;
 
 import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.TriviaStatsDatabase;
+import com.birtek.cashew.reactions.TriviaQuestionsListener;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.TextChannel;
 
@@ -16,8 +17,8 @@ public record TriviaQuestionTimer(String channelID, String userID) implements Ru
     @Override
     public void run() {
         TextChannel targetChannel = jdaInstance.getTextChannelById(channelID);
-        if(targetChannel != null) {
-            targetChannel.sendMessage("<@!" + userID + ">, Time's up!").queue();
+        if (targetChannel != null) {
+            targetChannel.sendMessage("<@!" + userID +">").addEmbeds(TriviaQuestionsListener.generateFailEmbed("You ran out of time!")).queue();
         }
         Cashew.triviaQuestionsManager.removeQuestion(userID);
         TriviaStatsDatabase database = TriviaStatsDatabase.getInstance();
