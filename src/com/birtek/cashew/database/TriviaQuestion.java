@@ -57,4 +57,12 @@ public final class TriviaQuestion {
         return responsesLeft;
     }
 
+    public static String getDifficultyName(int difficulty) {
+        return switch (difficulty) {
+            case 1 -> "easy";
+            case 2 -> "medium";
+            case 3 -> "hard";
+            default -> "random (?) idk there was an error";
+        };
+    }
 }

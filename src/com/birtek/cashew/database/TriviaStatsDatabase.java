@@ -8,7 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class TriviaStatsDatabase extends Database {
 
@@ -147,21 +146,19 @@ public class TriviaStatsDatabase extends Database {
      * @param userID   ID of the user whose stats will be updated
      * @param won      true if the games was won, false otherwise
      * @param question question from the game
-     * @return 0 if the update was successful, 1 if completing this question resulted in completing all questions of
-     * the difficulty, or -1 if an error occurred
+     * @return true if the update was successful, false otherwise
      */
-    public int updateUserStats(String userID, boolean won, TriviaQuestion question) {
+    public boolean updateUserStats(String userID, boolean won, TriviaQuestion question) {
         if (!isInDatabase(userID)) {
             String progress = "";
             progress = saveProgress(progress, won, question);
-            if (insertStatsRecord(userID, won, progress)) return 0;
-            else return -1;
+            return insertStatsRecord(userID, won, progress);
         } else {
             TriviaStats oldUserStats = getUserStats(userID);
-            if (oldUserStats == null) return -1;
+            if (oldUserStats == null) return false;
             try {
                 if (databaseConnection.isClosed()) {
-                    if (!reestablishConnection()) return -1;
+                    if (!reestablishConnection()) return false;
                 }
                 PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT * FROM triviastats WHERE userid = ?");
                 preparedStatement.setString(1, userID);
@@ -172,29 +169,11 @@ public class TriviaStatsDatabase extends Database {
                     progress = saveProgress(results.getString(2), won, question);
                     gamesPlayed = oldUserStats.gamesPlayed() + 1;
                     gamesWon = oldUserStats.gamesWon() + (won ? 1 : 0);
-                } else return -1;
-                if (!updateStatsRecord(userID, progress, gamesPlayed, gamesWon)) return -1;
-                if (!won) return 0;
-                TriviaStats newUserStats = createStatsFromData(userID, progress, gamesPlayed, gamesWon);
-                TriviaQuestionsDatabase database = TriviaQuestionsDatabase.getInstance();
-                HashMap<Integer, Integer> distribution = database.getQuestionsCountByType();
-                int oldCompletedQuestionsOfType = switch (question.difficulty()) {
-                    case 1 -> oldUserStats.easy();
-                    case 2 -> oldUserStats.medium();
-                    case 3 -> oldUserStats.hard();
-                    default -> 0;
-                };
-                int newCompletedQuestionsOfType = switch (question.difficulty()) {
-                    case 1 -> newUserStats.easy();
-                    case 2 -> newUserStats.medium();
-                    case 3 -> newUserStats.hard();
-                    default -> 0;
-                };
-                if (distribution.get(question.difficulty()) == newCompletedQuestionsOfType && newCompletedQuestionsOfType == oldCompletedQuestionsOfType + 1) return 1;
-                else return 0;
+                } else return false;
+                return updateStatsRecord(userID, progress, gamesPlayed, gamesWon);
             } catch (SQLException e) {
                 LOGGER.warn(e + " thrown at TriviaStatsDatabase.updateUserStats()");
-                return -1;
+                return false;
             }
         }
     }

@@ -53,15 +53,19 @@ public class TriviaQuestionsManager {
      *
      * @param userID ID of the user responding to the question
      * @param answer answer of the user
-     * @return 1 if the question was answered correctly, 0 if it wasn't, or -1 if the responses limit was hit
+     * @return 0 if the response wasn't correct, -1 if the responses limit was hit, or any number bigger than 0 being
+     * the number of questions correctly answered by the player up until this point
      */
     public int checkAnswer(String userID, String answer) {
         if (!activeQuestions.containsKey(userID)) return 0;
         ArrayList<String> correctAnswers = activeQuestions.get(userID).answers();
         answer = answer.toLowerCase(Locale.ROOT);
         if (correctAnswers.contains(answer)) {
+            TriviaQuestion usersQuestion = activeQuestions.get(userID);
+            TriviaStatsDatabase database = TriviaStatsDatabase.getInstance();
+            database.updateUserStats(userID, true, usersQuestion);
             removeQuestion(userID);
-            return 1;
+            return database.getUserStats(userID).getProgressByDifficulty(usersQuestion.difficulty());
         } else {
             if(activeQuestions.get(userID).responsesLimitHit()) {
                 removeQuestion(userID);
