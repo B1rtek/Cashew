@@ -2,11 +2,7 @@ package com.birtek.cashew;
 
 import com.birtek.cashew.commands.*;
 import com.birtek.cashew.database.MessageCache;
-import com.birtek.cashew.reactions.CountingMessageDeletionDetector;
-import com.birtek.cashew.reactions.CountingMessageModificationDetector;
-import com.birtek.cashew.reactions.Counter;
-import com.birtek.cashew.reactions.ReactionsExecutor;
-import com.birtek.cashew.reactions.WhenExecutor;
+import com.birtek.cashew.reactions.*;
 import com.birtek.cashew.timings.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -36,6 +32,7 @@ public class Cashew {
     public static ReactionsSettingsManager reactionsSettingsManager;
     public static CommandsSettingsManager commandsSettingsManager;
     public static WhenSettingsManager whenSettingsManager;
+    public static TriviaQuestionsManager triviaQuestionsManager;
     public static MessageCache messageCache;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
@@ -47,9 +44,9 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), new Trivia(), //commands
                         new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
-                        new ReactionsExecutor(), new Counter()) //messagereations
+                        new ReactionsExecutor(), new Counter(), new TriviaQuestionsListener()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .build();
@@ -241,7 +238,17 @@ public class Cashew {
                                 new SubcommandData("remove", "Removes the ReactionRoles WhenRules")
                                         .addOption(STRING, "messageid", "ID of the message with the ReactionRoles embed to remove", true))
                         .setDefaultPermissions(moderatorPermissions)
-                        .setGuildOnly(true)
+                        .setGuildOnly(true),
+                Commands.slash("trivia", "Test your Nekopara knowledge")
+                        .addSubcommands(new SubcommandData("question", "Gives you a random question about Nekopara to answer")
+                                        .addOption(STRING, "difficulty", "Difficulty of the question, by default random", false, true),
+                                new SubcommandData("stats", "Shows trivia stats, such as % of correct answers")
+                                        .addOption(USER, "user", "User to show the stats of, by default set to you", false),
+                                new SubcommandData("suggest", "Suggest a new question to be included in the trivia questions set")
+                                        .addOption(STRING, "question", "Content of the question", true)
+                                        .addOption(STRING, "answers", "Correct answers, separated with commas", true)
+                                        .addOption(STRING, "image", "(Optional) URL of the image to be included in the question embed")
+                                        .addOption(STRING, "notes", "(Optional) Additional notes about the question"))
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
@@ -252,6 +259,7 @@ public class Cashew {
         reactionsSettingsManager = new ReactionsSettingsManager();
         commandsSettingsManager = new CommandsSettingsManager();
         whenSettingsManager = new WhenSettingsManager();
+        triviaQuestionsManager = new TriviaQuestionsManager(jda);
         messageCache = new MessageCache();
     }
 }
