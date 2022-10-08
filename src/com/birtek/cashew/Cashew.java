@@ -243,7 +243,12 @@ public class Cashew {
                         .addSubcommands(new SubcommandData("question", "Gives you a random question about Nekopara to answer")
                                         .addOption(STRING, "difficulty", "Difficulty of the question, by default random", false, true),
                                 new SubcommandData("stats", "Shows trivia stats, such as % of correct answers")
-                                        .addOption(USER, "user", "User to show the stats of, by default set to you", false))
+                                        .addOption(USER, "user", "User to show the stats of, by default set to you", false),
+                                new SubcommandData("suggest", "Suggest a new question to be included in the trivia questions set")
+                                        .addOption(STRING, "question", "Content of the question", true)
+                                        .addOption(STRING, "answers", "Correct answers, separated with commas", true)
+                                        .addOption(STRING, "image", "(Optional) URL of the image to be included in the question embed")
+                                        .addOption(STRING, "notes", "(Optional) Additional notes about the question"))
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
