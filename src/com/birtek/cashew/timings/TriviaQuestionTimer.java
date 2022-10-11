@@ -22,6 +22,8 @@ public record TriviaQuestionTimer(String channelID, String userID) implements Ru
         }
         Cashew.triviaQuestionsManager.removeQuestion(userID);
         TriviaStatsDatabase database = TriviaStatsDatabase.getInstance();
-        database.updateUserStats(userID, false, null);
+        if(!database.updateUserStats(userID, false, null) && targetChannel != null) {
+            targetChannel.sendMessage("<@!" + userID +"> failed to save your progress!").queue();
+        }
     }
 }

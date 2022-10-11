@@ -62,6 +62,9 @@ public class TriviaQuestionsListener extends ListenerAdapter {
             TriviaQuestion usersQuestion = Cashew.triviaQuestionsManager.getUsersQuestion(event.getAuthor().getId());
             if (usersQuestion == null) return;
             int result = Cashew.triviaQuestionsManager.checkAnswer(event.getAuthor().getId(), event.getMessage().getContentRaw().toLowerCase(Locale.ROOT));
+            if(result == -2) {
+                event.getMessage().reply("Something went wrong while saving your progress").mentionRepliedUser(false).queue();
+            }
             if (result >= 1) {
                 event.getMessage().reply("Correct!").addEmbeds(generateProgressEmbed(result, usersQuestion.difficulty())).mentionRepliedUser(false).queue();
             } else {
