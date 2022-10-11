@@ -114,7 +114,7 @@ public class Trivia extends BaseCommand {
                 int difficulty = difficulties.indexOf(dif);
                 difficulty = difficulty == -1 ? 0 : difficulty + 1;
                 TriviaQuestionsDatabase database = TriviaQuestionsDatabase.getInstance();
-                TriviaQuestion question = database.getRandomQuestion(difficulty);
+                TriviaQuestion question = database.getRandomQuestion(event.getUser().getId(), difficulty);
                 MessageEmbed questionEmbed = generateQuestionEmbed(question);
                 if (Cashew.triviaQuestionsManager.addQuestion(event.getUser().getId(), event.getChannel().getId(), question)) {
                     event.replyEmbeds(questionEmbed).queue();

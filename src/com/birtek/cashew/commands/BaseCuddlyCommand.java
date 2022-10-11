@@ -24,13 +24,15 @@ public class BaseCuddlyCommand extends BaseCommand {
     public String purifyFromMentionsAndMerge(String[] splitWithMentions, Guild guild, boolean ignoreFirst) {
         int start = ignoreFirst ? 1 : 0;
         for (int i = start; i < splitWithMentions.length; i++) {
-            if (splitWithMentions[i].length() == 22 && splitWithMentions[i].startsWith("<@!") && splitWithMentions[i].endsWith(">")) {
-                String id = splitWithMentions[i].substring(3, 21);
+            if (splitWithMentions[i].length() >= 22 && splitWithMentions[i].startsWith("<@!") && splitWithMentions[i].endsWith(">")) {
+                int end = splitWithMentions[i].length()-1;
+                String id = splitWithMentions[i].substring(3, end);
                 String name = Objects.requireNonNull(guild.getMemberById(id)).getEffectiveName();
                 splitWithMentions[i] = name;
             }
-            if (splitWithMentions[i].length() == 21 && splitWithMentions[i].startsWith("<@") && splitWithMentions[i].endsWith(">")) {
-                String id = splitWithMentions[i].substring(2, 20);
+            if (splitWithMentions[i].length() >= 21 && splitWithMentions[i].startsWith("<@") && splitWithMentions[i].endsWith(">")) {
+                int end = splitWithMentions[i].length()-1;
+                String id = splitWithMentions[i].substring(2, end);
                 String name = Objects.requireNonNull(guild.getMemberById(id)).getEffectiveName();
                 splitWithMentions[i] = name;
             }

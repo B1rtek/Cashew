@@ -111,7 +111,7 @@ public class TriviaStatsDatabase extends Database {
                 }
             }
         }
-        return new TriviaStats(userID, easy, medium, hard, gamesPlayed, gamesWon);
+        return new TriviaStats(userID, progress, easy, medium, hard, gamesPlayed, gamesWon);
     }
 
     /**
@@ -121,7 +121,7 @@ public class TriviaStatsDatabase extends Database {
      * @return {@link TriviaStats TriviaStats} of the user, or null if an error occurred
      */
     public TriviaStats getUserStats(String userID) {
-        if (!isInDatabase(userID)) return new TriviaStats(userID, 0, 0, 0, 0, 0);
+        if (!isInDatabase(userID)) return new TriviaStats(userID, "", 0, 0, 0, 0, 0);
         try {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return null;
