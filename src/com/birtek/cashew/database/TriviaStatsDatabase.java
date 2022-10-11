@@ -214,8 +214,8 @@ public class TriviaStatsDatabase extends Database {
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO triviastats(userid, progress, gamesplayed, gameswon) VALUES(?, ?, ?, ?)");
             preparedStatement.setString(1, userID);
             preparedStatement.setString(2, progress);
-            preparedStatement.setInt(3, won ? 1 : 0);
-            preparedStatement.setInt(4, 1);
+            preparedStatement.setInt(3, 1);
+            preparedStatement.setInt(4, won ? 1 : 0);
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at TriviaStatsDatabase.insertStatsRecord()");
