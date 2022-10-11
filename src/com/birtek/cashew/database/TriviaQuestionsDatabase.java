@@ -4,10 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.*;
 
 public class TriviaQuestionsDatabase {
 
@@ -84,20 +81,58 @@ public class TriviaQuestionsDatabase {
     }
 
     /**
-     * Gets a random question from the database
+     * Gets randomly an ID of a question not answered yet by the user, if the user answered all questions the ID
+     * is set to 0
+     * @param userID ID of the user who requested a question
+     * @param difficulty difficulty of the requested question
+     * @return random ID of a question not answered yet by the user or 0 if all were already answered
+     */
+    private int getRandomNotAnsweredQuestionID(String userID, int difficulty) {
+        TriviaStatsDatabase database = TriviaStatsDatabase.getInstance();
+        TriviaStats userStats = database.getUserStats(userID);
+        ArrayList<Integer> goodIDs = new ArrayList<>();
+        for(int i=0; i<hardnessMap.size(); i++) {
+            if(userStats.progress().length() < i+1 || userStats.progress().charAt(i) == '0') {
+                if(difficulty == hardnessMap.get(i) || difficulty == 0) {
+                    goodIDs.add(i+1);
+                }
+            }
+        }
+        if(goodIDs.isEmpty()) {
+            return 0;
+        } else {
+            Random random = new Random();
+            return goodIDs.get(random.nextInt(goodIDs.size()));
+        }
+    }
+
+    /**
+     * Gets a random question from the database, with a 50% chance of it being not yet answered by the user
      *
+     * @param userID ID of the user who requested a question
      * @param difficulty difficulty of the question to get, if set to 0 then the difficulty will be random
      * @return a {@link TriviaQuestion TriviaQuestion} with all details about the randomly selected question, or null if
      * an error occurred
      */
-    public TriviaQuestion getRandomQuestion(int difficulty) {
+    public TriviaQuestion getRandomQuestion(String userID, int difficulty) {
+        Random random = new Random();
+        boolean notAnswered = random.nextBoolean();
+        int notAnsweredQuestionID = 0;
+        if(notAnswered) {
+            notAnsweredQuestionID = getRandomNotAnsweredQuestionID(userID, difficulty);
+        }
         try {
             PreparedStatement preparedStatement;
-            if (difficulty == 0) {
-                preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT * FROM Questions ORDER BY RANDOM() LIMIT 1");
+            if(notAnswered && notAnsweredQuestionID != 0) {
+                preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT * FROM Questions WHERE _id = ?");
+                preparedStatement.setInt(1, notAnsweredQuestionID);
             } else {
-                preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT * FROM Questions WHERE difficulty = ? ORDER BY RANDOM() LIMIT 1");
-                preparedStatement.setInt(1, difficulty);
+                if (difficulty == 0) {
+                    preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT * FROM Questions ORDER BY RANDOM() LIMIT 1");
+                } else {
+                    preparedStatement = triviaQuestionsConnection.prepareStatement("SELECT * FROM Questions WHERE difficulty = ? ORDER BY RANDOM() LIMIT 1");
+                    preparedStatement.setInt(1, difficulty);
+                }
             }
             ResultSet results = preparedStatement.executeQuery();
             if (results.next()) {
