@@ -13,11 +13,12 @@ public class Info extends BaseCommand {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setColor(0xA86A61);
         embedBuilder.setTitle("Cashew");
-        embedBuilder.setDescription("Nekopara bot with fun commands by B1rtek#2383");
+        embedBuilder.setDescription("Nekopara-themed bot with fun commands by B1rtek#2383");
         embedBuilder.addField("Commands", "To display all commands, type `/help` or `"+ Cashew.COMMAND_PREFIX +"help`", false);
-        embedBuilder.addField("Support", "DM me `B1rtek#2383`", false);
-        embedBuilder.addField("Bot development", "Cashew's trello board: https://trello.com/b/R432WEsW/cashew-bot", false);
-//        embedBuilder.addField("Github repo", "soon :tm:", false);
+        embedBuilder.addField("Support", "DM me `B1rtek#2383` or open an issue on GitHub (link below)", false);
+        embedBuilder.addField("Bot development", "Cashew's GitHub repo: https://github.com/B1rtek/Cashew\nCashew's Trello board: https://trello.com/b/R432WEsW/cashew-bot", false);
+        embedBuilder.addField("Donations (if you really, really like Cashew)", "https://ko-fi.com/b1rtek", false);
+        embedBuilder.setFooter("Cashew 2.26.1");
         embedBuilder.setThumbnail(event.getJDA().getSelfUser().getAvatarUrl());
         return embedBuilder.build();
     }
