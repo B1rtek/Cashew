@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class CountingDatabase extends Database {
 
@@ -147,13 +148,12 @@ public class CountingDatabase extends Database {
      * @return true if the update was successful, false otherwise
      */
     private boolean insertCountingStatus(boolean newState, String channelID) {
-        if (!newState) return true;
         try {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return false;
             }
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO counting(activity, current, channelid, typosleft) VALUES(?, ?, ?, ?)");
-            preparedStatement.setBoolean(1, true);
+            preparedStatement.setBoolean(1, newState);
             preparedStatement.setInt(2, 0);
             preparedStatement.setString(3, channelID);
             preparedStatement.setInt(4, 3);
@@ -239,6 +239,41 @@ public class CountingDatabase extends Database {
      * one tells if the user was muted (true) or unmuted (false)
      */
     public Pair<Boolean, Boolean> switchMuteStatus(User user, String channelID) {
-        return Pair.of(true, true);
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select muted from counting where channelid = ?");
+            preparedStatement.setString(1, channelID);
+            ResultSet results = preparedStatement.executeQuery();
+            String muteList;
+            if(results.next()) {
+                muteList = results.getString(1);
+                if(muteList == null) muteList = "";
+            } else {
+                setCountingStatus(false, channelID);
+                muteList = "";
+            }
+            ArrayList<String> mutedIDs = new ArrayList<>(Arrays.asList(muteList.split(",")));
+            boolean ifMuted = true;
+            if(mutedIDs.contains(user.getId())) {
+                mutedIDs.remove(user.getId());
+                ifMuted = false;
+            } else {
+                mutedIDs.add(user.getId());
+            }
+            StringBuilder muteListString = new StringBuilder();
+            for (String muted: mutedIDs) {
+                muteListString.append(muted).append(',');
+            }
+            muteListString.deleteCharAt(muteListString.length()-1);
+            preparedStatement = databaseConnection.prepareStatement("update counting set muted = ? where channelid = ?");
+            preparedStatement.setString(1, muteListString.toString());
+            preparedStatement.setString(2, channelID);
+            return Pair.of(preparedStatement.executeUpdate() == 1, ifMuted);
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CountingDatabase.switchMuteStatus()");
+            return Pair.of(false, false);
+        }
     }
 }
