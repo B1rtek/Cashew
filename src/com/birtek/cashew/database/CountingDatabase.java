@@ -1,5 +1,7 @@
 package com.birtek.cashew.database;
 
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,5 +216,16 @@ public class CountingDatabase extends Database {
             LOGGER.warn(e + " thrown at CountingDatabase.getAllActiveCountingChannels()");
             return null;
         }
+    }
+
+    /**
+     * Mutes or unmutes a user in the counting game
+     * @param user {@link User user} to mute/unmute
+     * @param channelID ID of the channel in which the user status is being changed
+     * @return {@link Pair pair} with two Booleans - first one indicates whether the operation was successful, the other
+     * one tells if the user was muted (true) or unmuted (false)
+     */
+    public Pair<Boolean, Boolean> switchMuteStatus(User user, String channelID) {
+        return Pair.of(true, true);
     }
 }

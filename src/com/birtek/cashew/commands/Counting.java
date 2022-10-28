@@ -2,9 +2,11 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.database.CountingDatabase;
 import com.birtek.cashew.database.CountingInfo;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -59,6 +61,15 @@ public class Counting extends BaseCommand {
                     }
                 } else {
                     event.reply("Something went wrong while getting data from the database").setEphemeral(true).queue();
+                }
+            } else if (Objects.equals(event.getSubcommandName(), "mute")) {
+                CountingDatabase database = CountingDatabase.getInstance();
+                User user = event.getOption("user", null, OptionMapping::getAsUser);
+                Pair<Boolean, Boolean> result = database.switchMuteStatus(user, event.getChannel().getId());
+                if (result.getLeft()) {
+                    event.reply("User " + user.getAsMention() + " has been " + (result.getRight() ? "" : "un") + "muted.").setEphemeral(true).queue();
+                } else {
+                    event.reply("Failed to switch mute status of the user!").setEphemeral(true).queue();
                 }
             }
         }
