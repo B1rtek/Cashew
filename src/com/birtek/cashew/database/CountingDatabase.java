@@ -47,6 +47,19 @@ public class CountingDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select column_name from information_schema.columns where table_name='counting' and column_name='muted'");
+            ResultSet results = preparedStatement.executeQuery();
+            if(!results.next()) {
+                preparedStatement = databaseConnection.prepareStatement("alter table counting add column muted text");
+                preparedStatement.execute();
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Failed to alter counting table!");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /**
