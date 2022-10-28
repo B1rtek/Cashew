@@ -204,7 +204,9 @@ public class CountingDatabase extends Database {
             HashMap<String, ArrayList<String>> muteList = new HashMap<>();
             while (results.next()) {
                 String channelID = results.getString(1);
-                ArrayList<String> channelMuteList = new ArrayList<>(Arrays.asList(results.getString(2).split(",")));
+                String muteString = results.getString(2);
+                if(muteString == null) continue;
+                ArrayList<String> channelMuteList = new ArrayList<>(Arrays.asList(muteString.split(",")));
                 muteList.put(channelID, channelMuteList);
             }
             return muteList;
