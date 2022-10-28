@@ -365,12 +365,12 @@ public class Counter extends BaseReaction {
         CountingDatabase database = CountingDatabase.getInstance();
         CountingInfo countingData = database.getCountingData(event.getChannel().getId());
         if (countingData != null && countingData.active() && (!Objects.equals(countingData.userID(), event.getAuthor().getId()) || !wasCorrected(event.getChannel().getId()))) {
-            if(isMuted(event.getChannel().getId(), event.getAuthor().getId())) {
+            message = prepareMessage(message);
+            MessageAnalysisResult analysisResult = analyzeMessage(message, countingData.value());
+            if(analysisResult.type != MessageAnalysisResultType.ERROR && isMuted(event.getChannel().getId(), event.getAuthor().getId())) {
                 event.getMessage().addReaction(Emoji.fromUnicode("\uD83E\uDD28")).queue();
                 return;
             }
-            message = prepareMessage(message);
-            MessageAnalysisResult analysisResult = analyzeMessage(message, countingData.value());
             switch (analysisResult.type()) {
                 case ERROR -> {
                     // do absolutely nothing
