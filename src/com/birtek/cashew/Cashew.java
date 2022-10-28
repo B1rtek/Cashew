@@ -35,6 +35,8 @@ public class Cashew {
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
 
+    public static final Counter counter = new Counter();
+
     public static void main(String[] args) {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
                 .setStatus(OnlineStatus.ONLINE)
@@ -44,7 +46,7 @@ public class Cashew {
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
                         new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), new Trivia(), //commands
                         new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
-                        new ReactionsExecutor(), new Counter(), new TriviaQuestionsListener()) //messagereations
+                        new ReactionsExecutor(), counter, new TriviaQuestionsListener()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .build();

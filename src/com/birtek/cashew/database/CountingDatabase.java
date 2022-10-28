@@ -1,5 +1,6 @@
 package com.birtek.cashew.database;
 
+import com.birtek.cashew.Cashew;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
@@ -194,7 +195,23 @@ public class CountingDatabase extends Database {
      * @return HashMap with muted users or null if an error occurred
      */
     public HashMap<String, ArrayList<String>> getAllMutedUsers() {
-        return null;
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select channelid, muted from counting");
+            ResultSet results = preparedStatement.executeQuery();
+            HashMap<String, ArrayList<String>> muteList = new HashMap<>();
+            while (results.next()) {
+                String channelID = results.getString(1);
+                ArrayList<String> channelMuteList = new ArrayList<>(Arrays.asList(results.getString(2).split(",")));
+                muteList.put(channelID, channelMuteList);
+            }
+            return muteList;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CountingDatabase.getAllMutedUsers()");
+            return null;
+        }
     }
 
     /**
@@ -279,7 +296,9 @@ public class CountingDatabase extends Database {
             preparedStatement = databaseConnection.prepareStatement("update counting set muted = ? where channelid = ?");
             preparedStatement.setString(1, muteListString.toString());
             preparedStatement.setString(2, channelID);
-            return Pair.of(preparedStatement.executeUpdate() == 1, ifMuted);
+            boolean dataUpdateResult = preparedStatement.executeUpdate() == 1;
+            Cashew.counter.updateMuteStatus(channelID, user.getId(), ifMuted);
+            return Pair.of(dataUpdateResult, ifMuted);
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at CountingDatabase.switchMuteStatus()");
             return Pair.of(false, false);
