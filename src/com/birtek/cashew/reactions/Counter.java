@@ -19,6 +19,7 @@ public class Counter extends BaseReaction {
     private static final Logger LOGGER = LoggerFactory.getLogger(Counter.class);
 
     private final HashMap<String, Boolean> correctedAfterOffline = new HashMap<>();
+    private HashMap<String, ArrayList<String>> muteList;
 
     public Counter() {
         CountingDatabase database = CountingDatabase.getInstance();
@@ -29,6 +30,34 @@ public class Counter extends BaseReaction {
             }
         } else {
             LOGGER.error("Failed to obtain channels list!");
+        }
+        muteList = database.getAllMutedUsers();
+        if (muteList == null) muteList = new HashMap<>();
+    }
+
+    public void updateMuteStatus(String channelID, String userID, boolean status) {
+        if(!muteList.containsKey(channelID)) {
+            if(!status) {
+                muteList.put(channelID, new ArrayList<>());
+            }
+        } else {
+            ArrayList<String> channelMuteList = muteList.get(channelID);
+            if(status) {
+                channelMuteList.add(userID);
+            } else {
+                channelMuteList.remove(userID);
+            }
+            muteList.put(channelID, channelMuteList);
+        }
+    }
+
+    private boolean isMuted(String channelID, String userID) {
+        if(!muteList.containsKey(channelID)) {
+            muteList.put(channelID, new ArrayList<>());
+            return false;
+        } else {
+            ArrayList<String> channelMuteList = muteList.get(channelID);
+            return channelMuteList.contains(userID);
         }
     }
 
@@ -338,6 +367,10 @@ public class Counter extends BaseReaction {
         if (countingData != null && countingData.active() && (!Objects.equals(countingData.userID(), event.getAuthor().getId()) || !wasCorrected(event.getChannel().getId()))) {
             message = prepareMessage(message);
             MessageAnalysisResult analysisResult = analyzeMessage(message, countingData.value());
+            if(analysisResult.type != MessageAnalysisResultType.ERROR && isMuted(event.getChannel().getId(), event.getAuthor().getId())) {
+                event.getMessage().addReaction(Emoji.fromUnicode("\uD83E\uDD28")).queue();
+                return;
+            }
             switch (analysisResult.type()) {
                 case ERROR -> {
                     // do absolutely nothing

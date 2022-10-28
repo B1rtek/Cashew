@@ -1,10 +1,15 @@
 package com.birtek.cashew.database;
 
+import com.birtek.cashew.Cashew;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class CountingDatabase extends Database {
 
@@ -42,6 +47,19 @@ public class CountingDatabase extends Database {
             preparedStatement.execute();
         } catch (SQLException e) {
             LOGGER.error("Failed to create the counting table");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select column_name from information_schema.columns where table_name='counting' and column_name='muted'");
+            ResultSet results = preparedStatement.executeQuery();
+            if(!results.next()) {
+                preparedStatement = databaseConnection.prepareStatement("alter table counting add column muted text");
+                preparedStatement.execute();
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Failed to alter counting table!");
             e.printStackTrace();
             System.exit(1);
         }
@@ -132,13 +150,12 @@ public class CountingDatabase extends Database {
      * @return true if the update was successful, false otherwise
      */
     private boolean insertCountingStatus(boolean newState, String channelID) {
-        if (!newState) return true;
         try {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return false;
             }
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO counting(activity, current, channelid, typosleft) VALUES(?, ?, ?, ?)");
-            preparedStatement.setBoolean(1, true);
+            preparedStatement.setBoolean(1, newState);
             preparedStatement.setInt(2, 0);
             preparedStatement.setString(3, channelID);
             preparedStatement.setInt(4, 3);
@@ -169,6 +186,32 @@ public class CountingDatabase extends Database {
             return new CountingInfo(false, " ", 0, " ", 3);
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at CountingDatabase.getCountingData()");
+            return null;
+        }
+    }
+
+    /**
+     * Returns a HashMap of lists of muted users on every counting channel
+     * @return HashMap with muted users or null if an error occurred
+     */
+    public HashMap<String, ArrayList<String>> getAllMutedUsers() {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select channelid, muted from counting");
+            ResultSet results = preparedStatement.executeQuery();
+            HashMap<String, ArrayList<String>> muteList = new HashMap<>();
+            while (results.next()) {
+                String channelID = results.getString(1);
+                String muteString = results.getString(2);
+                if(muteString == null) continue;
+                ArrayList<String> channelMuteList = new ArrayList<>(Arrays.asList(muteString.split(",")));
+                muteList.put(channelID, channelMuteList);
+            }
+            return muteList;
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CountingDatabase.getAllMutedUsers()");
             return null;
         }
     }
@@ -213,6 +256,54 @@ public class CountingDatabase extends Database {
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at CountingDatabase.getAllActiveCountingChannels()");
             return null;
+        }
+    }
+
+    /**
+     * Mutes or unmutes a user in the counting game
+     * @param user {@link User user} to mute/unmute
+     * @param channelID ID of the channel in which the user status is being changed
+     * @return {@link Pair pair} with two Booleans - first one indicates whether the operation was successful, the other
+     * one tells if the user was muted (true) or unmuted (false)
+     */
+    public Pair<Boolean, Boolean> switchMuteStatus(User user, String channelID) {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select muted from counting where channelid = ?");
+            preparedStatement.setString(1, channelID);
+            ResultSet results = preparedStatement.executeQuery();
+            String muteList;
+            if(results.next()) {
+                muteList = results.getString(1);
+                if(muteList == null) muteList = "";
+            } else {
+                setCountingStatus(false, channelID);
+                muteList = "";
+            }
+            ArrayList<String> mutedIDs = new ArrayList<>(Arrays.asList(muteList.split(",")));
+            boolean ifMuted = true;
+            if(mutedIDs.contains(user.getId())) {
+                mutedIDs.remove(user.getId());
+                ifMuted = false;
+            } else {
+                mutedIDs.add(user.getId());
+            }
+            StringBuilder muteListString = new StringBuilder();
+            for (String muted: mutedIDs) {
+                muteListString.append(muted).append(',');
+            }
+            muteListString.deleteCharAt(muteListString.length()-1);
+            preparedStatement = databaseConnection.prepareStatement("update counting set muted = ? where channelid = ?");
+            preparedStatement.setString(1, muteListString.toString());
+            preparedStatement.setString(2, channelID);
+            boolean dataUpdateResult = preparedStatement.executeUpdate() == 1;
+            Cashew.counter.updateMuteStatus(channelID, user.getId(), ifMuted);
+            return Pair.of(dataUpdateResult, ifMuted);
+        } catch (SQLException e) {
+            LOGGER.warn(e + " thrown at CountingDatabase.switchMuteStatus()");
+            return Pair.of(false, false);
         }
     }
 }

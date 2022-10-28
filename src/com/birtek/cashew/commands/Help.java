@@ -110,9 +110,10 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.addField("Works in DMs", "No", true);
                 specificHelpEmbed.setTitle("Counting");
                 specificHelpEmbed.setDescription("Counting game command, can only be used by moderators");
-                specificHelpEmbed.addField("`/counting toggle [toggle]`", "Toggles the counting game in the current channel on or off", false);
-                specificHelpEmbed.addField("`/counting setcount [count]`", "Sets the current count value for the counting game", false);
+                specificHelpEmbed.addField("`/counting toggle <toggle>`", "Toggles the counting game in the current channel on or off", false);
+                specificHelpEmbed.addField("`/counting setcount <count>`", "Sets the current count value for the counting game", false);
                 specificHelpEmbed.addField("`/counting reset`", "Resets the current count to zero", false);
+                specificHelpEmbed.addField("`/counting mute <user>`", "Mutes or unmutes a user in the current channel's counting game. Muted users will get \uD83E\uDD28 as a reaction to their message instead", false);
             }
             case "cuddle" -> {
                 specificHelpEmbed.setTitle("Cuddle");
