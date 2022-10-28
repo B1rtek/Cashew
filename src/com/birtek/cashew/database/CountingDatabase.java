@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class CountingDatabase extends Database {
 
@@ -186,6 +187,14 @@ public class CountingDatabase extends Database {
             LOGGER.warn(e + " thrown at CountingDatabase.getCountingData()");
             return null;
         }
+    }
+
+    /**
+     * Returns a HashMap of lists of muted users on every counting channel
+     * @return HashMap with muted users or null if an error occurred
+     */
+    public HashMap<String, ArrayList<String>> getAllMutedUsers() {
+        return null;
     }
 
     /**
