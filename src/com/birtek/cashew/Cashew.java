@@ -17,8 +17,6 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
-import javax.security.auth.login.LoginException;
-
 import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
 public class Cashew {
@@ -37,7 +35,7 @@ public class Cashew {
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
 
-    public static void main(String[] args) throws LoginException {
+    public static void main(String[] args) {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
                 .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("NEKOPARA Vol. 3"))
@@ -78,6 +76,8 @@ public class Cashew {
                         .addSubcommands(new SubcommandData("setcount", "Sets a new current count value")
                                 .addOption(INTEGER, "count", "New count value", true))
                         .addSubcommands(new SubcommandData("reset", "Resets the counter"))
+                        .addSubcommands(new SubcommandData("mute", "Mute or unmute a user in the counting game")
+                                .addOption(USER, "user", "User to mute"))
                         .setDefaultPermissions(moderatorPermissions)
                         .setGuildOnly(true),
                 Commands.slash("reactions", "Toggles Cashew's reactions to messages like 69 or amogus")
