@@ -20,6 +20,8 @@ dependencies {
     implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
     implementation('ch.qos.logback:logback-classic:1.2.11')
     implementation group: 'org.json', name: 'json', version: '20220320'
+    // technically not cashew but I have to fit two bots in one
+    implementation 'org.telegram:telegrambots:6.3.0'
 }
 
 application {

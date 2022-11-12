@@ -1,5 +1,7 @@
 package com.birtek.cashew;
 
+import com.birtek.cashew.badwayfarersubmissions.Bot;
+import com.birtek.cashew.badwayfarersubmissions.PostsManager;
 import com.birtek.cashew.commands.*;
 import com.birtek.cashew.database.MessageCache;
 import com.birtek.cashew.reactions.*;
@@ -16,6 +18,9 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
@@ -34,9 +39,12 @@ public class Cashew {
     public static MessageCache messageCache;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
-
     public static final Counter counter = new Counter();
 
+    // telegram bot stuff
+
+    public static com.birtek.cashew.badwayfarersubmissions.Bot bot;
+    public static com.birtek.cashew.badwayfarersubmissions.PostsManager postsManager;
     public static void main(String[] args) {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
                 .setStatus(OnlineStatus.ONLINE)
@@ -263,5 +271,16 @@ public class Cashew {
         whenSettingsManager = new WhenSettingsManager();
         triviaQuestionsManager = new TriviaQuestionsManager(jda);
         messageCache = new MessageCache();
+
+        // telegram stuff
+
+        postsManager = new PostsManager();
+        try {
+            TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+            bot = new Bot();
+            botsApi.registerBot(bot);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 }
