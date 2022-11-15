@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class PostsDatabase {
     private static volatile PostsDatabase instance;
-    private final String databaseURL = System.getenv("JDBC_DATABASE_URL");
     private Connection databaseConnection;
+    private final String databaseURL = System.getenv("JDBC_DATABASE_URL");
 
     private PostsDatabase() {
         try {
@@ -26,7 +26,7 @@ public class PostsDatabase {
         }
 
         try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists submissions(_id serial primary key, file_id text, caption text, author text, verified boolean)");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create table if not exists submissions(_id serial primary key, file_id text, caption text, author text)");
             preparedStatement.execute();
         } catch (SQLException e) {
             System.err.println("Failed to create the submissions table");
@@ -196,6 +196,42 @@ public class PostsDatabase {
             System.err.println("Failed to remove a post!");
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public int getVerifiedPostsCount() {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select count(*) from submissions where verified = true");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+            return 0;
+        } catch (SQLException e) {
+            System.err.println("Failed to get a list of all verified posts!");
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public Post getOldestVerifiedPost() {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, author from submissions where verified = true order by _id limit 1");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()) {
+                return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
+            }
+            return new Post(0,"", "", "");
+        } catch (SQLException e) {
+            System.err.println("Failed to get a new unverified submission!");
+            e.printStackTrace();
+            return null;
         }
     }
 

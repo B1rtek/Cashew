@@ -17,6 +17,15 @@ public class PostsManager {
     private static int currentlyScheduled = 0;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
+    public String schedulePost(Post post) {
+        Random random = new Random();
+        int range = 10;//(12 + currentlyScheduled) * 3600;
+        int delay = random.nextInt(range);
+        scheduler.schedule(new PostRunnable(post), delay, TimeUnit.SECONDS);
+        currentlyScheduled++;
+        return getExecutionTime(delay);
+    }
+
     public PostsManager() {
         PostsDatabase database = PostsDatabase.getInstance();
         ArrayList<Post> posts = database.getAllPosts();
@@ -36,15 +45,6 @@ public class PostsManager {
         return dateTimeFormatter.format(targetTime);
     }
 
-    public String schedulePost(Post post) {
-        Random random = new Random();
-        int range = (12 + currentlyScheduled) * 3600;
-        int delay = random.nextInt(range);
-        scheduler.schedule(new PostRunnable(post), delay, TimeUnit.SECONDS);
-        currentlyScheduled++;
-        return getExecutionTime(delay);
-    }
-
     private class PostRunnable implements Runnable {
 
         private final Post post;
@@ -55,7 +55,7 @@ public class PostsManager {
 
         @Override
         public void run() {
-            Cashew.bot.postSubmission(post, Bot.badWayfarerChannelID);
+            Cashew.badWayfarerBot.postSubmission(post, Bot.testChannelID);
             currentlyScheduled--;
             PostsDatabase database = PostsDatabase.getInstance();
             database.removePost(post.id());

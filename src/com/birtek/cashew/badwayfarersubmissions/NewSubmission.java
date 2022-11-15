@@ -8,15 +8,15 @@ public class NewSubmission {
         this.fileID = fileID;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public String getFileID() {
         return fileID;
     }
 
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 }
