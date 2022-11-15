@@ -1,7 +1,7 @@
 package com.birtek.cashew;
 
 import com.birtek.cashew.badwayfarersubmissions.Bot;
-import com.birtek.cashew.badwayfarersubmissions.PostsManager;
+import com.birtek.cashew.badwayfarersubmissions.PostsScheduler;
 import com.birtek.cashew.commands.*;
 import com.birtek.cashew.database.MessageCache;
 import com.birtek.cashew.reactions.*;
@@ -43,8 +43,9 @@ public class Cashew {
 
     // telegram bot stuff
 
-    public static com.birtek.cashew.badwayfarersubmissions.Bot bot;
-    public static com.birtek.cashew.badwayfarersubmissions.PostsManager postsManager;
+    public static Bot badWayfarerBot;
+    public static PostsScheduler postsManager;
+
     public static void main(String[] args) {
         JDA jda = JDABuilder.createDefault(System.getenv().get("TOKEN"))
                 .setStatus(OnlineStatus.ONLINE)
@@ -274,13 +275,13 @@ public class Cashew {
 
         // telegram stuff
 
-        postsManager = new PostsManager();
         try {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-            bot = new Bot();
-            botsApi.registerBot(bot);
+            badWayfarerBot = new Bot();
+            botsApi.registerBot(badWayfarerBot);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+        postsManager = new PostsScheduler();
     }
 }

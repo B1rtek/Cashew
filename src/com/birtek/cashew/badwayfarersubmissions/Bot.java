@@ -1,6 +1,5 @@
 package com.birtek.cashew.badwayfarersubmissions;
 
-import com.birtek.cashew.Cashew;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -18,9 +17,38 @@ public class Bot extends TelegramLongPollingBot {
     public final static String badWayfarerChannelID = "@hydrantyipompywodne";
     public final static String testChannelID = "@b1rtektestbotchannel";
     private final static String b1rtekDMID = "1819824656";
+    private int currentlyVerified = 0;
+
+    private void getNewSubmissionDetails(Message detailsMessage) {
+        String description = detailsMessage.getText();
+        if (description == null || description.isEmpty()) {
+            SendMessage errorMessage = new SendMessage();
+            errorMessage.setText("Ta wiadomość nie zawiera tekstu, spróbuj ponownie.");
+            errorMessage.setChatId(detailsMessage.getChatId().toString());
+            sendMessage(errorMessage);
+            return;
+        }
+        if (description.toLowerCase(Locale.ROOT).equals("żaden")) description = "";
+        NewSubmission completedSubmission = activeNewSubmissions.get(detailsMessage.getChatId().toString());
+        completedSubmission.setDescription(description);
+        activeNewCommandChannels.remove(detailsMessage.getChatId().toString());
+        PostsDatabase database = PostsDatabase.getInstance();
+        boolean success = database.addSubmission(completedSubmission, detailsMessage.getFrom().getUserName());
+        SendMessage successMessage = new SendMessage();
+        successMessage.setChatId(detailsMessage.getChatId().toString());
+        successMessage.setText(success ? "Pomyślnie dodano nowe zgłoszenie!" : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
+        try {
+            execute(successMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+        if (success) {
+            notifyAboutNewPost();
+        }
+    }
+
     private final static HashMap<String, NewCommandStatus> activeNewCommandChannels = new HashMap<>();
     private final static HashMap<String, NewSubmission> activeNewSubmissions = new HashMap<>();
-    private int currentlyVerified = 0;
 
     @Override
     public String getBotUsername() {
@@ -85,42 +113,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void getNewSubmissionDetails(Message detailsMessage) {
-        String description = detailsMessage.getText();
-        if (description == null || description.isEmpty()) {
-            SendMessage errorMessage = new SendMessage();
-            errorMessage.setText("Ta wiadomość nie zawiera tekstu, spróbuj ponownie.");
-            errorMessage.setChatId(detailsMessage.getChatId().toString());
-            sendMessage(errorMessage);
-            return;
-        }
-        if (description.equals("żaden")) description = "";
-        NewSubmission completedSubmission = activeNewSubmissions.get(detailsMessage.getChatId().toString());
-        completedSubmission.setDescription(description);
-        activeNewCommandChannels.remove(detailsMessage.getChatId().toString());
-        PostsDatabase database = PostsDatabase.getInstance();
-        boolean success = database.addSubmission(completedSubmission, detailsMessage.getFrom().getUserName());
-        SendMessage successMessage = new SendMessage();
-        successMessage.setChatId(detailsMessage.getChatId().toString());
-        successMessage.setText(success ? "Pomyślnie dodano nowe zgłoszenie!" : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
-        try {
-            execute(successMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-        if (success) {
-            notifyAboutNewPost();
-        }
-    }
-
-    private void notifyAboutNewPost() {
-        SendMessage notification = new SendMessage();
-        notification.setChatId(b1rtekDMID);
-        notification.setText("Pojawił się nowy post do weryfikacji");
-        sendMessage(notification);
-    }
-
-    public void postSubmission(Post post, String targetChannelID) {
+    public boolean postSubmission(Post post, String targetChannelID) {
         SendPhoto testPost = new SendPhoto();
         testPost.setChatId(targetChannelID);
         java.io.File photo = getPhoto(post.fileID());
@@ -129,7 +122,7 @@ public class Bot extends TelegramLongPollingBot {
             errorMessage.setText("Nie udało się dostarczyć \"" + post.caption() + "\", file_id = " + post.fileID() + " - nie udało się pobrać zdjęcia");
             errorMessage.setChatId(b1rtekDMID);
             sendMessage(errorMessage);
-            return;
+            return false;
         }
         InputFile photoInputFile = new InputFile();
         photoInputFile.setMedia(photo);
@@ -145,18 +138,16 @@ public class Bot extends TelegramLongPollingBot {
             errorMessage.setText("Nie udało się dostarczyć \"" + post.caption() + "\", file_id = " + post.fileID() + " - nie udało się wysłać posta");
             errorMessage.setChatId(b1rtekDMID);
             sendMessage(errorMessage);
+            return false;
         }
+        return true;
     }
 
-    private String postVerification(String chatID) {
-        if (!chatID.equals(b1rtekDMID)) return "Nie masz uprawnień do weryfikacji postów";
-        PostsDatabase database = PostsDatabase.getInstance();
-        Post unverifiedPost = database.getUnverifiedPost();
-        if (unverifiedPost == null) return "Coś poszło nie tak...";
-        if (unverifiedPost.id() == 0) return "Nie ma żadnych niezweryfikowanych postów";
-        postSubmission(unverifiedPost, b1rtekDMID);
-        currentlyVerified = unverifiedPost.id();
-        return "Napisz \"tak\", aby zweryfikować post, lub \"nie\" aby go odrzucić";
+    private void notifyAboutNewPost() {
+        SendMessage notification = new SendMessage();
+        notification.setChatId(b1rtekDMID);
+        notification.setText("Pojawił się nowy post do weryfikacji");
+        sendMessage(notification);
     }
 
     private void finalizeVerification(String response) {
@@ -172,18 +163,30 @@ public class Bot extends TelegramLongPollingBot {
         } else {
             if (database.removePost(currentlyVerified)) {
                 verificationConfirmation.setText("Pomyślnie usunięto post!");
-                sendMessage(verificationConfirmation);
-                return;
             } else {
                 verificationConfirmation.setText("Coś poszło nie tak...");
-                sendMessage(verificationConfirmation);
-                return;
             }
+            sendMessage(verificationConfirmation);
+            return;
         }
-        String timeString = Cashew.postsManager.schedulePost(database.getPostByID(currentlyVerified));
         currentlyVerified = 0;
-        verificationConfirmation.setText("Pomyślnie zweryfikowano post! Publikację zaplanowano na " + timeString);
+        verificationConfirmation.setText("Pomyślnie zweryfikowano post!");
         sendMessage(verificationConfirmation);
+    }
+
+    private String postVerification(String chatID) {
+        if (!chatID.equals(b1rtekDMID)) return "Nie masz uprawnień do weryfikacji postów";
+        PostsDatabase database = PostsDatabase.getInstance();
+        Post unverifiedPost = database.getUnverifiedPost();
+        if (unverifiedPost == null) return "Coś poszło nie tak...";
+        if (unverifiedPost.id() == 0) return "Nie ma żadnych niezweryfikowanych postów";
+        postSubmission(unverifiedPost, b1rtekDMID);
+        currentlyVerified = unverifiedPost.id();
+        return "Napisz \"tak\", aby zweryfikować post, lub \"nie\" aby go odrzucić";
+    }
+
+    private enum NewCommandStatus {
+        GET_PHOTO, GET_DETAILS
     }
 
     @Override
@@ -217,9 +220,5 @@ public class Bot extends TelegramLongPollingBot {
                 }
             }
         }
-    }
-
-    private enum NewCommandStatus {
-        GET_PHOTO, GET_DETAILS
     }
 }
