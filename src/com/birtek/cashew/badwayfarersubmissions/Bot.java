@@ -1,5 +1,10 @@
 package com.birtek.cashew.badwayfarersubmissions;
 
+import com.birtek.cashew.database.LeaderboardRecord;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
+import org.nocrala.tools.texttablefmt.BorderStyle;
+import org.nocrala.tools.texttablefmt.ShownBorders;
+import org.nocrala.tools.texttablefmt.Table;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -7,10 +12,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -182,7 +184,30 @@ public class Bot extends TelegramLongPollingBot {
         if (unverifiedPost.id() == 0) return "Nie ma żadnych niezweryfikowanych postów";
         postSubmission(unverifiedPost, b1rtekDMID);
         currentlyVerified = unverifiedPost.id();
-        return "Przesłane przez @" + unverifiedPost.author() + "\n Napisz \"tak\", aby zweryfikować post, lub \"nie\" aby go odrzucić";
+        return "Przesłane przez @" + unverifiedPost.author() + "\nNapisz \"tak\", aby zweryfikować post, lub \"nie\" aby go odrzucić";
+    }
+
+    private String createLeaderboardTable(ArrayList<LeaderboardRecord> leaderboard) {
+        Table leaderboardTable = new Table(2, BorderStyle.UNICODE_BOX, ShownBorders.SURROUND_HEADER_AND_COLUMNS);
+        leaderboardTable.addCell("Agent");
+        leaderboardTable.addCell("#");
+        for (LeaderboardRecord record : leaderboard) {
+            leaderboardTable.addCell(record.userID());
+            leaderboardTable.addCell(String.valueOf(record.count()));
+        }
+        return leaderboardTable.render();
+    }
+
+    private String getSubmissionsStats() {
+        PostsDatabase database = PostsDatabase.getInstance();
+        ArrayList<LeaderboardRecord> leaderboard = database.getTopSubmitters();
+        return "```\nLista agentów z największą ilością zgłoszeń\n\n" + createLeaderboardTable(leaderboard) + "\n```";
+    }
+
+    private String getQueueStats() {
+        PostsDatabase database = PostsDatabase.getInstance();
+        Pair<Integer, Integer> stats = database.getQueueStats();
+        return "Liczba postów w kolejce: " + stats.getLeft() + "\nLiczba postów czekających na weryfikację: " + stats.getRight();
     }
 
     private enum NewCommandStatus {
@@ -204,6 +229,11 @@ public class Bot extends TelegramLongPollingBot {
                     case "ping" -> replyMessage.setText("Pong!");
                     case "weryfikuj" ->
                             replyMessage.setText(postVerification(update.getMessage().getChatId().toString()));
+                    case "staty" -> {
+                        replyMessage.setText(getSubmissionsStats());
+                        replyMessage.setParseMode("Markdown");
+                    }
+                    case "kolejka" -> replyMessage.setText(getQueueStats());
                 }
                 sendMessage(replyMessage);
             } else if (update.getMessage().hasPhoto() || update.getMessage().hasText()) {

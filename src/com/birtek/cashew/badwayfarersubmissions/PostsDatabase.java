@@ -1,5 +1,8 @@
 package com.birtek.cashew.badwayfarersubmissions;
 
+import com.birtek.cashew.database.LeaderboardRecord;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
+
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -74,7 +77,7 @@ public class PostsDatabase {
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, author from submissions where verified = true order by _id");
             ResultSet resultSet = preparedStatement.executeQuery();
             ArrayList<Post> posts = new ArrayList<>();
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 posts.add(new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4)));
             }
             return posts;
@@ -93,7 +96,7 @@ public class PostsDatabase {
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, author from submissions where verified = true and _id = ?");
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
             }
             return null;
@@ -129,10 +132,10 @@ public class PostsDatabase {
             }
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, author from submissions where verified = false order by _id limit 1");
             ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
             }
-            return new Post(0,"", "", "");
+            return new Post(0, "", "", "");
         } catch (SQLException e) {
             System.err.println("Failed to get a new unverified submission!");
             e.printStackTrace();
@@ -147,7 +150,7 @@ public class PostsDatabase {
             }
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("update submissions set verified = true where _id = ?");
             preparedStatement.setInt(1, id);
-            if(preparedStatement.executeUpdate() != 1) return false;
+            if (preparedStatement.executeUpdate() != 1) return false;
             updateSubmissionsCount(id);
             return true;
         } catch (SQLException e) {
@@ -166,18 +169,16 @@ public class PostsDatabase {
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
             boolean exists = false;
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 exists = resultSet.getInt(1) == 1;
             }
-            if(exists) {
+            if (exists) {
                 preparedStatement = databaseConnection.prepareStatement("update submissionstats set postscount = postscount + 1 where author = (select author from submissions where _id = ?)");
-                preparedStatement.setInt(1, id);
-                preparedStatement.executeUpdate();
             } else {
                 preparedStatement = databaseConnection.prepareStatement("insert into submissionstats values((select author from submissions where _id = ?), 1)");
-                preparedStatement.setInt(1, id);
-                preparedStatement.executeUpdate();
             }
+            preparedStatement.setInt(1, id);
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Failed to update posts count!");
             e.printStackTrace();
@@ -206,7 +207,7 @@ public class PostsDatabase {
             }
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select count(*) from submissions where verified = true");
             ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 return resultSet.getInt(1);
             }
             return 0;
@@ -224,15 +225,56 @@ public class PostsDatabase {
             }
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, author from submissions where verified = true order by _id limit 1");
             ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
             }
-            return new Post(0,"", "", "");
+            return new Post(0, "", "", "");
         } catch (SQLException e) {
-            System.err.println("Failed to get a new unverified submission!");
+            System.err.println("Failed to get the oldest unverified submission!");
             e.printStackTrace();
             return null;
         }
     }
 
+    public ArrayList<LeaderboardRecord> getTopSubmitters() {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select author, postscount from submissionstats order by postscount limit 10");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            ArrayList<LeaderboardRecord> leaderboard = new ArrayList<>();
+            if (resultSet.next()) {
+                leaderboard.add(new LeaderboardRecord(0, "@" + resultSet.getString(1), resultSet.getInt(2)));
+            }
+            return leaderboard;
+        } catch (SQLException e) {
+            System.err.println("Failed to get the list of top submitters!");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Pair<Integer, Integer> getQueueStats() {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select count(*), verified from submissions group by verified order by verified");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            int verified = 0, unverified = 0;
+            while (resultSet.next()) {
+                if (resultSet.getBoolean(2)) {
+                    verified = resultSet.getInt(1);
+                } else {
+                    unverified = resultSet.getInt(1);
+                }
+            }
+            return Pair.of(verified, unverified);
+        } catch (SQLException e) {
+            System.err.println("Failed to get the queue stats!");
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
