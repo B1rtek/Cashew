@@ -241,11 +241,11 @@ public class PostsDatabase {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return null;
             }
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select author, postscount from submissionstats order by postscount limit 10");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select author, postscount from submissionstats order by postscount desc limit 10");
             ResultSet resultSet = preparedStatement.executeQuery();
             ArrayList<LeaderboardRecord> leaderboard = new ArrayList<>();
             while (resultSet.next()) {
-                leaderboard.add(new LeaderboardRecord(0, "@" + resultSet.getString(1), resultSet.getInt(2)));
+                leaderboard.add(new LeaderboardRecord(0, resultSet.getString(1), resultSet.getInt(2)));
             }
             return leaderboard;
         } catch (SQLException e) {
