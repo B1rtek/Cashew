@@ -22,6 +22,7 @@ dependencies {
     implementation group: 'org.json', name: 'json', version: '20220320'
     // technically not cashew but I have to fit two bots in one
     implementation 'org.telegram:telegrambots:6.3.0'
+    implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
 }
 
 application {
