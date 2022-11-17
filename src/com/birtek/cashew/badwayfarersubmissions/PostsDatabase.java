@@ -244,7 +244,7 @@ public class PostsDatabase {
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select author, postscount from submissionstats order by postscount limit 10");
             ResultSet resultSet = preparedStatement.executeQuery();
             ArrayList<LeaderboardRecord> leaderboard = new ArrayList<>();
-            if (resultSet.next()) {
+            while (resultSet.next()) {
                 leaderboard.add(new LeaderboardRecord(0, "@" + resultSet.getString(1), resultSet.getInt(2)));
             }
             return leaderboard;
