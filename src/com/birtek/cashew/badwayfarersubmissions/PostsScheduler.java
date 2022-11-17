@@ -22,10 +22,11 @@ public class PostsScheduler {
         PostsDatabase database = PostsDatabase.getInstance();
         int postsCount = database.getVerifiedPostsCount();
         if (postsCount <= 0) postsCount = 1;
-        int range = 9 * 3600 / postsCount;
+        int range = (12-Math.min(postsCount, 10)) * 3600;
         Random random = new Random();
         int delay = random.nextInt(range);
         delay = verifyExecutionTime(delay);
+
         scheduler.schedule(new SchedulerRunnable(), delay, TimeUnit.SECONDS);
     }
 

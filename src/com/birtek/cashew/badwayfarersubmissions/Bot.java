@@ -182,7 +182,7 @@ public class Bot extends TelegramLongPollingBot {
         if (unverifiedPost.id() == 0) return "Nie ma żadnych niezweryfikowanych postów";
         postSubmission(unverifiedPost, b1rtekDMID);
         currentlyVerified = unverifiedPost.id();
-        return "Napisz \"tak\", aby zweryfikować post, lub \"nie\" aby go odrzucić";
+        return "Przesłane przez @" + unverifiedPost.author() + "\n Napisz \"tak\", aby zweryfikować post, lub \"nie\" aby go odrzucić";
     }
 
     private enum NewCommandStatus {
