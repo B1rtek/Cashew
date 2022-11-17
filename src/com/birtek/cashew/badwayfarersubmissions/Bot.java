@@ -1,5 +1,6 @@
 package com.birtek.cashew.badwayfarersubmissions;
 
+import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.LeaderboardRecord;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.nocrala.tools.texttablefmt.BorderStyle;
@@ -207,7 +208,13 @@ public class Bot extends TelegramLongPollingBot {
     private String getQueueStats() {
         PostsDatabase database = PostsDatabase.getInstance();
         Pair<Integer, Integer> stats = database.getQueueStats();
-        return "Liczba postów w kolejce: " + stats.getLeft() + "\nLiczba postów czekających na weryfikację: " + stats.getRight();
+        StringBuilder queueStats = new StringBuilder("Liczba postów w kolejce: " + stats.getLeft() + "\nLiczba postów czekających na weryfikację: " + stats.getRight());
+        if(stats.getLeft() > 0) {
+            queueStats.append("\nKolejny post zaplanowany jest na ||");
+            queueStats.append(Cashew.postsManager.getNextPostTime().replaceAll("-", "\\-"));
+            queueStats.append("||");
+        }
+        return queueStats.toString();
     }
 
     private enum NewCommandStatus {
@@ -233,7 +240,10 @@ public class Bot extends TelegramLongPollingBot {
                         replyMessage.setText(getSubmissionsStats());
                         replyMessage.setParseMode("Markdown");
                     }
-                    case "kolejka" -> replyMessage.setText(getQueueStats());
+                    case "kolejka" -> {
+                        replyMessage.setText(getQueueStats());
+                        replyMessage.setParseMode("MarkdownV2");
+                    }
                 }
                 sendMessage(replyMessage);
             } else if (update.getMessage().hasPhoto() || update.getMessage().hasText()) {
