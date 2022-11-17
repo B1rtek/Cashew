@@ -26,7 +26,7 @@ public class PostsScheduler {
         Random random = new Random();
         int delay = random.nextInt(range);
         delay = verifyExecutionTime(delay);
-        //System.out.println(delay);
+
         scheduler.schedule(new SchedulerRunnable(), delay, TimeUnit.SECONDS);
     }
 
