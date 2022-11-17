@@ -137,6 +137,10 @@ public class BirthdayRemindersManager {
         BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
         BirthdayReminder reminderWithID = database.setBirthdayReminder(reminder);
         if (reminderWithID == null) return false;
+        ScheduledFuture<?> oldReminderFuture = birthdayRemindersFutures.get(reminder.getId());
+        if(oldReminderFuture != null) {
+            oldReminderFuture.cancel(false);
+        }
         ScheduledFuture<?> reminderFuture = scheduleReminder(reminder);
         birthdayReminders.put(reminder.getId(), reminder);
         birthdayRemindersFutures.put(reminder.getId(), reminderFuture);
