@@ -22,34 +22,6 @@ public class Bot extends TelegramLongPollingBot {
     private final static String b1rtekDMID = "1819824656";
     private int currentlyVerified = 0;
 
-    private void getNewSubmissionDetails(Message detailsMessage) {
-        String description = detailsMessage.getText();
-        if (description == null || description.isEmpty()) {
-            SendMessage errorMessage = new SendMessage();
-            errorMessage.setText("Ta wiadomość nie zawiera tekstu, spróbuj ponownie.");
-            errorMessage.setChatId(detailsMessage.getChatId().toString());
-            sendMessage(errorMessage);
-            return;
-        }
-        if (description.toLowerCase(Locale.ROOT).equals("żaden")) description = "";
-        NewSubmission completedSubmission = activeNewSubmissions.get(detailsMessage.getChatId().toString());
-        completedSubmission.setDescription(description);
-        activeNewCommandChannels.remove(detailsMessage.getChatId().toString());
-        PostsDatabase database = PostsDatabase.getInstance();
-        boolean success = database.addSubmission(completedSubmission, detailsMessage.getFrom().getUserName());
-        SendMessage successMessage = new SendMessage();
-        successMessage.setChatId(detailsMessage.getChatId().toString());
-        successMessage.setText(success ? "Pomyślnie dodano nowe zgłoszenie!" : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
-        try {
-            execute(successMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-        if (success) {
-            notifyAboutNewPost();
-        }
-    }
-
     private final static HashMap<String, NewCommandStatus> activeNewCommandChannels = new HashMap<>();
     private final static HashMap<String, NewSubmission> activeNewSubmissions = new HashMap<>();
 
@@ -94,7 +66,7 @@ public class Bot extends TelegramLongPollingBot {
         return null; // Just in case
     }
 
-    private void getNewSubmissionPhoto(Message photoMessage) {
+    private void getNewSubmission(Message photoMessage) {
         List<PhotoSize> photos = photoMessage.getPhoto();
         if (photos.isEmpty()) {
             SendMessage errorMessage = new SendMessage();
@@ -106,13 +78,23 @@ public class Bot extends TelegramLongPollingBot {
         PhotoSize maxResPhoto = photos.stream().max(Comparator.comparing(PhotoSize::getFileSize)).orElse(null);
         activeNewSubmissions.put(photoMessage.getChatId().toString(), new NewSubmission(maxResPhoto.getFileId()));
         activeNewCommandChannels.put(photoMessage.getChatId().toString(), NewCommandStatus.GET_DETAILS);
+        String description = photoMessage.getCaption();
+        if (description == null) description = "";
+        NewSubmission completedSubmission = activeNewSubmissions.get(photoMessage.getChatId().toString());
+        completedSubmission.setDescription(description);
+        activeNewCommandChannels.remove(photoMessage.getChatId().toString());
+        PostsDatabase database = PostsDatabase.getInstance();
+        boolean success = database.addSubmission(completedSubmission, photoMessage.getFrom().getUserName());
         SendMessage successMessage = new SendMessage();
         successMessage.setChatId(photoMessage.getChatId().toString());
-        successMessage.setText("Jaki jest twój komentarz do tego zdjęcia? (napisz \"żaden\" aby pozostawić pusty)");
+        successMessage.setText(success ? "Pomyślnie dodano nowe zgłoszenie!" : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
         try {
             execute(successMessage);
         } catch (TelegramApiException e) {
             e.printStackTrace();
+        }
+        if (success) {
+            notifyAboutNewPost();
         }
     }
 
@@ -231,7 +213,7 @@ public class Bot extends TelegramLongPollingBot {
                 switch (message.split("\\s+")[0].substring(1)) {
                     case "nowy" -> {
                         activeNewCommandChannels.put(update.getMessage().getChatId().toString(), NewCommandStatus.GET_PHOTO);
-                        replyMessage.setText("Proszę wyślij screena zgłoszenia");
+                        replyMessage.setText("Proszę wyślij screena zgłoszenia razem z opisem");
                     }
                     case "ping" -> replyMessage.setText("Pong!");
                     case "weryfikuj" ->
@@ -253,10 +235,7 @@ public class Bot extends TelegramLongPollingBot {
                         finalizeVerification(update.getMessage().getText());
                     }
                 } else {
-                    switch (commandStatus) {
-                        case GET_PHOTO -> getNewSubmissionPhoto(update.getMessage());
-                        case GET_DETAILS -> getNewSubmissionDetails(update.getMessage());
-                    }
+                    getNewSubmission(update.getMessage());
                 }
             }
         }
