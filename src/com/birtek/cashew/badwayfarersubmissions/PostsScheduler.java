@@ -52,7 +52,7 @@ public class PostsScheduler {
             PostsDatabase database = PostsDatabase.getInstance();
             Post post = database.getOldestVerifiedPost();
             if (post != null && post.id() != 0) {
-                if (Cashew.badWayfarerBot.postSubmission(post, Bot.testChannelID)) {
+                if (Cashew.badWayfarerBot.postSubmission(post, Bot.badWayfarerChannelID)) {
                     database.removePost(post.id());
                 }
             }
