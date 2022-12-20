@@ -4,7 +4,6 @@ import com.birtek.cashew.Cashew;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,8 +40,8 @@ public class PostsScheduler {
     }
 
     public String getNextPostTime() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("d/L H:mm").withLocale(new Locale("pl"));
-        ZonedDateTime targetTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(nextPostTimestamp), ZoneOffset.UTC).atZone(ZoneId.of("Europe/Warsaw"));
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("d/L H:mm").withZone(ZoneId.of("Europe/Warsaw"));
+        ZonedDateTime targetTime = Instant.ofEpochSecond(nextPostTimestamp).atZone(ZoneId.of("Europe/Warsaw"));
         return dateTimeFormatter.format(targetTime);
     }
 
