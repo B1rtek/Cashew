@@ -139,7 +139,7 @@ public class Bot extends TelegramLongPollingBot {
         SendMessage verificationConfirmation = new SendMessage();
         verificationConfirmation.setChatId(b1rtekDMID);
         PostsDatabase database = PostsDatabase.getInstance();
-        if (response.toLowerCase(Locale.ROOT).equals("tak")) {
+        if (!response.toLowerCase(Locale.ROOT).equals("nie")) {
             if (!database.verifyPost(currentlyVerified)) {
                 verificationConfirmation.setText("Coś poszło nie tak...");
                 sendMessage(verificationConfirmation);
@@ -171,7 +171,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private String createLeaderboardTable(ArrayList<LeaderboardRecord> leaderboard) {
-        Table leaderboardTable = new Table(2, BorderStyle.UNICODE_BOX, ShownBorders.SURROUND_HEADER_AND_COLUMNS);
+        Table leaderboardTable = new Table(2, BorderStyle.DESIGN_PAPYRUS, ShownBorders.SURROUND_HEADER_AND_COLUMNS);
         leaderboardTable.addCell("Agent");
         leaderboardTable.addCell("#");
         for (LeaderboardRecord record : leaderboard) {
