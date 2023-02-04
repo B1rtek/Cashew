@@ -11,11 +11,12 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -81,7 +82,7 @@ public class Scheduler extends BaseCommand {
      * "Show details", "Delete", "Delete all/confirm delete all", "<" and ">" (used to switch between pages)
      */
     private Pair<ActionRow, ActionRow> generateScheduledMessagesListActionRows(ArrayList<ScheduledMessage> messages, User user, boolean deleteAllConfirm) {
-        SelectMenu.Builder scheduledMessagesSelectMenu = SelectMenu.create(user.getId() + ":scheduler:list")
+        StringSelectMenu.Builder scheduledMessagesSelectMenu = StringSelectMenu.create(user.getId() + ":scheduler:list")
                 .setPlaceholder("Select a message")
                 .setRequiredRange(1, 1);
         int index = 0;
@@ -309,7 +310,7 @@ public class Scheduler extends BaseCommand {
     }
 
     @Override
-    public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
+    public void onStringSelectInteraction(@NotNull StringSelectInteractionEvent event) {
         String[] menuID = event.getComponentId().split(":");
         if (menuID.length < 3) return;
         if (menuID[1].equals("scheduler")) {

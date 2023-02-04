@@ -8,11 +8,12 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -603,7 +604,7 @@ public class CaseSim extends BaseCommand {
      */
     private Pair<ActionRow, ActionRow> getInventoryEmbedActionRows(User requestingUser, User requestedUser, MessageEmbed inventoryEmbed, boolean asEphemeral, String requestedUserName, String requestedUserID) {
         requestedUserID = requestedUser == null ? requestedUserID : requestedUser.getId();
-        SelectMenu.Builder itemSelectMenu = SelectMenu.create(requestingUser.getId() + ":casesim:inventory")
+        StringSelectMenu.Builder itemSelectMenu = StringSelectMenu.create(requestingUser.getId() + ":casesim:inventory")
                 .setPlaceholder("Choose the weapon to interact with") // shows the placeholder indicating what this menu is for
                 .setRequiredRange(1, 1); // only one can be selected
         int index = 0;
@@ -1043,11 +1044,13 @@ public class CaseSim extends BaseCommand {
         event.editMessageEmbeds(inventoryEmbed).setComponents(actionRows.getLeft(), actionRows.getRight()).queue();
     }
 
+
+
     /**
      * Handles underlining the selected items in the inventory
      */
     @Override
-    public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
+    public void onStringSelectInteraction(@NotNull StringSelectInteractionEvent event) {
         String[] menuID = event.getComponentId().split(":");
         if (menuID.length < 3) return;
         if (menuID[1].equals("casesim") && menuID[2].equals("inventory")) {

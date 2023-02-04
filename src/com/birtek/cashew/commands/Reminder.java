@@ -9,11 +9,12 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.TimeFormat;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -64,7 +65,7 @@ public class Reminder extends BaseCommand {
      * and the other one with three {@link Button Buttons} - "Show details", "Delete" and "Delete all"
      */
     private Pair<ActionRow, ActionRow> generateListActionRows(ArrayList<ReminderRunnable> reminders, User user, boolean deleteAllConfirm) {
-        SelectMenu.Builder reminderSelectMenu = SelectMenu.create(user.getId() + ":reminder:list")
+        StringSelectMenu.Builder reminderSelectMenu = StringSelectMenu.create(user.getId() + ":reminder:list")
                 .setPlaceholder("Select a reminder")
                 .setRequiredRange(1, 1);
         int index = 0;
@@ -309,7 +310,7 @@ public class Reminder extends BaseCommand {
     }
 
     @Override
-    public void onSelectMenuInteraction(@NotNull SelectMenuInteractionEvent event) {
+    public void onStringSelectInteraction(@NotNull StringSelectInteractionEvent event) {
         String[] menuID = event.getComponentId().split(":");
         if (menuID.length < 3) return;
         if (menuID[1].equals("reminder")) {
