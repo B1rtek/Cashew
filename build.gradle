@@ -18,8 +18,9 @@ dependencies {
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.4.3'
     implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-beta.3'
     implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
-    implementation('ch.qos.logback:logback-classic:1.2.11')
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.11'
     implementation group: 'org.json', name: 'json', version: '20220320'
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.15.3'
     // technically not cashew but I have to fit two bots in one
     implementation 'org.telegram:telegrambots:6.3.0'
     implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
