@@ -184,7 +184,7 @@ public class BaseCommand extends ListenerAdapter {
      * @param connection {@link URLConnection URLConnection} for a request
      * @return read response in a String
      */
-    public String readURL(URLConnection connection) throws IOException {
+    public static String readURL(URLConnection connection) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         String inputLine;
         StringBuilder response = new StringBuilder();
