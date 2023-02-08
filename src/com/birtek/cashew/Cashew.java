@@ -53,7 +53,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), new Trivia(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), new Trivia(), new CashewAgainstHumanity(), //commands
                         new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
                         new ReactionsExecutor(), counter, new TriviaQuestionsListener()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
@@ -259,7 +259,14 @@ public class Cashew {
                                         .addOption(STRING, "question", "Content of the question", true)
                                         .addOption(STRING, "answers", "Correct answers, separated with commas", true)
                                         .addOption(STRING, "image", "(Optional) URL of the image to be included in the question embed")
-                                        .addOption(STRING, "notes", "(Optional) Additional notes about the question"))
+                                        .addOption(STRING, "notes", "(Optional) Additional notes about the question")),
+                Commands.slash("cah", "Cashew Against Humanity")
+                        .addSubcommands(new SubcommandData("create", "Creates a new game"),
+                                new SubcommandData("deck", "Adds a deck to a game you're hosting")
+                                        .addOption(STRING, "deck", "Code of the deck from ManyDecks", true, false),
+                                new SubcommandData("join", "Joins a game")
+                                        .addOption(STRING, "game", "Game code of the game to join", true, false),
+                                new SubcommandData("leave", "Leaves the game"))
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
