@@ -21,6 +21,7 @@ public class Help extends BaseCommand {
             add("bestneko");
             add("birthday");
             add("boburnham");
+            add("cah");
             add("casesim");
             add("clear");
             add("counting");
@@ -78,6 +79,16 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.addField("Works in DMs", "Yes", true);
                 specificHelpEmbed.setTitle("Bo Burnham");
                 specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "boburnham [\"nsfw\"]`", "Sends a quote from one of Bo Burnham's songs/shows. Addiing the \"nsfw\" option will send an nsfw quote instead.", false);
+            }
+            case "cah" -> {
+                specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+                specificHelpEmbed.addField("Works in DMs", "Yes", true);
+                specificHelpEmbed.setTitle("Cashew Against Humanity");
+                specificHelpEmbed.setDescription("Cashew's clone of the card game Cards Against Humanity");
+                specificHelpEmbed.addField("`/cah create`", "Creates a new game", false);
+                specificHelpEmbed.addField("`/cah deck <deck code>`", "Adds a deck from ManyDecks to the game", false);
+                specificHelpEmbed.addField("`/cah join <game code>`", "Joins a game", false);
+                specificHelpEmbed.addField("`/cah leave`", "Leaves the game", false);
             }
             case "casesim" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
@@ -286,7 +297,7 @@ public class Help extends BaseCommand {
         helpEmbed.setThumbnail(cashewAvatarUrl);
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`, `/roll`", false);
-        helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `/counting`, `dadjoke`, `/gifts`, `insp`, `korwin`, `kromer`, `nekoichi`, `ping`, `/socialcredit`, `/trivia`", false);
+        helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `/cah`, `/counting`, `dadjoke`, `/gifts`, `insp`, `korwin`, `kromer`, `nekoichi`, `ping`, `/socialcredit`, `/trivia`", false);
         helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/cmdset`, `/poll`, `/reactionroles`, `/reactions`, `/scheduler`, `/when`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);

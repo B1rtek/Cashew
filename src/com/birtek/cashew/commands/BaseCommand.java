@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
+import org.glassfish.grizzly.utils.Charsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,8 +185,8 @@ public class BaseCommand extends ListenerAdapter {
      * @param connection {@link URLConnection URLConnection} for a request
      * @return read response in a String
      */
-    public String readURL(URLConnection connection) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+    public static String readURL(URLConnection connection) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charsets.UTF8_CHARSET));
         String inputLine;
         StringBuilder response = new StringBuilder();
         while ((inputLine = in.readLine()) != null) response.append(inputLine);
