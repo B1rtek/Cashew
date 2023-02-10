@@ -2,10 +2,13 @@ package com.birtek.cashew.commands;
 
 import com.birtek.cashew.database.Card;
 import com.birtek.cashew.database.ManyDecksWebscraper;
+import com.google.common.base.Charsets;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 
 public class CashewAgainstHumanity extends BaseCommand {
@@ -35,16 +38,15 @@ public class CashewAgainstHumanity extends BaseCommand {
                     event.reply("Something went wrong while downloading the deck or it does not exist").setEphemeral(true).queue();
                     return;
                 }
-                StringBuilder deckContent = new StringBuilder("```\n");
+                StringBuilder deckContent = new StringBuilder();
                 for (Card card : deck) {
-                    deckContent.append(card.color()?"white: ":"black: ");
+                    deckContent.append(card.color()?"⬜ ":"⬛ ");
                     for(String part: card.content()) {
                         deckContent.append(part).append(" ");
                     }
                     deckContent.append('\n');
                 }
-                deckContent.append("```");
-                event.reply(deckContent.toString()).queue();
+                event.replyFiles(FileUpload.fromData(new ByteArrayInputStream(deckContent.toString().getBytes(Charsets.UTF_8)), "results.txt")).queue();
             } else {
                 event.reply("Not implemented yet").setEphemeral(true).queue();
             }
