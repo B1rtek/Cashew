@@ -1,8 +1,11 @@
 package com.birtek.cashew.commands;
 
+import com.birtek.cashew.Cashew;
 import com.birtek.cashew.database.Card;
 import com.birtek.cashew.database.ManyDecksWebscraper;
+import com.birtek.cashew.timings.CAHGame;
 import com.google.common.base.Charsets;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -47,6 +50,22 @@ public class CashewAgainstHumanity extends BaseCommand {
                     deckContent.append('\n');
                 }
                 event.replyFiles(FileUpload.fromData(new ByteArrayInputStream(deckContent.toString().getBytes(Charsets.UTF_8)), "results.txt")).queue();
+            } else if (event.getSubcommandName().equals("create")) {
+                if(!Cashew.cahGameManager.joinGame(event.getUser().getId())) {
+                    event.reply("Failed to create a game!").setEphemeral(true).queue();
+                    return;
+                }
+                CAHGame createdGame = Cashew.cahGameManager.getGame(event.getUser().getId());
+                if(createdGame == null) {
+                    event.reply("Failed to create a game!").setEphemeral(true).queue();
+                    return;
+                }
+                EmbedBuilder newGameEmbed = new EmbedBuilder();
+                newGameEmbed.setTitle("New Cashew Against Humanity Game");
+                newGameEmbed.addField("Players: ", createdGame.getPlayersList(), false);
+                newGameEmbed.addField("Decks: ", createdGame.getDecksList(), false);
+                newGameEmbed.setFooter("Join code: " + createdGame.getGameCode());
+                event.replyEmbeds(newGameEmbed.build()).queue();
             } else {
                 event.reply("Not implemented yet").setEphemeral(true).queue();
             }
