@@ -1,6 +1,7 @@
 package com.birtek.cashew.timings;
 
 import java.util.HashMap;
+import java.util.Random;
 
 public class CAHGameManager {
 
@@ -26,7 +27,30 @@ public class CAHGameManager {
         return true;
     }
 
+    public boolean leaveGame(String userID) {
+        CAHGame gameToLeave = players.get(userID);
+        if(gameToLeave == null) return false;
+        gameToLeave.leaveGame(userID);
+        if(gameToLeave.getPlayersList().isEmpty()) {
+
+        }
+        return true;
+    }
+
     public CAHGame getGame(String userID) {
         return players.get(userID);
+    }
+
+    public String generateGameCode() {
+        String codeCandidate = "";
+        while(codeCandidate.isEmpty() || gameCodes.containsKey(codeCandidate)) {
+            Random random = new Random();
+            StringBuilder code = new StringBuilder();
+            for (int i = 0; i < 5; i++) {
+                code.append((char)random.nextInt(65 ,91));
+            }
+            codeCandidate = code.toString();
+        }
+        return codeCandidate;
     }
 }

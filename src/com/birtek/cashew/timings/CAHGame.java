@@ -1,7 +1,8 @@
 package com.birtek.cashew.timings;
 
+import com.birtek.cashew.Cashew;
+
 import java.util.ArrayList;
-import java.util.Random;
 
 public class CAHGame {
 
@@ -9,20 +10,15 @@ public class CAHGame {
     ArrayList<String> players = new ArrayList<>();
 
     public CAHGame() {
-        gameCode = generateGameCode();
-    }
-
-    private String generateGameCode() {
-        Random random = new Random();
-        StringBuilder code = new StringBuilder();
-        for (int i = 0; i < 5; i++) {
-            code.append((char)random.nextInt(65 ,91));
-        }
-        return code.toString();
+        gameCode = Cashew.cahGameManager.generateGameCode();
     }
 
     public void joinGame(String userID) {
         players.add(userID);
+    }
+
+    public void leaveGame(String userID) {
+        players.remove(userID);
     }
 
     public String getGameCode() {
