@@ -135,11 +135,26 @@ public class Bot extends TelegramLongPollingBot {
         sendMessage(notification);
     }
 
+    private void notifySubmitter(Post post, String reason, boolean approved) {
+        SendMessage notification = new SendMessage();
+        notification.setChatId(post.author());
+        if(approved) {
+            notification.setText("Post " + post.id() + " został zaakceptowany!");
+        } else {
+            notification.setText("Post " + post.id() + " został odrzucony! Powód: " + reason);
+            postSubmission(post, post.author());
+        }
+        sendMessage(notification);
+    }
+
     private void finalizeVerification(String response) {
         SendMessage verificationConfirmation = new SendMessage();
         verificationConfirmation.setChatId(b1rtekDMID);
         PostsDatabase database = PostsDatabase.getInstance();
-        if (!response.toLowerCase(Locale.ROOT).equals("nie")) {
+        String baseResponse = response.split("\\s+")[0];
+        String reason = baseResponse.length() == response.length() ? "" : response.substring(baseResponse.length()+1);
+        Post postBeingVerified = database.getPostByID(currentlyVerified);
+        if (!baseResponse.toLowerCase(Locale.ROOT).equals("nie")) {
             if (!database.verifyPost(currentlyVerified)) {
                 verificationConfirmation.setText("Coś poszło nie tak...");
                 sendMessage(verificationConfirmation);
@@ -148,10 +163,12 @@ public class Bot extends TelegramLongPollingBot {
         } else {
             if (database.removePost(currentlyVerified)) {
                 verificationConfirmation.setText("Pomyślnie usunięto post!");
+                notifySubmitter(postBeingVerified, reason, false);
             } else {
                 verificationConfirmation.setText("Coś poszło nie tak...");
             }
             sendMessage(verificationConfirmation);
+            notifySubmitter(postBeingVerified, "", true);
             return;
         }
         currentlyVerified = 0;
