@@ -84,16 +84,16 @@ public class Bot extends TelegramLongPollingBot {
         completedSubmission.setDescription(description);
         activeNewCommandChannels.remove(photoMessage.getChatId().toString());
         PostsDatabase database = PostsDatabase.getInstance();
-        boolean success = database.addSubmission(completedSubmission, photoMessage.getFrom().getUserName(), photoMessage.getChatId());
+        int postID = database.addSubmission(completedSubmission, photoMessage.getFrom().getUserName());
         SendMessage successMessage = new SendMessage();
         successMessage.setChatId(photoMessage.getChatId().toString());
-        successMessage.setText(success ? "Pomyślnie dodano nowe zgłoszenie!" : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
+        successMessage.setText(postID != -1 ? "Pomyślnie dodano nowe zgłoszenie! ID zgłoszenia: " + postID : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
         try {
             execute(successMessage);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-        if (success) {
+        if (postID != -1) {
             notifyAboutNewPost();
         }
     }
@@ -112,8 +112,16 @@ public class Bot extends TelegramLongPollingBot {
         InputFile photoInputFile = new InputFile();
         photoInputFile.setMedia(photo);
         testPost.setPhoto(photoInputFile);
-        if (!post.caption().isEmpty()) {
-            testPost.setCaption(post.caption());
+        PostsDatabase database = PostsDatabase.getInstance();
+        Submitter author = database.getSubmitterStats(post.author());
+        String caption = "";
+        if(!post.caption().isEmpty()) caption += post.caption();
+        if(author.showNickname()) {
+            if(!caption.isEmpty()) caption += '\n';
+            caption += "Przesłane przez @" + post.author();
+        }
+        if (!caption.isEmpty()) {
+            testPost.setCaption(caption);
         }
         try {
             execute(testPost);
@@ -138,7 +146,7 @@ public class Bot extends TelegramLongPollingBot {
     private void notifySubmitter(Post post, String reason, boolean approved) {
         SendMessage notification = new SendMessage();
         notification.setChatId(post.authorDMID());
-        if(approved) {
+        if (approved) {
             notification.setText("Post " + post.id() + " został zaakceptowany!");
         } else {
             notification.setText("Post " + post.id() + " został odrzucony! Powód: " + reason);
@@ -152,7 +160,7 @@ public class Bot extends TelegramLongPollingBot {
         verificationConfirmation.setChatId(b1rtekDMID);
         PostsDatabase database = PostsDatabase.getInstance();
         String baseResponse = response.split("\\s+")[0];
-        String reason = baseResponse.length() == response.length() ? "" : response.substring(baseResponse.length()+1);
+        String reason = baseResponse.length() == response.length() ? "" : response.substring(baseResponse.length() + 1);
         Post postBeingVerified = database.getPostByID(currentlyVerified);
         if (!baseResponse.toLowerCase(Locale.ROOT).equals("nie")) {
             if (!database.verifyPost(currentlyVerified)) {
@@ -208,7 +216,7 @@ public class Bot extends TelegramLongPollingBot {
         PostsDatabase database = PostsDatabase.getInstance();
         Pair<Integer, Integer> stats = database.getQueueStats();
         StringBuilder queueStats = new StringBuilder("Liczba postów w kolejce: " + stats.getLeft() + "\nLiczba postów czekających na weryfikację: " + stats.getRight());
-        if(stats.getLeft() > 0) {
+        if (stats.getLeft() > 0) {
             queueStats.append("\nKolejny post zaplanowany jest na ||");
             queueStats.append(Cashew.postsManager.getNextPostTime().replaceAll("-", "\\-"));
             queueStats.append("||");
@@ -244,6 +252,14 @@ public class Bot extends TelegramLongPollingBot {
                     case "kolejka" -> {
                         replyMessage.setText(getQueueStats());
                         replyMessage.setParseMode("MarkdownV2");
+                    }
+                    case "shownick" -> {
+                        int result = database.toggleNickVisibility(update.getMessage().getFrom().getUserName());
+                        if (result != -1) {
+                            replyMessage.setText("Twój nick" + (result == 0 ? " nie" : "") + " będzie teraz widoczny w postach.");
+                        } else {
+                            replyMessage.setText("Nie udało się zmienić widoczności nicku w postach!");
+                        }
                     }
                 }
                 sendMessage(replyMessage);

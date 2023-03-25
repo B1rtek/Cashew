@@ -120,21 +120,26 @@ public class PostsDatabase {
         }
     }
 
-    public boolean addSubmission(NewSubmission newSubmission, String author, Long chatId) {
+    public int addSubmission(NewSubmission newSubmission, String author) {
         try {
             if (databaseConnection.isClosed()) {
-                if (!reestablishConnection()) return false;
+                if (!reestablishConnection()) return -1;
             }
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("insert into submissions(file_id, caption, author, verified) values(?, ?, ?, ?)");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("insert into submissions(file_id, caption, author, verified) values(?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, newSubmission.getFileID());
             preparedStatement.setString(2, newSubmission.getDescription());
             preparedStatement.setString(3, author);
             preparedStatement.setBoolean(4, false);
-            return preparedStatement.executeUpdate() == 1;
+            if(preparedStatement.executeUpdate() != 1) return -1;
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            if(generatedKeys.next()) {
+                return generatedKeys.getInt(1);
+            }
+            return -1;
         } catch (SQLException e) {
             System.err.println("Failed to add a new submission to the database!");
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
 
@@ -254,7 +259,7 @@ public class PostsDatabase {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return null;
             }
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select author, postscount from submissionstats order by postscount desc limit 10");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select author, postscount from submissionstats where postscount > 0 order by postscount desc limit 10");
             ResultSet resultSet = preparedStatement.executeQuery();
             ArrayList<LeaderboardRecord> leaderboard = new ArrayList<>();
             while (resultSet.next()) {
@@ -357,6 +362,27 @@ public class PostsDatabase {
             System.err.println("Failed to add the chat ID!");
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public int toggleNickVisibility(String author) {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
+            Submitter submitterStats = getSubmitterStats(author);
+            if(submitterStats == null) return -1;
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("update submissionstats set show_tag = ? where author = ?");
+            preparedStatement.setBoolean(1, !submitterStats.showNickname());
+            preparedStatement.setString(2, author);
+            if(preparedStatement.executeUpdate() == 1) {
+                return submitterStats.showNickname() ? 0 : 1;
+            }
+            return -1;
+        } catch (SQLException e) {
+            System.err.println("Failed to add the chat ID!");
+            e.printStackTrace();
+            return -1;
         }
     }
 }
