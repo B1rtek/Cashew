@@ -84,16 +84,16 @@ public class Bot extends TelegramLongPollingBot {
         completedSubmission.setDescription(description);
         activeNewCommandChannels.remove(photoMessage.getChatId().toString());
         PostsDatabase database = PostsDatabase.getInstance();
-        boolean success = database.addSubmission(completedSubmission, photoMessage.getFrom().getUserName());
+        int postID = database.addSubmission(completedSubmission, photoMessage.getFrom().getUserName());
         SendMessage successMessage = new SendMessage();
         successMessage.setChatId(photoMessage.getChatId().toString());
-        successMessage.setText(success ? "Pomyślnie dodano nowe zgłoszenie!" : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
+        successMessage.setText(postID != -1 ? "Pomyślnie dodano nowe zgłoszenie! ID zgłoszenia: " + postID : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
         try {
             execute(successMessage);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-        if (success) {
+        if (postID != -1) {
             notifyAboutNewPost();
         }
     }
@@ -112,15 +112,23 @@ public class Bot extends TelegramLongPollingBot {
         InputFile photoInputFile = new InputFile();
         photoInputFile.setMedia(photo);
         testPost.setPhoto(photoInputFile);
-        if (!post.caption().isEmpty()) {
-            testPost.setCaption(post.caption());
+        PostsDatabase database = PostsDatabase.getInstance();
+        Submitter author = database.getSubmitterStats(post.author());
+        String caption = "";
+        if(!post.caption().isEmpty()) caption += post.caption();
+        if(author.showNickname()) {
+            if(!caption.isEmpty()) caption += '\n';
+            caption += "Przesłane przez @" + post.author();
+        }
+        if (!caption.isEmpty()) {
+            testPost.setCaption(caption);
         }
         try {
             execute(testPost);
         } catch (TelegramApiException e) {
             e.printStackTrace();
             SendMessage errorMessage = new SendMessage();
-            errorMessage.setText("Nie udało się dostarczyć \"" + post.caption() + "\", file_id = " + post.fileID() + " - nie udało się wysłać posta");
+            errorMessage.setText("Nie udało się dostarczyć \"" + post.caption() + "\", file_id = " + post.fileID() + ", author = @" + post.author() + " - nie udało się wysłać posta");
             errorMessage.setChatId(b1rtekDMID);
             sendMessage(errorMessage);
             return false;
@@ -135,11 +143,26 @@ public class Bot extends TelegramLongPollingBot {
         sendMessage(notification);
     }
 
+    private void notifySubmitter(Post post, String reason, boolean approved) {
+        SendMessage notification = new SendMessage();
+        notification.setChatId(post.authorDMID());
+        if (approved) {
+            notification.setText("Post " + post.id() + " został zaakceptowany!");
+        } else {
+            notification.setText("Post " + post.id() + " został odrzucony! Powód: " + reason);
+            postSubmission(post, post.authorDMID());
+        }
+        sendMessage(notification);
+    }
+
     private void finalizeVerification(String response) {
         SendMessage verificationConfirmation = new SendMessage();
         verificationConfirmation.setChatId(b1rtekDMID);
         PostsDatabase database = PostsDatabase.getInstance();
-        if (!response.toLowerCase(Locale.ROOT).equals("nie")) {
+        String baseResponse = response.split("\\s+")[0];
+        String reason = baseResponse.length() == response.length() ? "" : response.substring(baseResponse.length() + 1);
+        Post postBeingVerified = database.getPostByID(currentlyVerified);
+        if (!baseResponse.toLowerCase(Locale.ROOT).equals("nie")) {
             if (!database.verifyPost(currentlyVerified)) {
                 verificationConfirmation.setText("Coś poszło nie tak...");
                 sendMessage(verificationConfirmation);
@@ -148,12 +171,14 @@ public class Bot extends TelegramLongPollingBot {
         } else {
             if (database.removePost(currentlyVerified)) {
                 verificationConfirmation.setText("Pomyślnie usunięto post!");
+                notifySubmitter(postBeingVerified, reason, false);
             } else {
                 verificationConfirmation.setText("Coś poszło nie tak...");
             }
             sendMessage(verificationConfirmation);
             return;
         }
+        notifySubmitter(postBeingVerified, "", true);
         currentlyVerified = 0;
         verificationConfirmation.setText("Pomyślnie zweryfikowano post!");
         sendMessage(verificationConfirmation);
@@ -191,12 +216,25 @@ public class Bot extends TelegramLongPollingBot {
         PostsDatabase database = PostsDatabase.getInstance();
         Pair<Integer, Integer> stats = database.getQueueStats();
         StringBuilder queueStats = new StringBuilder("Liczba postów w kolejce: " + stats.getLeft() + "\nLiczba postów czekających na weryfikację: " + stats.getRight());
-        if(stats.getLeft() > 0) {
+        if (stats.getLeft() > 0) {
             queueStats.append("\nKolejny post zaplanowany jest na ||");
             queueStats.append(Cashew.postsManager.getNextPostTime().replaceAll("-", "\\-"));
             queueStats.append("||");
         }
         return queueStats.toString();
+    }
+
+    private String cancelPost(int postNumber, String author) {
+        PostsDatabase database = PostsDatabase.getInstance();
+        Post postToRemove = database.getPostByID(postNumber);
+        if(postToRemove == null || !Objects.equals(postToRemove.author(), author)) return "Nie udało się wycofać posta";
+        SendMessage cancelMessage = new SendMessage();
+        cancelMessage.setText("Post wycofany przez @" + author);
+        cancelMessage.setChatId(b1rtekDMID);
+        sendMessage(cancelMessage);
+        postSubmission(postToRemove, b1rtekDMID);
+        return database.removePost(postNumber) ? "Pomyślnie wycofano post!" : "Nie udało się wycofać posta";
+
     }
 
     private enum NewCommandStatus {
@@ -210,6 +248,8 @@ public class Bot extends TelegramLongPollingBot {
             SendMessage replyMessage = new SendMessage();
             replyMessage.setChatId(update.getMessage().getChatId().toString());
             if (message != null && message.startsWith("/")) {
+                PostsDatabase database = PostsDatabase.getInstance();
+                database.saveChatID(update.getMessage().getFrom().getUserName(), String.valueOf(update.getMessage().getChatId()));
                 switch (message.split("\\s+")[0].substring(1)) {
                     case "nowy" -> {
                         activeNewCommandChannels.put(update.getMessage().getChatId().toString(), NewCommandStatus.GET_PHOTO);
@@ -225,6 +265,26 @@ public class Bot extends TelegramLongPollingBot {
                     case "kolejka" -> {
                         replyMessage.setText(getQueueStats());
                         replyMessage.setParseMode("MarkdownV2");
+                    }
+                    case "shownick" -> {
+                        int result = database.toggleNickVisibility(update.getMessage().getFrom().getUserName());
+                        if (result != -1) {
+                            replyMessage.setText("Twój nick" + (result == 0 ? " nie" : "") + " będzie teraz widoczny w postach.");
+                        } else {
+                            replyMessage.setText("Nie udało się zmienić widoczności nicku w postach!");
+                        }
+                    }
+                    case "wycofaj" -> {
+                        String[] msgSplit = message.split("\\s+");
+                        if(msgSplit.length < 2) {
+                            replyMessage.setText("Nie podano numeru posta");
+                        } else {
+                            try {
+                                replyMessage.setText(cancelPost(Integer.parseInt(msgSplit[1]), update.getMessage().getFrom().getUserName()));
+                            } catch (NumberFormatException e) {
+                                replyMessage.setText("Nieprawidłowy numer posta");
+                            }
+                        }
                     }
                 }
                 sendMessage(replyMessage);
