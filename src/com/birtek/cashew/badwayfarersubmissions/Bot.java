@@ -84,7 +84,7 @@ public class Bot extends TelegramLongPollingBot {
         completedSubmission.setDescription(description);
         activeNewCommandChannels.remove(photoMessage.getChatId().toString());
         PostsDatabase database = PostsDatabase.getInstance();
-        boolean success = database.addSubmission(completedSubmission, photoMessage.getFrom().getUserName());
+        boolean success = database.addSubmission(completedSubmission, photoMessage.getFrom().getUserName(), photoMessage.getChatId());
         SendMessage successMessage = new SendMessage();
         successMessage.setChatId(photoMessage.getChatId().toString());
         successMessage.setText(success ? "Pomyślnie dodano nowe zgłoszenie!" : "Coś poszło nie tak w trakcie dodawania zgłoszenia...");
@@ -137,12 +137,12 @@ public class Bot extends TelegramLongPollingBot {
 
     private void notifySubmitter(Post post, String reason, boolean approved) {
         SendMessage notification = new SendMessage();
-        notification.setChatId(post.author());
+        notification.setChatId(post.authorDMID());
         if(approved) {
             notification.setText("Post " + post.id() + " został zaakceptowany!");
         } else {
             notification.setText("Post " + post.id() + " został odrzucony! Powód: " + reason);
-            postSubmission(post, post.author());
+            postSubmission(post, post.authorDMID());
         }
         sendMessage(notification);
     }
@@ -168,9 +168,9 @@ public class Bot extends TelegramLongPollingBot {
                 verificationConfirmation.setText("Coś poszło nie tak...");
             }
             sendMessage(verificationConfirmation);
-            notifySubmitter(postBeingVerified, "", true);
             return;
         }
+        notifySubmitter(postBeingVerified, "", true);
         currentlyVerified = 0;
         verificationConfirmation.setText("Pomyślnie zweryfikowano post!");
         sendMessage(verificationConfirmation);
@@ -227,6 +227,8 @@ public class Bot extends TelegramLongPollingBot {
             SendMessage replyMessage = new SendMessage();
             replyMessage.setChatId(update.getMessage().getChatId().toString());
             if (message != null && message.startsWith("/")) {
+                PostsDatabase database = PostsDatabase.getInstance();
+                database.saveChatID(update.getMessage().getFrom().getUserName(), String.valueOf(update.getMessage().getChatId()));
                 switch (message.split("\\s+")[0].substring(1)) {
                     case "nowy" -> {
                         activeNewCommandChannels.put(update.getMessage().getChatId().toString(), NewCommandStatus.GET_PHOTO);

@@ -45,6 +45,19 @@ public class PostsDatabase {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select column_name from information_schema.columns where table_name='submissionstats' and column_name='chat_id'");
+            ResultSet results = preparedStatement.executeQuery();
+            if(!results.next()) {
+                preparedStatement = databaseConnection.prepareStatement("alter table submissionstats add column chat_id text, add column show_tag boolean");
+                preparedStatement.execute();
+            }
+        } catch (SQLException e) {
+            System.err.println("Failed to add the chat_id column");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     public static PostsDatabase getInstance() {
@@ -78,7 +91,7 @@ public class PostsDatabase {
             ResultSet resultSet = preparedStatement.executeQuery();
             ArrayList<Post> posts = new ArrayList<>();
             while (resultSet.next()) {
-                posts.add(new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4)));
+                posts.add(new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), ""));
             }
             return posts;
         } catch (SQLException e) {
@@ -93,11 +106,11 @@ public class PostsDatabase {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return null;
             }
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, author from submissions where verified = true and _id = ?");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, s1.author, s2.chat_id from submissions s1 join submissionstats s2 on s1.author = s2.author where _id = ?");
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
+                return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5));
             }
             return null;
         } catch (SQLException e) {
@@ -107,7 +120,7 @@ public class PostsDatabase {
         }
     }
 
-    public boolean addSubmission(NewSubmission newSubmission, String author) {
+    public boolean addSubmission(NewSubmission newSubmission, String author, Long chatId) {
         try {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return false;
@@ -130,12 +143,12 @@ public class PostsDatabase {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return null;
             }
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, author from submissions where verified = false order by _id limit 1");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, s1.author, s2.chat_id from submissions s1 join submissionstats s2 on s1.author = s2.author where verified = false order by _id limit 1");
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
+                return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5));
             }
-            return new Post(0, "", "", "");
+            return new Post(0, "", "", "", "");
         } catch (SQLException e) {
             System.err.println("Failed to get a new unverified submission!");
             e.printStackTrace();
@@ -223,12 +236,12 @@ public class PostsDatabase {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return null;
             }
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, author from submissions where verified = true order by _id limit 1");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select _id, file_id, caption, s1.author, s2.chat_id from submissions s1 join submissionstats s2 on s1.author = s2.author where verified = true order by _id limit 1");
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
+                return new Post(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5));
             }
-            return new Post(0, "", "", "");
+            return new Post(0, "", "", "", "");
         } catch (SQLException e) {
             System.err.println("Failed to get the oldest unverified submission!");
             e.printStackTrace();
@@ -275,6 +288,75 @@ public class PostsDatabase {
             System.err.println("Failed to get the queue stats!");
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private boolean userHasChatID(String username) {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select chat_id from submissionstats where author = ?");
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()) {
+                String chatID = resultSet.getString(1);
+                return chatID != null && !chatID.isEmpty();
+            }
+            return false;
+        } catch (SQLException e) {
+            System.err.println("Failed to check whether the user is already in the database!");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Submitter getSubmitterStats(String author) {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return null;
+            }
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select * from submissionstats where author = ?");
+            preparedStatement.setString(1, author);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                return new Submitter(results.getString(1), results.getInt(2), results.getString(3), results.getBoolean(4));
+            }
+            return new Submitter(author, 0, "", false);
+        } catch (SQLException e) {
+            System.err.println("Failed to get submission stats for " + author + "!");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean saveChatID(String author, String chatID) {
+        try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return false;
+            }
+            if(!userHasChatID(author)) {
+                Submitter submitterStats = getSubmitterStats(author);
+                if(submitterStats != null) {
+                    PreparedStatement preparedStatement;
+                    if(submitterStats.submissionsCount() == 0) {
+                        preparedStatement = databaseConnection.prepareStatement("insert into submissionstats values(?, ?, ?, ?)");
+                        preparedStatement.setString(1, author);
+                        preparedStatement.setInt(2, 0);
+                        preparedStatement.setString(3, chatID);
+                        preparedStatement.setBoolean(4, false);
+                    } else {
+                        preparedStatement = databaseConnection.prepareStatement("update submissionstats set chat_id = ? where author = ?");
+                        preparedStatement.setString(1, chatID);
+                        preparedStatement.setString(2, author);
+                    } return preparedStatement.executeUpdate() == 1;
+                }
+            }
+            return true;
+        }  catch (SQLException e) {
+            System.err.println("Failed to add the chat ID!");
+            e.printStackTrace();
+            return false;
         }
     }
 }
