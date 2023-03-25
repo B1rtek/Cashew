@@ -128,7 +128,7 @@ public class Bot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
             SendMessage errorMessage = new SendMessage();
-            errorMessage.setText("Nie udało się dostarczyć \"" + post.caption() + "\", file_id = " + post.fileID() + " - nie udało się wysłać posta");
+            errorMessage.setText("Nie udało się dostarczyć \"" + post.caption() + "\", file_id = " + post.fileID() + ", author = @" + post.author() + " - nie udało się wysłać posta");
             errorMessage.setChatId(b1rtekDMID);
             sendMessage(errorMessage);
             return false;
@@ -224,6 +224,19 @@ public class Bot extends TelegramLongPollingBot {
         return queueStats.toString();
     }
 
+    private String cancelPost(int postNumber, String author) {
+        PostsDatabase database = PostsDatabase.getInstance();
+        Post postToRemove = database.getPostByID(postNumber);
+        if(postToRemove == null || !Objects.equals(postToRemove.author(), author)) return "Nie udało się wycofać posta";
+        SendMessage cancelMessage = new SendMessage();
+        cancelMessage.setText("Post wycofany przez @" + author);
+        cancelMessage.setChatId(b1rtekDMID);
+        sendMessage(cancelMessage);
+        postSubmission(postToRemove, b1rtekDMID);
+        return database.removePost(postNumber) ? "Pomyślnie wycofano post!" : "Nie udało się wycofać posta";
+
+    }
+
     private enum NewCommandStatus {
         GET_PHOTO, GET_DETAILS
     }
@@ -259,6 +272,18 @@ public class Bot extends TelegramLongPollingBot {
                             replyMessage.setText("Twój nick" + (result == 0 ? " nie" : "") + " będzie teraz widoczny w postach.");
                         } else {
                             replyMessage.setText("Nie udało się zmienić widoczności nicku w postach!");
+                        }
+                    }
+                    case "wycofaj" -> {
+                        String[] msgSplit = message.split("\\s+");
+                        if(msgSplit.length < 2) {
+                            replyMessage.setText("Nie podano numeru posta");
+                        } else {
+                            try {
+                                replyMessage.setText(cancelPost(Integer.parseInt(msgSplit[1]), update.getMessage().getFrom().getUserName()));
+                            } catch (NumberFormatException e) {
+                                replyMessage.setText("Nieprawidłowy numer posta");
+                            }
                         }
                     }
                 }
