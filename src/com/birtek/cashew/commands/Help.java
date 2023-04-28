@@ -27,6 +27,7 @@ public class Help extends BaseCommand {
             add("counting");
             add("cuddle");
             add("dadjoke");
+            add("data");
             add("feedback");
             add("gifts");
             add("hug");
@@ -137,6 +138,14 @@ public class Help extends BaseCommand {
                 specificHelpEmbed.addField("Works in DMs", "Yes", true);
                 specificHelpEmbed.setTitle("Dad Joke");
                 specificHelpEmbed.addField('`' + Cashew.COMMAND_PREFIX + "dadjoke`", "Displays a random dad joke from https://icanhazdadjoke.com/", false);
+            }
+            case "data" -> {
+                specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
+                specificHelpEmbed.addField("Works in DMs", "No", true);
+                specificHelpEmbed.setTitle("Data");
+                specificHelpEmbed.setDescription("Manipulates user data");
+                specificHelpEmbed.addField("`/data import <serverID> [@user]`", "Imports data from another server - requires moderator permissions on both the source and the target (this) server! If specified, will only import the selected user's data.", false);
+                specificHelpEmbed.addField("`/data reset [@user]`", "Resets server user data. If specified, will only affect the selected user.", false);
             }
             case "feedback" -> {
                 specificHelpEmbed.addField("Works with prefix " + Cashew.COMMAND_PREFIX, "No", true);
@@ -298,7 +307,7 @@ public class Help extends BaseCommand {
         helpEmbed.addField("🎭 Roleplay", "`cuddle`, `hug`, `kiss`, `pat`", false);
         helpEmbed.addField("\uD83D\uDD27 Utilities", "`/feedback`, `/reminder`, `/roll`", false);
         helpEmbed.addField("😂 Fun stuff", "`/bestneko`, `/birthday`, `boburnham`, `/casesim`, `/cah`, `/counting`, `dadjoke`, `/gifts`, `insp`, `korwin`, `kromer`, `nekoichi`, `ping`, `/socialcredit`, `/trivia`", false);
-        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/cmdset`, `/poll`, `/reactionroles`, `/reactions`, `/scheduler`, `/when`", false);
+        helpEmbed.addField("\uD83D\uDD27 Mod's tools", "`/clear`, `/cmdset`, `/data`, /poll`, `/reactionroles`, `/reactions`, `/scheduler`, `/when`", false);
         helpEmbed.addField("❓ Help", "To learn more about a specific command, type `/help <command>`. Note that some of the commands only work as slash commands. To get more information about the bot use `/info`", false);
         helpEmbed.setColor(0xffd297);
         return helpEmbed;
