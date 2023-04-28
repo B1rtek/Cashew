@@ -53,7 +53,7 @@ public class Cashew {
                 .setCompression(Compression.NONE)
                 .addEventListeners(new Help(), new Clear(), new BestNeko(), new Nekoichi(), new Reactions(), new BoBurnham(), new Scheduler(),
                         new Cuddle(), new Hug(), new Kiss(), new Pat(), new SocialCredit(), new Korwin(), new Inspirobot(), new DadJoke(), new Counting(), new Ping(),
-                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), new Trivia(), new CashewAgainstHumanity(), //commands
+                        new Kromer(), new Gifts(), new CaseSim(), new Info(), new Birthday(), new Reminder(), new Feedback(), new Poll(), new Roll(), new CmdSet(), new When(), new ReactionRoles(), new Trivia(), new CashewAgainstHumanity(), new Data(), //commands
                         new CountingMessageDeletionDetector(), new CountingMessageModificationDetector(), new WhenExecutor(), //events
                         new ReactionsExecutor(), counter, new TriviaQuestionsListener()) //messagereations
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
@@ -266,7 +266,15 @@ public class Cashew {
                                         .addOption(STRING, "deck", "Code of the deck from ManyDecks", true, false),
                                 new SubcommandData("join", "Joins a game")
                                         .addOption(STRING, "game", "Game code of the game to join", true, false),
-                                new SubcommandData("leave", "Leaves the game"))
+                                new SubcommandData("leave", "Leaves the game")),
+                Commands.slash("data", "Manipulate server's user data")
+                        .addSubcommands(new SubcommandData("import", "Imports server data from another server - requires moderator permission on both servers!")
+                                .addOption(STRING, "sourceserverid", "ID of the server to source data from", true, false)
+                                .addOption(USER, "targetuser", "Optional: specify a user to import only this user's data", false, false))
+                        .addSubcommands(new SubcommandData("reset", "Resets user data")
+                                .addOption(USER, "targetuser", "Optional: specify a user to reset only this user's data", false, false))
+                        .setDefaultPermissions(moderatorPermissions)
+                        .setGuildOnly(true)
         ).queue();
         scheduledMessagesManager = new ScheduledMessagesManager(jda);
         birthdayRemindersManager = new BirthdayRemindersManager(jda);
