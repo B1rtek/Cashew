@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class BirthdayRemindersDatabase extends Database {
+public class BirthdayRemindersDatabase extends TransferrableDatabase {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BirthdayRemindersDatabase.class);
 
@@ -55,6 +55,58 @@ public class BirthdayRemindersDatabase extends Database {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    private TransferResult checkDefaultsStateForTransfer(String serverID) {
+        int serverDefaultsID = getDefaultsID(serverID);
+        if(serverDefaultsID < 1) {
+            return switch (serverDefaultsID) {
+                case 0 -> TransferResult.NO_DEFAULTS_SPECIFIED;
+                case -1 -> TransferResult.DATABASE_ERROR;
+                default -> TransferResult.UNKNOWN_ERROR;
+            };
+        }
+        return TransferResult.SUCCESS;
+    }
+
+    @Override
+    TransferResult importDataFromServer(String serverID, String destinationServerID, String userID) {
+        TransferResult defaultsCheckResult = checkDefaultsStateForTransfer(destinationServerID);
+        if(defaultsCheckResult != TransferResult.SUCCESS) return defaultsCheckResult;
+
+        try {
+            PreparedStatement importStatement;
+            if(userID == null) {
+                importStatement = databaseConnection.prepareStatement("insert into birthdayreminders(message, dateandtime, channelid, serverid, userid) select message, dateandtime, channelid, ?, userid from birthdayreminders where serverid = ?");
+            } else {
+                importStatement = databaseConnection.prepareStatement("insert into birthdayreminders(message, dateandtime, channelid, serverid, userid) select message, dateandtime, channelid, ?, userid from birthdayreminders where serverid = ? and userid = ?");
+                importStatement.setString(3, userID);
+            }
+            importStatement.setString(1, destinationServerID);
+            importStatement.setString(2, serverID);
+
+            if(!importStatement.execute()) {
+                return TransferResult.DATABASE_ERROR;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return TransferResult.DATABASE_ERROR;
+        }
+
+        return TransferResult.SUCCESS;
+    }
+
+    @Override
+    TransferResult importDataFromUser(String userID, String targetUserID, String serverID) {
+        TransferResult defaultsCheckResult = checkDefaultsStateForTransfer(serverID);
+        if(defaultsCheckResult != TransferResult.SUCCESS) return defaultsCheckResult;
+
+        return null;
+    }
+
+    @Override
+    TransferResult deleteDataFromUser(String userID, String serverID) {
+        return null;
     }
 
     /**
