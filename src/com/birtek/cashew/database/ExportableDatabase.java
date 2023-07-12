@@ -1,8 +1,8 @@
 package com.birtek.cashew.database;
 
-public interface IExportableDB {
+public abstract class ExportableDatabase extends Database {
 
-    default void addToList() {
+    public ExportableDatabase() {
         Database.exportableDBs.add(this);
     }
 
