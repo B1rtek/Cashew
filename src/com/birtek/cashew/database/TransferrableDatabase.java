@@ -1,8 +1,8 @@
 package com.birtek.cashew.database;
 
-public abstract class ExportableDatabase extends Database {
+public abstract class TransferrableDatabase extends Database {
 
-    public ExportableDatabase() {
+    public TransferrableDatabase() {
         Database.exportableDBs.add(this);
     }
 

@@ -10,7 +10,7 @@ public class Database {
     protected Connection databaseConnection;
     protected String databaseURL;
 
-    public static ArrayList<ExportableDatabase> exportableDBs;
+    public static ArrayList<TransferrableDatabase> exportableDBs = new ArrayList<>();
 
     /**
      * Tries to reestablish a connection
