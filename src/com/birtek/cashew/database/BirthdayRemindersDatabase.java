@@ -93,6 +93,9 @@ public class BirthdayRemindersDatabase extends TransferrableDatabase {
         TransferResult defaultsCheckResult = checkDefaultsStateForTransfer(destinationServerID);
         if(defaultsCheckResult != TransferResult.SUCCESS) return defaultsCheckResult;
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return TransferResult.DATABASE_ERROR;
+            }
             PreparedStatement importStatement;
             if(userID == null) {
                 importStatement = databaseConnection.prepareStatement("insert into birthdayreminders(message, dateandtime, channelid, serverid, userid) select message, dateandtime, channelid, ?, userid from birthdayreminders where serverid = ?");
@@ -117,6 +120,9 @@ public class BirthdayRemindersDatabase extends TransferrableDatabase {
 
     private int getAmountToImport(String serverID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select count(*) from birthdayreminders where serverid = ?");
             preparedStatement.setString(1, serverID);
             ResultSet results = preparedStatement.executeQuery();
@@ -132,6 +138,9 @@ public class BirthdayRemindersDatabase extends TransferrableDatabase {
 
     private int getAmountOfConflicts(String serverID, String destinationServerID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return -1;
+            }
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select count(*) from (select userid, count(*) from birthdayreminders where serverid = ? or serverid = ? group by userid having count(*) = 2) subqr");
             preparedStatement.setString(1, serverID);
             preparedStatement.setString(2, destinationServerID);
@@ -158,6 +167,9 @@ public class BirthdayRemindersDatabase extends TransferrableDatabase {
         TransferResult defaultsCheckResult = checkDefaultsStateForTransfer(serverID);
         if(defaultsCheckResult != TransferResult.SUCCESS) return defaultsCheckResult;
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return TransferResult.DATABASE_ERROR;
+            }
             PreparedStatement importStatement = databaseConnection.prepareStatement("insert into birthdayreminders(message, dateandtime, channelid, serverid, userid) select message, dateandtime, channelid, ?, ? from birthdayreminders where serverid = ? and userid = ?");
             importStatement.setString(1, serverID);
             importStatement.setString(2, targetUserID);
@@ -178,6 +190,9 @@ public class BirthdayRemindersDatabase extends TransferrableDatabase {
     @Override
     public TransferResult deleteDataFromUser(String userID, String serverID) {
         try {
+            if (databaseConnection.isClosed()) {
+                if (!reestablishConnection()) return TransferResult.DATABASE_ERROR;
+            }
             PreparedStatement deleteStatement = databaseConnection.prepareStatement("delete from birthdayreminders where userid = ? and serverid = ?");
             deleteStatement.setString(1, userID);
             deleteStatement.setString(2, serverID);
