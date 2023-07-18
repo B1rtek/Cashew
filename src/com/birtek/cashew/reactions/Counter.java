@@ -2,6 +2,7 @@ package com.birtek.cashew.reactions;
 
 import com.birtek.cashew.database.CountingDatabase;
 import com.birtek.cashew.database.CountingInfo;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -21,7 +22,7 @@ public class Counter extends BaseReaction {
     private final HashMap<String, Boolean> correctedAfterOffline = new HashMap<>();
     private HashMap<String, ArrayList<String>> muteList;
 
-    public Counter() {
+    public Counter(JDA jda) {
         CountingDatabase database = CountingDatabase.getInstance();
         ArrayList<String> countingChannels = database.getAllActiveCountingChannels();
         if (countingChannels != null) {
@@ -33,6 +34,7 @@ public class Counter extends BaseReaction {
         }
         muteList = database.getAllMutedUsers();
         if (muteList == null) muteList = new HashMap<>();
+        database.fixCountingChannelsServerData(jda);
     }
 
     public void updateMuteStatus(String channelID, String userID, boolean status) {

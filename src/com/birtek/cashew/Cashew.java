@@ -39,7 +39,7 @@ public class Cashew {
     public static MessageCache messageCache;
     public static final Permission moderatorPermission = Permission.MANAGE_SERVER;
     public static final DefaultMemberPermissions moderatorPermissions = DefaultMemberPermissions.enabledFor(moderatorPermission);
-    public static final Counter counter = new Counter();
+    public static Counter counter;
 
     // telegram bot stuff
 
@@ -286,6 +286,7 @@ public class Cashew {
         commandsSettingsManager = new CommandsSettingsManager();
         whenSettingsManager = new WhenSettingsManager();
         triviaQuestionsManager = new TriviaQuestionsManager(jda);
+        counter = new Counter(jda);
         messageCache = new MessageCache();
 
         // telegram stuff

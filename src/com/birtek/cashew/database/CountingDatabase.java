@@ -1,12 +1,17 @@
 package com.birtek.cashew.database;
 
 import com.birtek.cashew.Cashew;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,14 +59,64 @@ public class CountingDatabase extends Database {
         try {
             PreparedStatement preparedStatement = databaseConnection.prepareStatement("select column_name from information_schema.columns where table_name='counting' and column_name='muted'");
             ResultSet results = preparedStatement.executeQuery();
-            if(!results.next()) {
+            if (!results.next()) {
                 preparedStatement = databaseConnection.prepareStatement("alter table counting add column muted text");
                 preparedStatement.execute();
             }
         } catch (SQLException e) {
-            LOGGER.error("Failed to alter counting table!");
+            LOGGER.error("Failed to alter counting table by adding the muted column!");
             e.printStackTrace();
             System.exit(1);
+        }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select column_name from information_schema.columns where table_name='counting' and column_name='serverid'");
+            ResultSet results = preparedStatement.executeQuery();
+            if (!results.next()) {
+                preparedStatement = databaseConnection.prepareStatement("alter table counting add column serverid text");
+                preparedStatement.execute();
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Failed to alter counting table by adding the serverid column!");
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void updateChannelServerID(String channelID, String serverID) {
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("update counting set serverid = ? where channelid = ?");
+            preparedStatement.setString(1, serverID);
+            preparedStatement.setString(2, channelID);
+            if (preparedStatement.executeUpdate() != 1) {
+                LOGGER.warn("Failed to update serverID (" + serverID + ") for counting channel " + channelID);
+            }
+        } catch (SQLException e) {
+            LOGGER.warn("Error while updating serverID (" + serverID + ") for counting channel " + channelID);
+            e.printStackTrace();
+        }
+    }
+
+    public void fixCountingChannelsServerData(JDA jda) {
+        ArrayList<String> channelsToFix = new ArrayList<>();
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select channelid from counting where serverid is null");
+            ResultSet results = preparedStatement.executeQuery();
+            while (results.next()) {
+                channelsToFix.add(results.getString(1));
+            }
+        } catch (SQLException e) {
+            LOGGER.warn("Failed to fix counting channels server data!");
+            e.printStackTrace();
+        }
+
+        for (String channelID : channelsToFix) {
+            TextChannel textChannel = jda.getChannelById(TextChannel.class, channelID);
+            if (textChannel != null) {
+                updateChannelServerID(channelID, textChannel.getGuild().getId());
+            } else {
+                LOGGER.warn("Failed to obtain text channel " + channelID);
+            }
         }
     }
 
@@ -192,6 +247,7 @@ public class CountingDatabase extends Database {
 
     /**
      * Returns a HashMap of lists of muted users on every counting channel
+     *
      * @return HashMap with muted users or null if an error occurred
      */
     public HashMap<String, ArrayList<String>> getAllMutedUsers() {
@@ -205,7 +261,7 @@ public class CountingDatabase extends Database {
             while (results.next()) {
                 String channelID = results.getString(1);
                 String muteString = results.getString(2);
-                if(muteString == null) continue;
+                if (muteString == null) continue;
                 ArrayList<String> channelMuteList = new ArrayList<>(Arrays.asList(muteString.split(",")));
                 muteList.put(channelID, channelMuteList);
             }
@@ -261,7 +317,8 @@ public class CountingDatabase extends Database {
 
     /**
      * Mutes or unmutes a user in the counting game
-     * @param user {@link User user} to mute/unmute
+     *
+     * @param user      {@link User user} to mute/unmute
      * @param channelID ID of the channel in which the user status is being changed
      * @return {@link Pair pair} with two Booleans - first one indicates whether the operation was successful, the other
      * one tells if the user was muted (true) or unmuted (false)
@@ -275,26 +332,26 @@ public class CountingDatabase extends Database {
             preparedStatement.setString(1, channelID);
             ResultSet results = preparedStatement.executeQuery();
             String muteList;
-            if(results.next()) {
+            if (results.next()) {
                 muteList = results.getString(1);
-                if(muteList == null) muteList = "";
+                if (muteList == null) muteList = "";
             } else {
                 setCountingStatus(false, channelID);
                 muteList = "";
             }
             ArrayList<String> mutedIDs = new ArrayList<>(Arrays.asList(muteList.split(",")));
             boolean ifMuted = true;
-            if(mutedIDs.contains(user.getId())) {
+            if (mutedIDs.contains(user.getId())) {
                 mutedIDs.remove(user.getId());
                 ifMuted = false;
             } else {
                 mutedIDs.add(user.getId());
             }
             StringBuilder muteListString = new StringBuilder();
-            for (String muted: mutedIDs) {
+            for (String muted : mutedIDs) {
                 muteListString.append(muted).append(',');
             }
-            muteListString.deleteCharAt(muteListString.length()-1);
+            muteListString.deleteCharAt(muteListString.length() - 1);
             preparedStatement = databaseConnection.prepareStatement("update counting set muted = ? where channelid = ?");
             preparedStatement.setString(1, muteListString.toString());
             preparedStatement.setString(2, channelID);
