@@ -27,7 +27,7 @@ public class Counting extends BaseCommand {
             if (Objects.equals(event.getSubcommandName(), "toggle")) {
                 String toggle = event.getOption("toggle", "", OptionMapping::getAsString);
                 if (!toggle.isEmpty() && (toggle.equals("on") || toggle.equals("off"))) {
-                    if (saveToDatabase(toggle, event.getChannel().getId())) {
+                    if (saveToDatabase(toggle, event.getChannel().getId(), event.getGuild().getId())) {
                         event.reply("Counting has been turned " + toggle + " in this channel.").queue();
                     } else {
                         event.reply("Something went wrong while toggling the counting game in this channel").setEphemeral(true).queue();
@@ -84,8 +84,8 @@ public class Counting extends BaseCommand {
         }
     }
 
-    private boolean saveToDatabase(String argument, String channelID) {
+    private boolean saveToDatabase(String argument, String channelID, String serverID) {
         CountingDatabase database = CountingDatabase.getInstance();
-        return database.setCountingStatus(argument.equals("on"), channelID);
+        return database.setCountingStatus(argument.equals("on"), channelID, serverID);
     }
 }

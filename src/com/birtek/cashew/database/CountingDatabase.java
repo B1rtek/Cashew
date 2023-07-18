@@ -141,13 +141,15 @@ public class CountingDatabase extends Database {
      *
      * @param newState  new state of the game - either on (true) or off (false)
      * @param channelID ID of the channel where the game is being turned on or off
+     * @param serverID ID of the server in which the counting channel is located, used only when counting is enabled
+     *                 for the first time, can be set to null during farther updates
      * @return true if the change was successful, false otherwise
      */
-    public boolean setCountingStatus(boolean newState, String channelID) {
+    public boolean setCountingStatus(boolean newState, String channelID, String serverID) {
         if (isInDatabase(channelID)) {
             return updateCountingStatus(newState, channelID);
         } else {
-            return insertCountingStatus(newState, channelID);
+            return insertCountingStatus(newState, channelID, serverID);
         }
     }
 
@@ -202,18 +204,20 @@ public class CountingDatabase extends Database {
      *
      * @param newState  new state of the game - either on (true) or off (false)
      * @param channelID ID of the channel where the game is being turned on or off
+     * @param serverID ID of the server in which the counting channel is situated
      * @return true if the update was successful, false otherwise
      */
-    private boolean insertCountingStatus(boolean newState, String channelID) {
+    private boolean insertCountingStatus(boolean newState, String channelID, String serverID) {
         try {
             if (databaseConnection.isClosed()) {
                 if (!reestablishConnection()) return false;
             }
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO counting(activity, current, channelid, typosleft) VALUES(?, ?, ?, ?)");
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("INSERT INTO counting(activity, current, channelid, typosleft, serverid) VALUES(?, ?, ?, ?, ?)");
             preparedStatement.setBoolean(1, newState);
             preparedStatement.setInt(2, 0);
             preparedStatement.setString(3, channelID);
             preparedStatement.setInt(4, 3);
+            preparedStatement.setString(5, serverID);
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException e) {
             LOGGER.warn(e + " thrown at CountingDatabase.insertCountingStatus()");
@@ -336,7 +340,7 @@ public class CountingDatabase extends Database {
                 muteList = results.getString(1);
                 if (muteList == null) muteList = "";
             } else {
-                setCountingStatus(false, channelID);
+                setCountingStatus(false, channelID, null);
                 muteList = "";
             }
             ArrayList<String> mutedIDs = new ArrayList<>(Arrays.asList(muteList.split(",")));
