@@ -1,6 +1,7 @@
 package com.birtek.cashew.database;
 
 import com.birtek.cashew.timings.BirthdayReminder;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,24 @@ public class BirthdayRemindersDatabase extends TransferrableDatabase {
             e.printStackTrace();
             System.exit(1);
         }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("create or replace function create_constraint_if_not_exists (t_name text, c_name text, constraint_sql text) returns void AS $$ begin if not exists (select constraint_name from information_schema.constraint_column_usage where table_name = t_name  and constraint_name = c_name) then execute constraint_sql; end if; end; $$ language 'plpgsql';");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create/replace the plsql function create_constraint_if_not_exists!");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select create_constraint_if_not_exists('birthdayreminders', 'uc_reminder', 'alter table birthdayreminders add constraint uc_reminder unique (serverid,userid);')");
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            LOGGER.error("Failed to create constraint birthdayreminders.uc_reminder!");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     private TransferResult checkDefaultsStateForTransfer(String serverID) {
@@ -70,10 +89,9 @@ public class BirthdayRemindersDatabase extends TransferrableDatabase {
     }
 
     @Override
-    TransferResult importDataFromServer(String serverID, String destinationServerID, String userID) {
+    public TransferResult importDataFromServer(String serverID, String destinationServerID, String userID) {
         TransferResult defaultsCheckResult = checkDefaultsStateForTransfer(destinationServerID);
         if(defaultsCheckResult != TransferResult.SUCCESS) return defaultsCheckResult;
-
         try {
             PreparedStatement importStatement;
             if(userID == null) {
@@ -85,28 +103,89 @@ public class BirthdayRemindersDatabase extends TransferrableDatabase {
             importStatement.setString(1, destinationServerID);
             importStatement.setString(2, serverID);
 
-            if(!importStatement.execute()) {
+            importStatement.execute();
+        } catch (SQLException e) {
+            if(e.getErrorCode() == 23505) {// unique constraint violation
+                return TransferResult.CONFLICT;
+            } else {
+                e.printStackTrace();
                 return TransferResult.DATABASE_ERROR;
             }
+        }
+        return TransferResult.SUCCESS;
+    }
+
+    private int getAmountToImport(String serverID) {
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select count(*) from birthdayreminders where serverid = ?");
+            preparedStatement.setString(1, serverID);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                return results.getInt(1);
+            }
+            return 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            return TransferResult.DATABASE_ERROR;
+            return -1;
         }
+    }
 
+    private int getAmountOfConflicts(String serverID, String destinationServerID) {
+        try {
+            PreparedStatement preparedStatement = databaseConnection.prepareStatement("select count(*) from (select userid, count(*) from birthdayreminders where serverid = ? or serverid = ? group by userid having count(*) = 2) subqr");
+            preparedStatement.setString(1, serverID);
+            preparedStatement.setString(2, destinationServerID);
+            ResultSet results = preparedStatement.executeQuery();
+            if(results.next()) {
+                return results.getInt(1);
+            }
+            return 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    @Override
+    public Pair<Integer, Integer> getInformationAboutDuplicates(String serverID, String destinationServerID) {
+        int amountToImport = getAmountToImport(serverID);
+        int amountOfConflicts = getAmountOfConflicts(serverID, destinationServerID);
+        return Pair.of(amountToImport, amountOfConflicts);
+    }
+
+    @Override
+    public TransferResult importDataFromUser(String userID, String targetUserID, String serverID) {
+        TransferResult defaultsCheckResult = checkDefaultsStateForTransfer(serverID);
+        if(defaultsCheckResult != TransferResult.SUCCESS) return defaultsCheckResult;
+        try {
+            PreparedStatement importStatement = databaseConnection.prepareStatement("insert into birthdayreminders(message, dateandtime, channelid, serverid, userid) select message, dateandtime, channelid, ?, ? from birthdayreminders where serverid = ? and userid = ?");
+            importStatement.setString(1, serverID);
+            importStatement.setString(2, targetUserID);
+            importStatement.setString(3, serverID);
+            importStatement.setString(4, userID);
+            importStatement.execute();
+        } catch (SQLException e) {
+            if(e.getErrorCode() == 23505) {// unique constraint violation
+                return TransferResult.CONFLICT;
+            } else {
+                e.printStackTrace();
+                return TransferResult.DATABASE_ERROR;
+            }
+        }
         return TransferResult.SUCCESS;
     }
 
     @Override
-    TransferResult importDataFromUser(String userID, String targetUserID, String serverID) {
-        TransferResult defaultsCheckResult = checkDefaultsStateForTransfer(serverID);
-        if(defaultsCheckResult != TransferResult.SUCCESS) return defaultsCheckResult;
-
-        return null;
-    }
-
-    @Override
-    TransferResult deleteDataFromUser(String userID, String serverID) {
-        return null;
+    public TransferResult deleteDataFromUser(String userID, String serverID) {
+        try {
+            PreparedStatement deleteStatement = databaseConnection.prepareStatement("delete from birthdayreminders where userid = ? and serverid = ?");
+            deleteStatement.setString(1, userID);
+            deleteStatement.setString(2, serverID);
+            deleteStatement.executeUpdate();
+        } catch (SQLException e) {
+            return TransferResult.DATABASE_ERROR;
+        }
+        return TransferResult.SUCCESS;
     }
 
     /**
