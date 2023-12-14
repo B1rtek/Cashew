@@ -43,13 +43,13 @@ public class BirthdayRemindersManager {
     private void getReminders() {
         BirthdayRemindersDatabase database = BirthdayRemindersDatabase.getInstance();
         ArrayList<BirthdayReminder> reminders = database.getAllReminders();
-        if (reminders == null || reminders.isEmpty()) {
+        if (reminders == null) {
             LOGGER.error("Failed to obtain the list of birthday reminders!");
             return;
         }
         createRemindersMap(reminders);
         ArrayList<BirthdayReminderDefaults> defaultsList = database.getAllDefaults();
-        if (defaultsList == null || defaultsList.isEmpty()) {
+        if (defaultsList == null) {
             LOGGER.error("Failed to obtain the list of birthday reminder defaults!");
             return;
         }
