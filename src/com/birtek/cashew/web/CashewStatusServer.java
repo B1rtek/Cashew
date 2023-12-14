@@ -18,13 +18,13 @@ public class CashewStatusServer {
     private HttpServer server;
     public CashewStatusServer() {
         try {
-            server = HttpServer.create(new InetSocketAddress("localhost",8008), 0);
+            server = HttpServer.create(new InetSocketAddress(80), 0);
         } catch (IOException e) {
             LOGGER.error("Failed to create CashewStatusServer");
             return;
         }
 
-        server.createContext("/test", new CashewStatusHttpHandler());
+        server.createContext("/", new CashewStatusHttpHandler());
         server.setExecutor(threadPoolExecutor);
         server.start();
     }

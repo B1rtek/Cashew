@@ -1,49 +1,87 @@
 package com.birtek.cashew.web;
 
+import com.birtek.cashew.Cashew;
+import com.birtek.cashew.database.PollsDatabase;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 
 public class CashewStatusHttpHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        String requestParamValue = null;
         if ("GET".equals(httpExchange.getRequestMethod())) {
-            requestParamValue = handleGetRequest(httpExchange);
+            OutputStream outputStream = httpExchange.getResponseBody();
+            String responseContent;
+            if(checkIfUrlAllowed(httpExchange.getRequestURI())) {
+                if(httpExchange.getRequestURI().toString().equals("/")) {
+                    responseContent = generateStatusPage();
+                } else {
+                    responseContent = getCSS();
+                }
+                httpExchange.sendResponseHeaders(200, responseContent.length());
+            } else {
+                responseContent = "Nothing to see here...";
+                httpExchange.sendResponseHeaders(403, responseContent.length());
+            }
+            outputStream.write(responseContent.getBytes());
+            outputStream.flush();
+            outputStream.close();
         }
-        handleResponse(httpExchange, requestParamValue);
     }
 
-    private String handleGetRequest(HttpExchange httpExchange) {
-        return httpExchange.
-                getRequestURI()
-                .toString()
-                .split("\\?")[1]
-                .split("=")[1];
+    private boolean checkIfUrlAllowed(URI uri) {
+        return uri.toString().equals("/") || uri.toString().equals("/style.css");
     }
 
-    private void handleResponse(HttpExchange httpExchange, String requestParamValue) throws IOException {
-        OutputStream outputStream = httpExchange.getResponseBody();
-        StringBuilder htmlBuilder = new StringBuilder();
-        htmlBuilder.append("<html>")
-                .append("<body>")
-                .append("<h1>")
-                .append("Hello ")
-                .append(requestParamValue)
-                .append("</h1>")
-                .append("</body>")
-                .append("</html>");
-        // encode HTML content
-//        String htmlResponse = StringEscapeUtils.escapeHtml4(htmlBuilder.toString());
-        String htmlResponse = htmlBuilder.toString();
+    private String generateStatusPage() {
+        StringBuilder content = new StringBuilder();
+        content.append("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"/><title>Cashew Status</title><link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" /></head><body><h1 id=\"header\">Cashew status</h1>");
+        content.append("<table><tbody><tr><td colspan=\"2\" class=\"thdr\">Database</td></tr>");
+        content.append("<tr><td colspan=\"1\" class=\"lside\">Postgres</td><td colspan=\"1\" class=\"rside\">").append(getDatabaseStatus()).append("</td></tr>");
+        content.append("<tr></tr>");
+        content.append("<tr><td colspan=\"2\" class=\"thdr\">Bots</td></tr>");
+        content.append("<tr><td colspan=\"1\" class=\"lside\">Cashew</td><td colspan=\"1\" class=\"rside\">").append(getCashewStatus()).append("</td></tr>");
+        content.append("<tr><td colspan=\"1\" class=\"lside\">Bad Wayfarer Bot</td><td colspan=\"1\" class=\"rside\">").append(getBWBStatus()).append("</td></tr>");
+        content.append("</tbody></table>");
+        content.append("</body></html>");
+        return content.toString();
+    }
 
-        // this line is a must
-        httpExchange.sendResponseHeaders(200, htmlResponse.length());
-        outputStream.write(htmlResponse.getBytes());
-        outputStream.flush();
-        outputStream.close();
+    private String getCSS() {
+        return "";
+    }
+
+    private String statusToString(boolean status) {
+        if(status) {
+            return "Working";
+        }
+        return "Dead :(";
+    }
+
+    private String getDatabaseStatus() {
+        PollsDatabase database = PollsDatabase.getInstance();
+        return statusToString(database.getAllPolls() != null);
+    }
+
+    private String getCashewStatus() {
+        boolean status = true;
+        try {
+            Cashew.whenSettingsManager.getWhenRulesPageCount("0");
+        } catch (Exception e) {
+            status = false;
+        }
+        return statusToString(status);
+    }
+
+    private String getBWBStatus() {
+        boolean status = true;
+        try {
+            status = Cashew.postsManager.getNextPostTime() != null;
+        } catch (Exception ignored) {}
+        return statusToString(status);
     }
 }
