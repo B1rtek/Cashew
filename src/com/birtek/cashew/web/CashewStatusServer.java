@@ -18,7 +18,7 @@ public class CashewStatusServer {
     private HttpServer server;
     public CashewStatusServer() {
         try {
-            server = HttpServer.create(new InetSocketAddress(80), 0);
+            server = HttpServer.create(new InetSocketAddress(Integer.parseInt(System.getenv().get("PORT"))), 0);
         } catch (IOException e) {
             LOGGER.error("Failed to create CashewStatusServer");
             return;
