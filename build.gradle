@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.birtek.cashew'
-version '2.26.2'
+version '2.26.3'
 compileJava.options.encoding = 'UTF-8'
 
 
@@ -14,13 +14,13 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.36.0.3'
-    implementation group: 'org.postgresql', name: 'postgresql', version: '42.4.3'
+    implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.44.1.0'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.1'
     implementation group: 'net.dv8tion', name: 'JDA', version: '5.0.0-beta.3'
     implementation group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.11'
-    implementation group: 'org.json', name: 'json', version: '20220320'
-    implementation group: 'org.jsoup', name: 'jsoup', version: '1.15.3'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.14'
+    implementation group: 'org.json', name: 'json', version: '20230227'
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.17.1'
     // technically not cashew but I have to fit two bots in one
     implementation 'org.telegram:telegrambots:6.3.0'
     implementation 'org.nocrala.tools.texttablefmt:text-table-formatter:1.2.4'
@@ -43,7 +43,7 @@ build.mustRunAfter clean
 
 jar {
     manifest {
-        attributes 'Class-Path': 'build/libs/Cashew-2.26.2-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
+        attributes 'Class-Path': 'build/libs/Cashew-2.26.3-all.jar', 'Main-Class': 'com.birtek.cashew.Cashew'
     }
 }
 
@@ -52,7 +52,7 @@ wrapper {
 }
 
 shadowJar {
-    archiveFileName = "Cashew-2.26.2-all.jar"
+    archiveFileName = "Cashew-2.26.3-all.jar"
 }
 
 //

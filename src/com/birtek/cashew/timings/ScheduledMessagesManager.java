@@ -31,7 +31,7 @@ public class ScheduledMessagesManager {
     private void getMessages() {
         ScheduledMessagesDatabase database = ScheduledMessagesDatabase.getInstance();
         ArrayList<ScheduledMessage> scheduledMessageArrayList = database.getAllScheduledMessages();
-        if (scheduledMessageArrayList == null || scheduledMessageArrayList.isEmpty()) {
+        if (scheduledMessageArrayList == null) {
             LOGGER.error("Failed to obtain the list of scheduled messages!");
             return;
         }

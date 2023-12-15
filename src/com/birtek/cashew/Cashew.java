@@ -6,6 +6,7 @@ import com.birtek.cashew.commands.*;
 import com.birtek.cashew.database.MessageCache;
 import com.birtek.cashew.reactions.*;
 import com.birtek.cashew.timings.*;
+import com.birtek.cashew.web.CashewStatusServer;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -290,5 +291,9 @@ public class Cashew {
             e.printStackTrace();
         }
         postsManager = new PostsScheduler();
+
+        // cashew status page stuff
+
+        CashewStatusServer statusServer = new CashewStatusServer();
     }
 }

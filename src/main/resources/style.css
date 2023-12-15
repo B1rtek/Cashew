@@ -1,0 +1,42 @@
+#header {
+   text-align: center;
+}
+
+body {
+   background-color: white;
+   font-family: Arial, serif;
+}
+
+#table-div {
+   background-color: #EEEEEE;
+   width: 15%;
+   margin: auto;
+   border-radius: 10px;
+   border: #CCCCCC 2px solid;
+   padding: 5px;
+}
+
+#statustable {
+   width: 100%;
+}
+
+.thdr {
+   font-weight: bold;
+   text-align: center;
+}
+
+.lside {
+   text-align: left;
+}
+
+.rside {
+   text-align: right;
+}
+
+.green {
+   color: green;
+}
+
+.red {
+   color: darkred;
+}
