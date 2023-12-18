@@ -9,7 +9,7 @@ body {
 
 #table-div {
    background-color: #EEEEEE;
-   width: 15%;
+   width: 20%;
    margin: auto;
    border-radius: 10px;
    border: #CCCCCC 2px solid;
@@ -39,4 +39,14 @@ body {
 
 .red {
    color: darkred;
+}
+
+#footer {
+   text-align: center;
+   margin: auto;
+   width: 20%;
+}
+
+a {
+   text-decoration: none;
 }
