@@ -49,8 +49,11 @@ public class CashewStatusHttpHandler implements HttpHandler {
         content.append("<tr><td colspan=\"2\" class=\"thdr\">Bots</td></tr>");
         content.append("<tr><td colspan=\"1\" class=\"lside\">Cashew</td><td colspan=\"1\" class=\"rside ").append(statusToColor(getCashewStatus())).append("\">").append(statusToString(getCashewStatus())).append("</td></tr>");
         content.append("<tr><td colspan=\"1\" class=\"lside\">Bad Wayfarer Bot</td><td colspan=\"1\" class=\"rside ").append(statusToColor(getBWBStatus())).append("\">").append(statusToString(getBWBStatus())).append("</td></tr>");
-        content.append("</tbody></table></div>");
-        content.append("</body></html>");
+        content.append("</tbody></table></div><br><br>");
+        content.append("<div id=\"footer\"><a href=\"https://github.com/B1rtek/Cashew\">Github</a><br>");
+        content.append("<a href=\"https://trello.com/b/R432WEsW/cashew-bot\">Trello</a><br>");
+        content.append("Discord: @b1rtek");
+        content.append("</div></body></html>");
         return content.toString();
     }
 
